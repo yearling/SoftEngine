@@ -126,14 +126,12 @@ namespace SoftEngine
 			{
 
 				RECT window_rect = {0,0,width_-1,height_-1};
-				// make the call to adjust window_rect
 				::AdjustWindowRectEx(&window_rect,GetWindowStyle(hwnd_),GetMenu(hwnd_) != NULL,GetWindowExStyle(hwnd_));
 				client_offset_x_=-window_rect.left;
 				client_offset_y_=-window_rect.top;
-				MoveWindow(hwnd_,100, // x position
-					50, // y position
-					window_rect.right - window_rect.left, // width
-					window_rect.bottom - window_rect.top, // height
+				MoveWindow(hwnd_,100,50, 
+					window_rect.right - window_rect.left, 
+					window_rect.bottom - window_rect.top,
 					FALSE);
 			}
 		}

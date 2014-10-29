@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "DrawImp.h"
+#include <assert.h>
 
 namespace SoftEngine
 {
@@ -86,8 +87,8 @@ namespace SoftEngine
 		surface->Blt(0, NULL,  NULL,  DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx); 
 	}
 
-	unsigned int * DrawImp::LockSurface(CComPtr<IDirectDrawSurface7> surface,int *pitch)
-	{
+	unsigned int * DrawImp::LockSurface(CComPtr<IDirectDrawSurface7> surface,int *pitch, int *width, int *height)
+{
 		if (!surface)
 			return(NULL);
 		DDSURFACEDESC2 ddsd;
@@ -95,6 +96,10 @@ namespace SoftEngine
 		surface->Lock(NULL,&ddsd,DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR,NULL); 
 		if (pitch)
 			*pitch = ddsd.lPitch;
+		if(width)
+			*width=ddsd.dwWidth;
+		if(height)
+			*height=ddsd.dwHeight;
 		return (unsigned int *)ddsd.lpSurface;
 	}
 
@@ -145,5 +150,29 @@ namespace SoftEngine
 		}
 		free(region_data);
 	}
+
+	unsigned int * DrawImp::LockBackSurface(int *pitch,int *width,int *height)
+	{
+		if (ddsback_==nullptr)
+			return(NULL);
+		DDSURFACEDESC2 ddsd;
+		memset(&ddsd,0,sizeof(ddsd));
+		ddsback_->Lock(NULL,&ddsd,DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR,NULL); 
+		if (pitch)
+			*pitch = ddsd.lPitch;
+		if(width)
+			*width=ddsd.dwWidth;
+		if(height)
+			*height=ddsd.dwHeight;
+		return (unsigned int *)ddsd.lpSurface;
+	}
+
+	void DrawImp::UnlockBackSurface()
+	{
+		UnlockSurface(ddsback_);
+	}
+
+
+	
 
 }

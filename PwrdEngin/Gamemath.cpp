@@ -438,3 +438,22 @@ std::ostream & operator<<(std::ostream & out,Matrix &m)
 	}
 	return out;
 }
+inline float CalcDetermin3X3(const float &_0,const float &_1,
+	const float &_2,const float &_3,const float &_4,const float &_5,const float &_6,
+	const float &_7,const float &_8)
+{
+	return _0*_4*_8+_1*_5*_6+_2*_3*_7-_0*_5*_7-_1*_3*_8-_2*_4*_6;
+}
+float MatrixDetermint(const Matrix *m,float *f)
+{
+	float cal=0.0f;
+	const float *pf=*m;
+	cal+=m->m[0][0]*CalcDetermin3X3(pf[5],pf[6],pf[7],pf[9],pf[10],pf[11],pf[13],pf[14],pf[15]);
+	cal+=(-1)*m->m[1][0]*CalcDetermin3X3(pf[1],pf[2],pf[3],pf[9],pf[10],pf[11],pf[13],pf[14],pf[15]);
+	cal+=m->m[2][0]*CalcDetermin3X3(pf[1],pf[2],pf[3],pf[5],pf[6],pf[7],pf[13],pf[14],pf[15]);
+	cal+=(-1)*m->m[3][0]*CalcDetermin3X3(pf[1],pf[2],pf[3],pf[5],pf[6],pf[7],pf[9],pf[10],pf[11]);
+	if(f)
+		*f=cal;
+	return cal;
+}
+
