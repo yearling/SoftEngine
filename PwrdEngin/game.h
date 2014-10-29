@@ -17,6 +17,8 @@ namespace SoftEngine
 	protected:
 		virtual LRESULT MyProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) throw();
 		DrawImp draw_imp_;
+	private:
+		void AllocConsoleDebug();
 	};
 }
 #endif
