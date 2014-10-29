@@ -7,7 +7,8 @@
 
 namespace SoftEngine
 {
-#define  _ARGB(a,r,g,b) ((DWORD)((((a)&0xff))<<24) | (((r)&0xff)<<16) | (((g)&0xff)<<8)| ((b)&0xff)))
+//#define  _ARGB(a,r,g,b) ((DWORD)((((a)&0xff))<<24) | (((r)&0xff)<<16) | (((g)&0xff)<<8)| ((b)&0xff)))
+#define  _ARGB(a,r,g,b)   ((DWORD)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
 #define  _RGBA(r,g,b,a) _ARGB(a,r,g,b)
 #define  _RGB(r,g,b) _ARGB(0xff,r,g,b)
 	class DrawImp
@@ -17,6 +18,7 @@ namespace SoftEngine
 		~DrawImp(void);
 		bool Init(HWND hwnd,int width,int height,int offsetx,int offsety,bool window=true);	
 		void ClearSurface(CComPtr<IDirectDrawSurface7> surface,DWORD color);
+		void ClearBackBuffer(DWORD color=_RGB(0,0,0));
 		unsigned int *LockSurface(CComPtr<IDirectDrawSurface7> surface,int *pitch, int *width, int *height);
 		void UnlockSurface(CComPtr<IDirectDrawSurface7> surface);
 		unsigned int *LockBackSurface(int *pitch,int *width,int *height);

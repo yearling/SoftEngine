@@ -153,13 +153,15 @@ namespace SoftEngine
 
 	unsigned int * DrawImp::LockBackSurface(int *pitch,int *width,int *height)
 	{
+		HRESULT hr;
 		if (ddsback_==nullptr)
 			return(NULL);
 		DDSURFACEDESC2 ddsd;
 		memset(&ddsd,0,sizeof(ddsd));
-		ddsback_->Lock(NULL,&ddsd,DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR,NULL); 
+		ddsd.dwSize=sizeof(ddsd);
+		hr=ddsback_->Lock(NULL,&ddsd,DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR,NULL); 
 		if (pitch)
-			*pitch = ddsd.lPitch;
+			*pitch = ddsd.lPitch>>2;
 		if(width)
 			*width=ddsd.dwWidth;
 		if(height)
@@ -170,6 +172,18 @@ namespace SoftEngine
 	void DrawImp::UnlockBackSurface()
 	{
 		UnlockSurface(ddsback_);
+	}
+
+	void DrawImp::ClearBackBuffer(DWORD color/*=_RGB(0,0,0)*/)
+	{
+		if(ddsback_)
+		{
+			DDBLTFX ddbltfx; 
+			memset(&ddbltfx,0,sizeof(ddbltfx));
+			ddbltfx.dwSize=sizeof(ddbltfx);
+			ddbltfx.dwFillColor = color; 
+			ddsback_->Blt(0, NULL,  NULL,  DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx);
+		}
 	}
 
 

@@ -8,8 +8,6 @@ using std::cout;
 using std::endl;
 namespace SoftEngine
 {
-
-
 	void Game::Initial()
 	{
 		//create window and show window
@@ -19,7 +17,10 @@ namespace SoftEngine
 		main_window_->Init(width,height,_T("Soft Engine"));
 		main_window_->ShowWindow();	
 		AllocConsoleDebug();
-		draw_imp_.Init(main_window_->hwnd_,width,height,main_window_->client_offset_x_,main_window_->client_offset_y_);
+		draw_imp_=new DrawImp();
+		draw_imp_->Init(main_window_->hwnd_,width,height,main_window_->client_offset_x_,main_window_->client_offset_y_);
+		render_=new Render();
+		render_->Init(draw_imp_);
 	}
 
 	int Game::Run()
@@ -78,7 +79,20 @@ namespace SoftEngine
 
 	void Game::GameMain()
 	{
-		draw_imp_.Flip();
+		draw_imp_->ClearBackBuffer(_RGB(255,0,0));
+		if(render_->BeginDraw())
+		{
+			for(int i=0;i<100;i++)
+			{
+				int x0=rand()%2000-1000;
+				int y0=rand()%2000-1000;
+				int x1=rand()%2000-1000;
+				int y1=rand()%2000-1000;
+				render_->DrawLine(x0,y0,x1,y1);
+			}
+			render_->EndDraw();
+		}
+		draw_imp_->Flip();
 		Sleep(30);
 		static bool first_time=true;
 		if(first_time)
