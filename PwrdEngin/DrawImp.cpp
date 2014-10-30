@@ -64,19 +64,20 @@ namespace SoftEngine
 		ddsd_.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN |DDSCAPS_VIDEOMEMORY;
 		if(FAILED(hr=d3d_draw_->CreateSurface(&ddsd_,&ddsback_,nullptr)))
 			return false;
-		RECT screen_rect = {0,0,width_-1,height_-1};
+		RECT screen_rect = {0,0,width_,height_};
 		SetBackBufferCliper(&screen_rect);
 		if (windowed_)
 		{
 			if (FAILED(d3d_draw_->CreateClipper(0,&ddcliper_primer_surface_,NULL)))
-				return(0);
+				return(false);
 
 			if (FAILED(ddcliper_primer_surface_->SetHWnd(0, hwnd_)))
-				return(0);
+				return(false);
 
 			if (FAILED(ddsprimary_->SetClipper(ddcliper_primer_surface_)))
-				return(0);
+				return(false);
 		} // end if screen windowed
+		return true;
 	}
 
 	void DrawImp::ClearSurface(CComPtr<IDirectDrawSurface7> surface,DWORD color)
@@ -88,7 +89,7 @@ namespace SoftEngine
 	}
 
 	unsigned int * DrawImp::LockSurface(CComPtr<IDirectDrawSurface7> surface,int *pitch, int *width, int *height)
-{
+	{
 		if (!surface)
 			return(NULL);
 		DDSURFACEDESC2 ddsd;
@@ -124,7 +125,7 @@ namespace SoftEngine
 	}
 
 	void DrawImp::SetBackBufferCliper(RECT *rc)
-{
+	{
 		if(rc==nullptr)
 			return;
 		LPRGNDATA region_data; 
@@ -187,6 +188,6 @@ namespace SoftEngine
 	}
 
 
-	
+
 
 }

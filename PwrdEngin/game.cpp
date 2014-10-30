@@ -17,10 +17,9 @@ namespace SoftEngine
 		main_window_->Init(width,height,_T("Soft Engine"));
 		main_window_->ShowWindow();	
 		AllocConsoleDebug();
-		draw_imp_=new DrawImp();
-		draw_imp_->Init(main_window_->hwnd_,width,height,main_window_->client_offset_x_,main_window_->client_offset_y_);
 		render_=new Render();
-		render_->Init(draw_imp_);
+		if(!render_->Init(main_window_.get()))
+			throw std::exception("Initial failed!\n");
 	}
 
 	int Game::Run()
@@ -79,7 +78,7 @@ namespace SoftEngine
 
 	void Game::GameMain()
 	{
-		draw_imp_->ClearBackBuffer(_RGB(255,0,0));
+		render_->Clear(_RGB(255,0,0));
 		if(render_->BeginDraw())
 		{
 			for(int i=0;i<100;i++)
@@ -92,7 +91,7 @@ namespace SoftEngine
 			}
 			render_->EndDraw();
 		}
-		draw_imp_->Flip();
+		render_->Present();
 		Sleep(30);
 		static bool first_time=true;
 		if(first_time)

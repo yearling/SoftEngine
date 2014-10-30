@@ -15,6 +15,19 @@ namespace SoftEngine
 		return true;
 	}
 
+	bool Render::Init(const Window *windows)
+	{
+		if(windows==nullptr)
+			return false;
+		else
+		{
+			draw_imp_=new DrawImp();
+			if(!draw_imp_->Init(windows->hwnd_,windows->width_,windows->height_,windows->client_offset_x_,windows->client_offset_y_,windows->is_windowed_))
+				return false;
+		}
+		return true;
+	}
+
 	bool Render::BeginDraw()
 	{
 		assert(draw_imp_&&"render should init");
@@ -22,8 +35,8 @@ namespace SoftEngine
 		{
 			clipe_rc.left=0;
 			clipe_rc.top=0;
-			clipe_rc.right=width_-1;
-			clipe_rc.bottom=height_-1;
+			clipe_rc.right=width_;
+			clipe_rc.bottom=height_;
 			return true;
 		}
 		return false;
@@ -123,6 +136,18 @@ namespace SoftEngine
 			x1=x1+float(x0-x1)*float(y1-rc.bottom)/float(y1-y0);
 			y1=rc.bottom;
 		}
+		return true;
+	}
+
+	bool Render::Clear(UINT color)
+	{
+		draw_imp_->ClearBackBuffer(color);
+		return true;
+	}
+
+	bool Render::Present()
+	{
+		draw_imp_->Flip();
 		return true;
 	}
 

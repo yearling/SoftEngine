@@ -457,3 +457,10 @@ float MatrixDetermint(const Matrix *m,float *f)
 	return cal;
 }
 
+void MatrixIdentity(Matrix *in_out)
+{
+	float *pf=*in_out;
+	for(int i=0;i<16;++i)
+		pf[i]=1.0f;
+}
+

@@ -121,4 +121,5 @@ public:
 };
 Matrix *MatrixMultiply(Matrix *out,const Matrix *pm1,const Matrix *pm2);
 float MatrixDetermint(const Matrix *in,float *f=nullptr);
+void MatrixIdentity(Matrix *in_out);
 #endif
