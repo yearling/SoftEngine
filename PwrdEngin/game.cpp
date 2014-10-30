@@ -17,7 +17,7 @@ namespace SoftEngine
 		main_window_->Init(width,height,_T("Soft Engine"));
 		main_window_->ShowWindow();	
 		AllocConsoleDebug();
-		render_=new Render();
+		render_=new Device();
 		if(!render_->Init(main_window_.get()))
 			throw std::exception("Initial failed!\n");
 	}

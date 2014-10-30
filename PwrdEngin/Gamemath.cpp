@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Gamemath.h"
 #include <iomanip>
+#include <assert.h>
 Vector2 Vector2::operator/(float scalar) const
 {
 	return Vector2(x/scalar,y/scalar);
@@ -9,6 +10,11 @@ Vector2 Vector2::operator/(float scalar) const
 Vector2 Vector2::operator*(float scalar) const
 {
 	return Vector2(x*scalar,y*scalar);
+}
+
+float Vector2::operator*(const Vector2 &v) const
+{
+	return this->x*v.x+this->y*v.y;
 }
 
 Vector2 Vector2::operator-(const Vector2& v) const
@@ -67,6 +73,27 @@ bool Vector2::operator==(const Vector2&v) const
 bool Vector2::operator!=(const Vector2&v) const
 {
 	return !(x==v.x && y==v.y);
+}
+
+Vector2& Vector2::Normalize()
+{
+	float sqr=sqrtf(x*x+y*y);
+	if(sqr==0.0f)
+		return *this;
+	x/=sqr;
+	y/=sqr;
+	return *this;
+}
+
+float Vector2::Dot(const Vector2 &v) const
+{
+	return this->x*v.x+this->y*v.y;
+}
+
+float Vector2::Dot(const Vector2 *p) const
+{
+	assert(p);
+	return x*p->x+y*p->y;
 }
 
 std::ostream& operator<<(std::ostream & out,Vector2 &v)
@@ -150,6 +177,11 @@ Vector3 Vector3::operator*(float scalar) const
 	return Vector3(x*scalar,y*scalar,z*scalar);
 }
 
+float Vector3::operator*(const Vector3 &v) const
+{
+	return x*v.x+y*v.y+z*v.z;
+}
+
 Vector3 Vector3::operator/(float scalar) const
 {
 	return Vector3(x/scalar,y/scalar,z/scalar);
@@ -164,6 +196,54 @@ bool Vector3::operator!=(const Vector3&v) const
 {
 	return  !(x==v.x && y==v.y && z==v.z);
 }
+
+Vector3& Vector3::Normalize()
+{
+	float sqr=sqrtf(x*x+y*y+z*z);
+	if(sqr==0.0f)
+		return *this;
+	x/=sqr;
+	y/=sqr;
+	z/=sqr;
+	return *this;
+}
+
+Vector3 Vector3::operator^(const Vector3 &v) const
+{
+	return Vector3(
+		this->y*v.z-this->z*v.y,
+		this->z*v.x-this->x*v.y,
+		this->x*v.y-this->y*v.x);
+}
+
+Vector3 Vector3::Cross(const Vector3 &v) const
+{
+	return Vector3(
+		this->y*v.z-this->z*v.y,
+		this->z*v.x-this->x*v.y,
+		this->x*v.y-this->y*v.x);
+}
+
+Vector3 Vector3::Cross(const Vector3 *p) const
+{
+	assert(p);
+	return Vector3(
+		this->y*p->z-this->z*p->y,
+		this->z*p->x-this->x*p->y,
+		this->x*p->y-this->y*p->x);
+}
+
+float Vector3::Dot(const Vector3 &v) const
+{
+	return x*v.x+y*v.y+z*v.z;
+}
+
+float Vector3::Dot(const Vector3 *p) const
+{
+	assert(p);
+	return x*p->x+y*p->y+z*p->z;
+}
+
 std::ostream& operator<<(std::ostream & out,Vector3&v)
 {
 	out<<v.x<<"   "<<v.y<<"   "<<v.z;
@@ -246,6 +326,11 @@ Vector4 Vector4::operator*(float scalar) const
 	return Vector4(x*scalar,y*scalar,z*scalar,w*scalar);	
 }
 
+float Vector4::operator*(const Vector4 &v) const
+{
+	return x*v.x+y*v.y+z*v.z+w*v.w;
+}
+
 Vector4 Vector4::operator/(float scalar) const
 {
 	return Vector4(x/scalar,y/scalar,z/scalar,w/scalar);
@@ -260,6 +345,29 @@ bool Vector4::operator!=(const Vector4& v) const
 {
 	return !(*this==v);
 }
+
+Vector4& Vector4::Normalize()
+{
+	float sqr=sqrtf(x*x+y*y+z*z+w*w);
+	if(sqr==0.0f)
+		return *this;
+	x/=sqr;
+	y/=sqr;
+	z/=sqr;
+	w/=sqr;
+	return *this;
+}
+
+float Vector4::Dot(const Vector4 &v) const
+{
+	return x*v.x+y*v.y+z*v.z+w*v.w;
+}
+
+float Vector4::Dot(const Vector4 *p) const
+{
+	return x*p->x+y*p->y+z*p->z+w*p->w;
+}
+
 std::ostream& operator<<(std::ostream & out,Vector4&v)
 {
 	out<<v.x<<"   "<<v.y<<"   "<<v.z<<"   "<<v.w;
@@ -462,5 +570,100 @@ void MatrixIdentity(Matrix *in_out)
 	float *pf=*in_out;
 	for(int i=0;i<16;++i)
 		pf[i]=1.0f;
+}
+//////////////////////////////////////////////////////////////////////////
+/*
+首先 把观察坐标移到原点
+T=
+    1		0		0		0
+	0		1		0		0
+	0		0		1		0
+	-eye.x	-eye.y		-eye.z		1
+然后 旋转
+n = normal(At - Eye)  //Z轴
+u= normal(cross(Up, n))//X轴
+v = cross(n, u)  //Y轴
+R=
+	u.x		v.x		n.x		0  
+	u.y		v.y		n.y		0
+	u.z		v.z		n.z		0
+	0		0		0		1
+T*R=
+u.x           v.x           n.x          0
+u.y           v.y           n.y          0
+u.z           v.z           n.z          0
+-dot(u, eye)  -dot(v, eye)  -dot(n, eye)  1
+
+*/
+//////////////////////////////////////////////////////////////////////////
+Matrix * MatrixLookAtLH(Matrix *out,const Vector3 *eye,const Vector3 *look_at,const Vector3 *up)
+{
+	Vector3 eye_tmp=*eye;
+	Vector3 look_at_tmp=*look_at;
+	Vector3 up_tmp=*up;
+	Vector3 n=(look_at_tmp-eye_tmp).Normalize();
+	Vector3 u=(up_tmp^n).Normalize();
+	Vector3 v=n^u;
+	out->m[0][0]=u.x; out->m[0][1]=v.x; out->m[0][2]=n.x;out->m[0][3]=0.0f;
+	out->m[1][0]=u.y; out->m[1][1]=v.y; out->m[1][2]=n.y;out->m[1][3]=0.0f;
+	out->m[2][0]=u.z; out->m[2][1]=v.z; out->m[2][2]=n.z;out->m[2][3]=0.0f;
+	out->m[3][0]=-u*eye_tmp; out->m[3][1]=-v*eye_tmp; out->m[3][2]=-n*eye_tmp;out->m[3][3]=1.0f;
+	return out;	
+}
+
+void Normalize(Vector4 *v)
+{
+	float squre=v->x*v->x+v->y*v->y+v->z*v->z+v->w*v->w;
+	float sqr=sqrtf(squre);
+	if(sqr==0.0f)
+		return;
+	v->x=v->x/sqr;
+	v->y=v->y/sqr;
+	v->z=v->z/sqr;
+	v->w=v->w/sqr;
+}
+
+void Normalize(Vector3 *v)
+{
+	float squre=v->x*v->x+v->y*v->y+v->z*v->z;
+	float sqr=sqrtf(squre);
+	if(sqr==0.0f)
+		return;
+	v->x=v->x/sqr;
+	v->y=v->y/sqr;
+	v->z=v->z/sqr;
+}
+
+void Normalize(Vector2 *v)
+{
+	float squre=v->x*v->x+v->y*v->y;
+	float sqr=sqrtf(squre);
+	if(sqr==0.0f)
+		return;
+	v->x=v->x/sqr;
+	v->y=v->y/sqr;
+}
+
+float Dot(const Vector2*v1,const Vector2*v2)
+{
+	return v1->x*v2->x+v1->y*v2->y;
+}
+
+float Dot(const Vector3*v1,const Vector3*v2)
+{
+	return v1->x*v2->x+v1->y*v2->y+v1->z*v2->z;	
+}
+
+float Dot(const Vector4*v1,const Vector4*v2)
+{
+	return v1->x*v2->x+v1->y*v2->y+v1->z*v2->z+v1->w*v2->w;
+}
+
+Vector3 Cross(const Vector3*a ,const Vector3*b)
+{
+	return Vector3(
+		a->y*b->z-a->z*b->y,
+		a->z*b->x-a->x*b->y,
+		a->x*b->y-a->y*b->x);
 }
 

@@ -14,9 +14,6 @@
     <ClInclude Include="DrawImp.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Render.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="application.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -27,6 +24,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraBase.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Device.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -43,13 +46,16 @@
     <ClCompile Include="Gamemath.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Render.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="application.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraBase.cpp">
+      <Filter>头文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Device.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

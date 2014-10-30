@@ -75,19 +75,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="application.h" />
+    <ClInclude Include="CameraBase.h" />
     <ClInclude Include="DrawImp.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="Gamemath.h" />
-    <ClInclude Include="Render.h" />
+    <ClInclude Include="Device.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp" />
+    <ClCompile Include="CameraBase.cpp" />
     <ClCompile Include="DrawImp.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="Gamemath.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Render.cpp" />
+    <ClCompile Include="Device.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

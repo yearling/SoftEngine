@@ -27,6 +27,10 @@ public:
 	bool operator == ( const Vector2& ) const;
 	bool operator != ( const Vector2& ) const;
 	friend std::ostream& operator<<(std::ostream & out,Vector2 &);
+	Vector2& Normalize();
+	float Dot(const Vector2 &) const;
+	float Dot(const Vector2 *) const;
+	float operator*(const Vector2 &)const;
 public:
 	float x, y;
 };
@@ -49,6 +53,13 @@ public:
 	bool operator == ( const Vector3& ) const;
 	bool operator != ( const Vector3& ) const;
 	friend std::ostream& operator<<(std::ostream &,Vector3&);
+	Vector3& Normalize();
+	Vector3 operator^(const Vector3 &) const;
+	Vector3 Cross(const Vector3 &) const;
+	Vector3 Cross(const Vector3 *)const;
+	float Dot(const Vector3 &) const;
+	float Dot(const Vector3 *) const;
+	float operator*(const Vector3 &)const;
 public:
 	float x,y,z;
 };
@@ -71,6 +82,10 @@ public:
 	bool operator == ( const Vector4& ) const;
 	bool operator != ( const Vector4& ) const;
 	friend std::ostream& operator<<(std::ostream &,Vector4&);
+	Vector4& Normalize();
+	float Dot(const Vector4 &) const;
+	float Dot(const Vector4 *) const;
+	float operator*(const Vector4 &)const;
 public:
 	float x, y, z, w;
 }; 
@@ -122,4 +137,12 @@ public:
 Matrix *MatrixMultiply(Matrix *out,const Matrix *pm1,const Matrix *pm2);
 float MatrixDetermint(const Matrix *in,float *f=nullptr);
 void MatrixIdentity(Matrix *in_out);
+Matrix *MatrixLookAtLH(Matrix *out,const Vector3 *eye,const Vector3 *look_at,const Vector3 *up);
+void Normalize(Vector4 *v);
+void Normalize(Vector3 *v);
+void Normalize(Vector2 *v);
+float Dot(const Vector2*v1,const Vector2*v2);
+float Dot(const Vector3*v1,const Vector3*v2);
+float Dot(const Vector4*v1,const Vector4*v2);
+Vector3 Cross(const Vector3*v1 ,const Vector3*v2);
 #endif

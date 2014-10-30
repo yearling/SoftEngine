@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "application.h"
 #include "DrawImp.h"
-#include "Render.h"
+#include "Device.h"
 namespace SoftEngine
 {
 	class Game:public Application
@@ -17,7 +17,7 @@ namespace SoftEngine
 		void GameMain();
 	protected:
 		virtual LRESULT MyProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) throw();
-		Render*  render_;
+		Device*  render_;
 	private:
 		void AllocConsoleDebug();
 	};
