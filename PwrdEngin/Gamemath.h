@@ -138,6 +138,7 @@ Matrix *MatrixMultiply(Matrix *out,const Matrix *pm1,const Matrix *pm2);
 float MatrixDetermint(const Matrix *in,float *f=nullptr);
 void MatrixIdentity(Matrix *in_out);
 Matrix *MatrixLookAtLH(Matrix *out,const Vector3 *eye,const Vector3 *look_at,const Vector3 *up);
+Matrix *MatrixPerspectiveFOVLH(Matrix *out,float fov,float aspect,float zn,float zf);
 void Normalize(Vector4 *v);
 void Normalize(Vector3 *v);
 void Normalize(Vector2 *v);

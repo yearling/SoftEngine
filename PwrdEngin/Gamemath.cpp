@@ -666,4 +666,27 @@ Vector3 Cross(const Vector3*a ,const Vector3*b)
 		a->z*b->x-a->x*b->y,
 		a->x*b->y-a->y*b->x);
 }
+//////////////////////////////////////////////////////////////////////////
+/*
+
+xScale     0          0               0
+0        yScale       0               0
+0          0       zf/(zf-zn)         1
+0          0       -zn*zf/(zf-zn)     0
+where:
+yScale = cot(fovY/2)
+
+xScale = yScale / aspect ratio
+*/
+//////////////////////////////////////////////////////////////////////////
+Matrix * MatrixPerspectiveFOVLH(Matrix *out,float fov,float aspect,float zn,float zf)
+{
+	assert(out);
+	float y=tan(PI/2-fov/2);
+	float x=y/aspect;
+	out->m[0][0]=x; out->m[0][1]=0.0f; out->m[0][2]=0.0f;out->m[0][3]=0.0f;
+	out->m[1][0]=0.0f; out->m[1][1]=y; out->m[1][2]=0.0f;out->m[1][3]=0.0f;
+	out->m[2][0]=0.0f; out->m[2][1]=0.0f; out->m[2][2]=zf/(zf-zn);out->m[2][3]=1.0f;
+	out->m[3][0]=0.0f; out->m[3][1]=0.0f; out->m[3][2]=-zn*zf/(zf-zn);out->m[3][3]=0.0f;
+}
 
