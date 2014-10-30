@@ -115,6 +115,27 @@ namespace SoftEngine
 			auto m3=m1*m2;
 			cout<<m3<<endl;
 			cout<<MatrixDetermint(&m3)<<endl;
+			cout<<"--------------------"<<endl;
+			float width=800.0f;
+			float height=600.0f;
+			MatrixPerspectiveFOVLH(&m3,PI/4,width/height,1.0f,500.0f);
+			cout<<m3<<endl;
+			Vector3 eye(100,242,365);
+			Vector3 at(0,-20,155);
+			Vector3 up(0,1,0);
+			MatrixLookAtLH(&m3,&eye,&at,&up);
+			cout<<m3<<endl;
+			cout<<endl;
+			at.x=-60;
+			eye.y=79;
+			MatrixLookAtLH(&m3,&eye,&at,&up);
+			cout<<m3<<endl;
+			cout<<"-----------"<<endl;
+			Vector3 fx(-0.795432f,0.0f,0.606043f);
+			Vector3 fz(-0.567458f,-0.351115f,-0.744789f);
+			Vector3 vec;
+			vec=fz^fx;	
+			std::cout<<vec.x<<"		"<<vec.y<<"		"<<vec.z<<std::endl;
 		}
 	}
 

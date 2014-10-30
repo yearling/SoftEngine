@@ -2,6 +2,7 @@
 #include "Gamemath.h"
 #include <iomanip>
 #include <assert.h>
+#include <iostream>
 Vector2 Vector2::operator/(float scalar) const
 {
 	return Vector2(x/scalar,y/scalar);
@@ -212,7 +213,7 @@ Vector3 Vector3::operator^(const Vector3 &v) const
 {
 	return Vector3(
 		this->y*v.z-this->z*v.y,
-		this->z*v.x-this->x*v.y,
+		this->z*v.x-this->x*v.z,
 		this->x*v.y-this->y*v.x);
 }
 
@@ -540,7 +541,7 @@ std::ostream & operator<<(std::ostream & out,Matrix &m)
 	{
 		for(int j=0;j<4;j++)
 		{
-			out<<std::setw(6)<<m.m[i][j];
+			out<<std::setw(15)<<m.m[i][j];
 		}
 		out<<std::endl;
 	}
@@ -603,7 +604,9 @@ Matrix * MatrixLookAtLH(Matrix *out,const Vector3 *eye,const Vector3 *look_at,co
 	Vector3 up_tmp=*up;
 	Vector3 n=(look_at_tmp-eye_tmp).Normalize();
 	Vector3 u=(up_tmp^n).Normalize();
+	std::cout<<"octro:"<<n*u<<std::endl;
 	Vector3 v=n^u;
+	std::cout<<" v is "<<v.x*v.x+v.y*v.y+v.z*v.z<<std::endl;
 	out->m[0][0]=u.x; out->m[0][1]=v.x; out->m[0][2]=n.x;out->m[0][3]=0.0f;
 	out->m[1][0]=u.y; out->m[1][1]=v.y; out->m[1][2]=n.y;out->m[1][3]=0.0f;
 	out->m[2][0]=u.z; out->m[2][1]=v.z; out->m[2][2]=n.z;out->m[2][3]=0.0f;
@@ -688,5 +691,6 @@ Matrix * MatrixPerspectiveFOVLH(Matrix *out,float fov,float aspect,float zn,floa
 	out->m[1][0]=0.0f; out->m[1][1]=y; out->m[1][2]=0.0f;out->m[1][3]=0.0f;
 	out->m[2][0]=0.0f; out->m[2][1]=0.0f; out->m[2][2]=zf/(zf-zn);out->m[2][3]=1.0f;
 	out->m[3][0]=0.0f; out->m[3][1]=0.0f; out->m[3][2]=-zn*zf/(zf-zn);out->m[3][3]=0.0f;
+	return out;
 }
 
