@@ -12,7 +12,16 @@ namespace SoftEngine
 		CameraBase(void);
 		virtual ~CameraBase(void);
 	private:
-		Matrix
+		Matrix view_;
+		Matrix project_;
+		Vector3 eye_;
+		Vector3 look_at_;
+		float FOV_;
+		float aspect_;
+		float near_plane_;
+		float far_plane_;
+		int width_;
+		int height_;
 	};
 }
 #endif
