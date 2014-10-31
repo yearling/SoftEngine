@@ -2,7 +2,6 @@
 #include "Gamemath.h"
 #include <iomanip>
 #include <assert.h>
-#include <iostream>
 Vector2 Vector2::operator/(float scalar) const
 {
 	return Vector2(x/scalar,y/scalar);
@@ -221,7 +220,7 @@ Vector3 Vector3::Cross(const Vector3 &v) const
 {
 	return Vector3(
 		this->y*v.z-this->z*v.y,
-		this->z*v.x-this->x*v.y,
+		this->z*v.x-this->x*v.z,
 		this->x*v.y-this->y*v.x);
 }
 
@@ -230,7 +229,7 @@ Vector3 Vector3::Cross(const Vector3 *p) const
 	assert(p);
 	return Vector3(
 		this->y*p->z-this->z*p->y,
-		this->z*p->x-this->x*p->y,
+		this->z*p->x-this->x*p->z,
 		this->x*p->y-this->y*p->x);
 }
 
@@ -243,6 +242,16 @@ float Vector3::Dot(const Vector3 *p) const
 {
 	assert(p);
 	return x*p->x+y*p->y+z*p->z;
+}
+
+Vector3& Vector3::operator=(const Vector4&v)
+{
+	if(v.w==0.0f)
+		return *this;
+	x=v.x/v.w;
+	y=v.y/v.w;
+	z=v.z/v.w;
+	return *this;
 }
 
 std::ostream& operator<<(std::ostream & out,Vector3&v)
@@ -332,6 +341,16 @@ float Vector4::operator*(const Vector4 &v) const
 	return x*v.x+y*v.y+z*v.z+w*v.w;
 }
 
+Vector4& Vector4::operator*=(const Matrix &m)
+{
+	Vector4 tmp(*this);
+	x=tmp.x*m.m[0][0]+tmp.y*m.m[1][0]+tmp.z*m.m[2][0]+tmp.w*m.m[3][0];
+	y=tmp.x*m.m[0][1]+tmp.y*m.m[1][1]+tmp.z*m.m[2][1]+tmp.w*m.m[3][1];
+	z=tmp.x*m.m[0][2]+tmp.y*m.m[1][2]+tmp.z*m.m[2][2]+tmp.w*m.m[3][2];
+	w=tmp.x*m.m[0][3]+tmp.y*m.m[1][3]+tmp.z*m.m[2][3]+tmp.w*m.m[3][3];
+	return *this;
+}
+
 Vector4 Vector4::operator/(float scalar) const
 {
 	return Vector4(x/scalar,y/scalar,z/scalar,w/scalar);
@@ -369,6 +388,26 @@ float Vector4::Dot(const Vector4 *p) const
 	return x*p->x+y*p->y+z*p->z+w*p->w;
 }
 
+Vector4& Vector4::operator=(const Vector3&v)
+{
+	x=v.x;
+	y=v.y;
+	z=v.z;
+	w=1.0f;
+	return *this;
+}
+
+Vector4& Vector4::ProjectDivied()
+{
+	if(w==0.0f)
+		return *this;
+	x=x/w;
+	y=y/w;
+	z=z/w;
+	w=1.0f;
+	return *this;
+}
+
 std::ostream& operator<<(std::ostream & out,Vector4&v)
 {
 	out<<v.x<<"   "<<v.y<<"   "<<v.z<<"   "<<v.w;
@@ -379,9 +418,10 @@ Matrix * MatrixMultiply(Matrix *out,const Matrix *a,const Matrix *b)
 {
 	if(out==nullptr)
 		return nullptr;
-	memset(out,0,sizeof(Matrix));
 	Matrix tmp_a(*a);
 	Matrix tmp_b(*b);
+	memset(out,0,sizeof(Matrix));
+	
 	for(int i=0;i<4;++i)
 		for(int j=0;j<4;++j)
 			for(int k=0;k<4;++k)
@@ -568,9 +608,14 @@ float MatrixDetermint(const Matrix *m,float *f)
 
 void MatrixIdentity(Matrix *in_out)
 {
-	float *pf=*in_out;
-	for(int i=0;i<16;++i)
-		pf[i]=1.0f;
+	if(in_out)
+	{
+		memset(in_out,0,sizeof(Matrix));
+		in_out->_11=1.0f;
+		in_out->_22=1.0f;
+		in_out->_33=1.0f;
+		in_out->_44=1.0f;
+	}
 }
 //////////////////////////////////////////////////////////////////////////
 /*
@@ -604,9 +649,7 @@ Matrix * MatrixLookAtLH(Matrix *out,const Vector3 *eye,const Vector3 *look_at,co
 	Vector3 up_tmp=*up;
 	Vector3 n=(look_at_tmp-eye_tmp).Normalize();
 	Vector3 u=(up_tmp^n).Normalize();
-	std::cout<<"octro:"<<n*u<<std::endl;
 	Vector3 v=n^u;
-	std::cout<<" v is "<<v.x*v.x+v.y*v.y+v.z*v.z<<std::endl;
 	out->m[0][0]=u.x; out->m[0][1]=v.x; out->m[0][2]=n.x;out->m[0][3]=0.0f;
 	out->m[1][0]=u.y; out->m[1][1]=v.y; out->m[1][2]=n.y;out->m[1][3]=0.0f;
 	out->m[2][0]=u.z; out->m[2][1]=v.z; out->m[2][2]=n.z;out->m[2][3]=0.0f;
@@ -691,6 +734,67 @@ Matrix * MatrixPerspectiveFOVLH(Matrix *out,float fov,float aspect,float zn,floa
 	out->m[1][0]=0.0f; out->m[1][1]=y; out->m[1][2]=0.0f;out->m[1][3]=0.0f;
 	out->m[2][0]=0.0f; out->m[2][1]=0.0f; out->m[2][2]=zf/(zf-zn);out->m[2][3]=1.0f;
 	out->m[3][0]=0.0f; out->m[3][1]=0.0f; out->m[3][2]=-zn*zf/(zf-zn);out->m[3][3]=0.0f;
+	return out;
+}
+
+Matrix * MatrixViewPort(Matrix* out, int x,int y,int width,int height,float minZ/*=0.0f*/,float maxZ/*=1.0f*/)
+{
+	assert(out);
+	out->m[0][0]=width/2; out->m[0][1]=0.0f; out->m[0][2]=0.0f;out->m[0][3]=0.0f;
+	out->m[1][0]=0.0f; out->m[1][1]=-height/2; out->m[1][2]=0.0f;out->m[1][3]=0.0f;
+	out->m[2][0]=0.0f; out->m[2][1]=0.0f; out->m[2][2]=maxZ-minZ;out->m[2][3]=0.0f;
+	out->m[3][0]=x+width/2; out->m[3][1]=y+height/2; out->m[3][2]=minZ;out->m[3][3]=1.0f;
+	return out;
+}
+
+Matrix * MatrixRotationX(Matrix *out,float angle)
+{
+	if(out)
+	{
+		memset(out,0,sizeof(Matrix));
+		float c=cos(angle);
+		float s=sin(angle);
+		out->m[0][0]=1.0f;
+		out->m[1][1]=c;
+		out->m[1][2]=s;
+		out->m[2][1]=-s;
+		out->m[2][2]=c;
+		out->m[3][3]=1.0f;
+	}
+	return out;
+}
+
+Matrix * MatrixRotationY(Matrix *out,float angle)
+{
+	if(out)
+	{
+		memset(out,0,sizeof(Matrix));
+		float c=cos(angle);
+		float s=sin(angle);
+		out->m[0][0]=c;
+		out->m[0][2]=-s;
+		out->m[1][1]=1.0f;
+		out->m[2][0]=s;
+		out->m[2][2]=c;
+		out->m[3][3]=1.0f;
+	}
+	return out;
+}
+
+Matrix * MatrixRotationZ(Matrix *out,float angle)
+{
+	if(out)
+	{
+		memset(out,0,sizeof(Matrix));
+		float c=cos(angle);
+		float s=sin(angle);
+		out->m[0][0]=c;
+		out->m[0][1]=s;
+		out->m[1][0]=-s;
+		out->m[1][1]=c;
+		out->m[2][2]=1.0f;
+		out->m[3][3]=1.0f;
+	}
 	return out;
 }
 

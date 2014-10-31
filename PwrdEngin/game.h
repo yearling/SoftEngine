@@ -14,10 +14,17 @@ namespace SoftEngine
 		virtual void Initial();
 		virtual int Run();
 		virtual void Exit();
-		void GameMain();
+		void GameMain(float elpase_time);
 	protected:
 		virtual LRESULT MyProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) throw();
-		Device*  render_;
+		Device*  device_;
+		VertexDeclaration *vertex_decl_;
+		VertexBuffer* vertex_buffer_;
+		IndexBuffer* index_buffer_;
+		Matrix world_;
+		Matrix proj_;
+		Matrix view_;
+		DWORD  last_time_;
 	private:
 		void AllocConsoleDebug();
 	};

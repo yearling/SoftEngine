@@ -3,11 +3,15 @@
 #pragma once
 #include "stdafx.h"
 #include <math.h>
-#include <iostream>
+//#include <iostream>
 #define PI    ((FLOAT)  3.141592654f)
 #define ToRadian( degree ) ((degree) * (PI / 180.0f))
 #define ToDegree( radian ) ((radian) * (180.0f / PI)
-
+inline int Round( float f) {return int(f+0.5);}
+class Vector2;
+class Vector3;
+class Vector4;
+class Matrix;
 class Vector2
 {
 public:
@@ -44,6 +48,7 @@ public:
 	Vector3& operator -= ( const Vector3& );
 	Vector3& operator *= ( float );
 	Vector3& operator /= ( float );
+	Vector3& operator=(const Vector4&);
 	Vector3 operator + () const;
 	Vector3 operator - () const;
 	Vector3 operator + ( const Vector3& ) const;
@@ -69,10 +74,12 @@ public:
 	Vector4():x(0),y(0),z(0),w(1) {};
 	Vector4( const float* );
 	Vector4( float x, float y, float z, float w );
+	Vector4& operator=(const Vector3&);
 	Vector4& operator += ( const Vector4& );
 	Vector4& operator -= ( const Vector4& );
 	Vector4& operator *= ( float );
 	Vector4& operator /= ( float );
+	Vector4& operator*=(const Matrix &);
 	Vector4 operator + () const;
 	Vector4 operator - () const;
 	Vector4 operator + ( const Vector4& ) const;
@@ -83,6 +90,7 @@ public:
 	bool operator != ( const Vector4& ) const;
 	friend std::ostream& operator<<(std::ostream &,Vector4&);
 	Vector4& Normalize();
+	Vector4& ProjectDivied();
 	float Dot(const Vector4 &) const;
 	float Dot(const Vector4 *) const;
 	float operator*(const Vector4 &)const;
@@ -139,6 +147,10 @@ float MatrixDetermint(const Matrix *in,float *f=nullptr);
 void MatrixIdentity(Matrix *in_out);
 Matrix *MatrixLookAtLH(Matrix *out,const Vector3 *eye,const Vector3 *look_at,const Vector3 *up);
 Matrix *MatrixPerspectiveFOVLH(Matrix *out,float fov,float aspect,float zn,float zf);
+Matrix *MatrixViewPort(Matrix* out, int x,int y,int width,int height,float minZ=0.0f,float maxZ=1.0f);
+Matrix *MatrixRotationX(Matrix *out,float angle);
+Matrix *MatrixRotationY(Matrix *out,float angle);
+Matrix *MatrixRotationZ(Matrix *out,float angle);
 void Normalize(Vector4 *v);
 void Normalize(Vector3 *v);
 void Normalize(Vector2 *v);
