@@ -15,9 +15,15 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
 #include "application.h"
 #include "Gamemath.h"
 #include "DrawImp.h"
 #include "Device.h"
-
+using std::cout;
+using std::endl;
+using std::string;
 // TODO: 在此处引用程序需要的其他头文件

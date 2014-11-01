@@ -61,7 +61,11 @@ namespace SoftEngine
 		ip[30]=4;ip[31]=0;ip[32]=3;
 		ip[33]=4;ip[34]=3;ip[35]=7;
 		index_buffer_->UnLock();
-		
+		//////////////////////////////////////////////////////////////////////////
+		parser_=new FbxPaser();
+		parser_->Init(device_);
+		parser_->Load("..\\media\\box.fbx");
+		//////////////////////////////////////////////////////////////////////////
 	}
 
 	int Game::Run()

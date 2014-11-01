@@ -340,8 +340,8 @@ namespace SoftEngine
 				case DECLTYPE_FLOAT4:
 					size_+=16;
 					break;
-				case DECLTYPE_COLOR:
-					size_+=16;
+				case DECLTYPE_UINT:
+					size_+=4;
 					break;
 				default:
 					break;

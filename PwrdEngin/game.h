@@ -5,6 +5,7 @@
 #include "application.h"
 #include "DrawImp.h"
 #include "Device.h"
+#include "FbxPaser.h"
 namespace SoftEngine
 {
 	class Game:public Application
@@ -25,6 +26,7 @@ namespace SoftEngine
 		Matrix proj_;
 		Matrix view_;
 		DWORD  last_time_;
+		FbxPaser *parser_;
 	private:
 		void AllocConsoleDebug();
 	};

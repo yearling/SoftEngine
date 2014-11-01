@@ -26,10 +26,16 @@
     <ClInclude Include="stdafx.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="CameraBase.h">
-      <Filter>源文件</Filter>
-    </ClInclude>
     <ClInclude Include="Device.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FBXManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FbxPaser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraBase.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -52,10 +58,16 @@
     <ClCompile Include="application.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="CameraBase.cpp">
-      <Filter>头文件</Filter>
-    </ClCompile>
     <ClCompile Include="Device.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FBXManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FbxPaser.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraBase.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
