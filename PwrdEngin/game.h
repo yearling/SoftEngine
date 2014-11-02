@@ -15,8 +15,10 @@ namespace SoftEngine
 		virtual void Initial();
 		virtual int Run();
 		virtual void Exit();
-		void GameMain(float elpase_time);
+		void PreRender(float elpase_time);
+		void Render(float elpase_time);
 		FbxPaser *GetPaser() const{ return parser_;}
+		int GetFPS() const {return FPS_;}
 	protected:
 		virtual LRESULT MyProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) throw();
 		Device*  device_;
@@ -28,6 +30,9 @@ namespace SoftEngine
 		Matrix view_;
 		DWORD  last_time_;
 		FbxPaser *parser_;
+		int last_frame_counts_;
+		DWORD last_frame_time_;
+		int FPS_;
 	private:
 		void AllocConsoleDebug();
 	};

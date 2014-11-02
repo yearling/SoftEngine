@@ -6,8 +6,10 @@
 #include <locale.h>
 #include <iostream>
 #include <mmsystem.h>
+#include <sstream>
 using std::cout;
 using std::endl;
+
 namespace SoftEngine
 {
 	void Game::Initial()
@@ -84,7 +86,8 @@ namespace SoftEngine
 			} 
 			float elapse_time=(float)(timeGetTime()-last_time_)/1000;
 			last_time_=timeGetTime();
-			GameMain(elapse_time);
+			PreRender(elapse_time);
+			Render(elapse_time);
 		} 
 		return 0;
 	}
@@ -131,13 +134,16 @@ namespace SoftEngine
 		vertex_buffer_=nullptr;
 		index_buffer_=nullptr;
 		last_time_=0;
+		last_frame_time_=0;
+		last_frame_counts_=0;
+		FPS_=0;
 	}
 
-	void Game::GameMain(float elapse_time)
-	{
+	void Game::Render(float elpase_time)
+{
 		//cout<<elapse_time<<endl;
 		static float angle=0.0f;
-		angle+=elapse_time*PI;
+		angle+=elpase_time*PI;
 		if(angle>PI*2)
 			angle=0.0f;
 		Matrix rote;
@@ -163,9 +169,19 @@ namespace SoftEngine
 			device_->DrawIndexedPrimitive(PT_TRIANGLEIST,0,0,8,0,parser_->GetFaceNumber());
 			device_->EndScene();
 		}
-		device_->TextDraw("hellow world!",0,0,_RGB(255,0,0));
+		//////////////////////////////////////////////////////////////////////////
+		//to dispaly FPS
+		std::stringstream ss;
+		std::string to_dispaly;
+		ss<<"FPS:"<<GetFPS();
+		to_dispaly=ss.str();
+		device_->TextDraw(to_dispaly,0,0,_RGB(255,0,0));
+		ss.str("");
+		ss<<"Total face number:"<<parser_->GetFaceNumber();
+		to_dispaly=ss.str();
+		device_->TextDraw(to_dispaly,0,20,_RGB(0,255,0));
+		//////////////////////////////////////////////////////////////////////////
 		device_->Present();
-		Sleep(20);
 	}
 
 	void Game::AllocConsoleDebug()
@@ -179,6 +195,30 @@ namespace SoftEngine
 		std::ios::sync_with_stdio();
 		std::cout.clear();
 		std::wcout.clear();
+	}
+
+	void Game::PreRender(float elpase_time)
+	{
+		//////////////////////////////////////////////////////////////////////////
+		if(timeGetTime()-last_frame_time_>1000)
+		{
+			FPS_=last_frame_counts_;
+			last_frame_counts_=0;
+			last_frame_time_=timeGetTime();
+		}
+		else
+		{
+			last_frame_counts_++;
+		}
+
+		//////////////////////////////////////////////////////////////////////////
+		static bool first=true;
+		if(first)
+		{
+			first=false;
+			Quaternion q(2.4f,5.1f,8.3f,2.9f);
+			cout<<q*q<<endl;
+		}
 	}
 
 }

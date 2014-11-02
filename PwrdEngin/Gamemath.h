@@ -12,6 +12,7 @@ class Vector2;
 class Vector3;
 class Vector4;
 class Matrix;
+class Quaternion;
 class Vector2
 {
 public:
@@ -142,6 +143,17 @@ public:
 		};
 
 };
+class Quaternion {
+public:
+	Quaternion(){};
+	Quaternion(float x_,float y_,float z_,float w_):x(x_),y(y_),z(z_),w(w_){}
+	Quaternion operator*(const Quaternion & q);
+	friend std::ostream& operator<<(std::ostream&out,const Quaternion &q);
+	float x;
+	float y;
+	float z;
+	float w;
+};
 Matrix *MatrixMultiply(Matrix *out,const Matrix *pm1,const Matrix *pm2);
 float MatrixDetermint(const Matrix *in,float *f=nullptr);
 void MatrixIdentity(Matrix *in_out);
@@ -151,6 +163,9 @@ Matrix *MatrixViewPort(Matrix* out, int x,int y,int width,int height,float minZ=
 Matrix *MatrixRotationX(Matrix *out,float angle);
 Matrix *MatrixRotationY(Matrix *out,float angle);
 Matrix *MatrixRotationZ(Matrix *out,float angle);
+Matrix *MatrixTranslation(Matrix *out,float x,float y,float z);
+Matrix *MatrixRotationQuaternion(Matrix *out,const Quaternion *q);
+Quaternion * QuaternionIdentity(Quaternion *q);
 void Normalize(Vector4 *v);
 void Normalize(Vector3 *v);
 void Normalize(Vector2 *v);

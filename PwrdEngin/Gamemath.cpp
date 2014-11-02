@@ -798,3 +798,61 @@ Matrix * MatrixRotationZ(Matrix *out,float angle)
 	return out;
 }
 
+Matrix * MatrixRotationQuaternion(Matrix *out,const Quaternion *q)
+{
+	assert(q);
+	const float x=q->x;
+	const float y=q->y;
+	const float z=q->z;
+	const float w=q->w;
+	if(out)
+	{
+		memset(out,0,sizeof(Matrix));
+		out->m[0][0]=1-2*y*y-2*z*z; out->m[0][1]=2*x*y+2*w*z; out->m[0][2]=2*x*z-2*w*y;
+		out->m[1][0]=2*x*y-2*w*z;out->m[1][1]=1-2*x*x-2*z*z;out->m[1][2]=2*y*z+2*w*x;
+		out->m[2][0]=2*x*z+2*w*y;out->m[2][1]=2*y*z-2*w*x;out->m[2][2]=1-2*x*x-2*y*y;
+		out->m[3][3]=1.0f;
+	}
+	return out;
+}
+std::ostream& operator<<(std::ostream&out,const Quaternion &q)
+{
+	out<<q.x<<"	"<<q.y<<"		"<<q.z<<"		"<<q.w<<endl;
+	return out;
+}
+Quaternion * QuaternionIdentity(Quaternion *q)
+{
+	if(q)
+	{
+		q->x=q->y=q->z=0.0f;
+		q->w=1.0f;
+	}
+	return q;
+}
+
+Matrix * MatrixTranslation(Matrix *out,float x,float y,float z)
+{
+	if(out)
+	{
+		memset(out,0,sizeof(Matrix));
+		out->m[0][0]=1.0f;
+		out->m[1][1]=1.0f;
+		out->m[2][2]=1.0f;
+		out->m[3][3]=1.0f;
+		out->m[3][0]=x;
+		out->m[3][1]=y;
+		out->m[3][2]=z;
+	}
+	return out;
+}
+
+
+Quaternion Quaternion::operator*(const Quaternion & q)
+{
+	Quaternion p;
+	p.w=w*q.w-x*q.x-y*q.y-z*q.z;
+	p.x=w*q.x+x*q.w+y*q.z-z*q.y;
+	p.y=w*q.y-x*q.z+y*q.w+z*q.x;
+	p.z=w*q.z+x*q.y-y*q.x+z*q.w;
+	return p;
+}
