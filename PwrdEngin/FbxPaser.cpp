@@ -3,6 +3,7 @@
 #include "Gamemath.h"
 #include <assert.h>
 #include <fbxsdk/scene/geometry/fbxgeometry.h>
+#include <algorithm>
 namespace SoftEngine
 {
 	FbxPaser::FbxPaser()
@@ -69,6 +70,7 @@ namespace SoftEngine
 	void FbxPaser::ProcessNode(FbxNode* node)
 	{
 		assert(node && "node should not be empty");
+	/*	FbxAMatrix & gTransform=node->EvaluateGlobalTransform();*/
 		int num_attr=node->GetNodeAttributeCount();
 		for(int i=0;i<num_attr;i++)
 			if(node->GetNodeAttributeByIndex(i))
@@ -104,11 +106,10 @@ namespace SoftEngine
 		Vector4 color[3];
 		Vector3 normal[3];
 		Vector2 uv[3][2];
-		vertex_buffer_=device_->CreateVertexBuffer(triangle_count*3*sizeof(FbxRenderData));
-		index_buffer_=device_->CreateIndexBuffer(triangle_count*3);
-		assert(vertex_buffer_ && "fbx create VertexBuffer failed!");
-		assert(index_buffer_ && "fbx create IndexBuffer failed!");
+		UINT   index_change[3];
 		
+		
+		UINT index_cur=0;//用来计算index
 		for(int i=0;i<triangle_count;i++)
 		{
 			for(int j=0;j<3;j++)
@@ -120,22 +121,46 @@ namespace SoftEngine
 				ProcessNormal(mesh,ctrl_point_index,vertex_count,normal[j]);
 				vertex_count++;
 			}
-			for(int i=0;i<3;i++)
-			{
-				FbxRenderData da;
-				da.position=position[i];
-				da.normal=normal[i];
-				da.color=color[i];
-				da.uv=uv[i][0];
-				parse_buffer_.push_back(da);
-			}
+			//法向取反,z轴取反
+				for(int i=0;i<3;i++)
+				{
+					FbxRenderData da;
+					memset(&da,0,sizeof(da));
+					da.position=position[i];
+					da.position.z=-da.position.z;
+					da.normal=-normal[i];
+					da.color=color[i];
+					da.uv=uv[i][0];
+					UINT tmp;
+					if(FindSameRenderData(da,tmp))
+					{
+						index_change[i]=tmp;
+					}
+					else
+					{
+						parse_render_data_buffer_.push_back(da);
+						index_change[i]=index_cur++;
+					}
+				}
+				//反绕序
+				parse_index_buffer_.push_back(index_change[2]);
+				parse_index_buffer_.push_back(index_change[1]);
+				parse_index_buffer_.push_back(index_change[0]);
+
+
 		}
+		vertex_buffer_=device_->CreateVertexBuffer(parse_render_data_buffer_.size()*sizeof(FbxRenderData));
+		index_buffer_=device_->CreateIndexBuffer(parse_index_buffer_.size());
+		assert(vertex_buffer_ && "fbx create VertexBuffer failed!");
+		assert(index_buffer_ && "fbx create IndexBuffer failed!");
+		assert(parse_index_buffer_.size()==num_faces_*3);
 		void *v_buffer_data=vertex_buffer_->Lock();
-		memcpy(v_buffer_data,&parse_buffer_[0],vertex_buffer_->GetSize());
+		memcpy(v_buffer_data,&parse_render_data_buffer_[0],vertex_buffer_->GetSize());
 		vertex_buffer_->UnLock();
+		assert(index_buffer_->GetSize()==parse_index_buffer_.size() && "should not be error,check the parser");
 		UINT *i_buffer_data=index_buffer_->Lock();
-		for(UINT i=0;i<index_buffer_->GetSize();i++)
-			i_buffer_data[i]=i;
+		memcpy(i_buffer_data,&parse_index_buffer_[0],sizeof(UINT)*index_buffer_->GetSize());
+		index_buffer_->UnLock();
 	}
 
 	void FbxPaser::ProcessVertex(FbxMesh* mesh,int index,Vector3 &v)
@@ -245,6 +270,32 @@ namespace SoftEngine
 			}
 			break;
 		}
+	}
+
+	bool FbxPaser::FindSameRenderData(const FbxRenderData &data,UINT &pos)
+	{
+		auto iter=std::find(parse_render_data_buffer_.begin(),parse_render_data_buffer_.end(),data);
+		if(iter==parse_render_data_buffer_.end())
+			return false;
+		else
+		{
+#if defined(DEBUG) || defined( _DEGUB)
+			//如果还有重复点，说明插入有问题
+			auto test_iter=std::find(iter+1,parse_render_data_buffer_.end(),data);
+			assert(test_iter==parse_render_data_buffer_.end());
+#endif
+			pos=std::distance(parse_render_data_buffer_.begin(),iter);
+			return true;
+		}
+	}
+
+
+	bool FbxRenderData::operator==(const FbxRenderData &data)
+	{
+		if(position==data.position && normal==data.normal && color==data.color && uv==data.uv)
+			return true;
+		else
+		return false;
 	}
 
 }

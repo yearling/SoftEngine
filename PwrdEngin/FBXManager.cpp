@@ -67,6 +67,15 @@ namespace SoftEngine
 			cout<<tmp<<endl;
 			return nullptr;
 		}
+		if(scene)
+		{
+			FbxAxisSystem OriginSceneAxisSystem=scene->GetGlobalSettings().GetAxisSystem();
+			FbxAxisSystem OurSystemAxisSystem=FbxAxisSystem::DirectX;
+			if(OriginSceneAxisSystem!=OurSystemAxisSystem)
+			{
+				OurSystemAxisSystem.ConvertScene(scene);
+			}
+		}
 		return scene;
 	}
 

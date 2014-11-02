@@ -107,6 +107,7 @@ namespace SoftEngine
 		void SetIndices(IndexBuffer*p);
 		VertexDeclaration* CreateVertexDeclaration(VERTEXELEMENT v[]);
 		bool SetVertexDeclaration(VertexDeclaration *p);
+		bool TextDraw(std::string text, int x,int y,DWORD color);
 		inline void DrawPixel(int x,int y,DWORD color=_RGB(255,255,255))
 		{
 			back_buffer_[x+y*pitch]=color;

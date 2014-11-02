@@ -187,6 +187,18 @@ namespace SoftEngine
 		}
 	}
 
+	void DrawImp::DrawTextGDI(const std::string &text, int x,int y,DWORD color)
+	{
+		HDC xdc; 
+		if (FAILED(ddsback_->GetDC(&xdc)))
+			return;
+		//SetTextColor参数是COLORREF是大端位的，用RGB宏来处理。
+		SetTextColor(xdc,RGB(((color>>16) & 0xff),((color>>8) & 0xff),(color & 0xff)));
+		SetBkMode(xdc, TRANSPARENT);
+		TextOutA(xdc,x,y,text.c_str(),text.size());
+		ddsback_->ReleaseDC(xdc);
+	}
+
 
 
 

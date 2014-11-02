@@ -65,8 +65,8 @@ namespace SoftEngine
 		parser_=new FbxPaser();
 		parser_->Init(device_);
 		//parser_->Load("..\\media\\box.fbx");
-		parser_->Load("E:\\scene_fbx\\test\\box11.fbx");
-		//parser_->Load("E:\\scene_fbx\\ring.fbx");
+		//parser_->Load("E:\\scene_fbx\\test\\box_normal.fbx");
+		parser_->Load("E:\\scene_fbx\\ring.fbx");
 		//////////////////////////////////////////////////////////////////////////
 	}
 
@@ -96,6 +96,9 @@ namespace SoftEngine
 
 	LRESULT Game::MyProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
+		HDC hdc;
+		PAINTSTRUCT ps;
+		RECT rc;
 		switch(msg)
 		{
 		case WM_KEYDOWN:
@@ -160,6 +163,7 @@ namespace SoftEngine
 			device_->DrawIndexedPrimitive(PT_TRIANGLEIST,0,0,8,0,parser_->GetFaceNumber());
 			device_->EndScene();
 		}
+		device_->TextDraw("hellow world!",0,0,_RGB(255,0,0));
 		device_->Present();
 		Sleep(20);
 	}

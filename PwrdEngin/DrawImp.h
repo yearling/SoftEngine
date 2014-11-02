@@ -25,6 +25,7 @@ namespace SoftEngine
 		void UnlockBackSurface();
 		void Flip();
 		void SetBackBufferCliper(RECT *rc=nullptr);
+		void DrawTextGDI(const std::string &text, int x,int y,DWORD color);
 	private:
 		CComPtr<IDirectDraw7> d3d_draw_;
 		CComPtr<IDirectDrawSurface7> ddsprimary_;

@@ -301,6 +301,12 @@ namespace SoftEngine
 		project_=*pro;
 	}
 
+	bool Device::TextDraw(std::string text, int x,int y,DWORD color)
+	{
+		draw_imp_->DrawTextGDI(text,x,y,color);
+		return(1);
+	}
+
 	
 
 	
@@ -415,6 +421,7 @@ namespace SoftEngine
 			return nullptr;
 		if(offset_to_lock+size_to_lock>length_)
 			return nullptr;
+		locked_=true;
 		return  static_cast<void*>(buffer_+offset_to_lock);
 	}
 
@@ -466,6 +473,7 @@ namespace SoftEngine
 			return nullptr;
 		if(offset_to_lock+size_to_lock>length_)
 			return nullptr;
+		locked_=true;
 		return  static_cast<UINT*>(buffer_+offset_to_lock);
 	}
 
