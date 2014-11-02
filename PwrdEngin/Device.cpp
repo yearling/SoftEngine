@@ -283,7 +283,7 @@ namespace SoftEngine
 			Vector4 &p2=des_render_buffer_[i*3+2].position_;
 			DrawLine(p0.x,p0.y,p1.x,p1.y);
 			DrawLine(p1.x,p1.y,p2.x,p2.y);
-			DrawLine(p2.x,p2.y,p1.x,p1.y);
+			DrawLine(p2.x,p2.y,p0.x,p0.y);
 			i++;
 		}
 		return true;

@@ -64,7 +64,9 @@ namespace SoftEngine
 		//////////////////////////////////////////////////////////////////////////
 		parser_=new FbxPaser();
 		parser_->Init(device_);
-		parser_->Load("..\\media\\box.fbx");
+		//parser_->Load("..\\media\\box.fbx");
+		parser_->Load("E:\\scene_fbx\\test\\box11.fbx");
+		//parser_->Load("E:\\scene_fbx\\ring.fbx");
 		//////////////////////////////////////////////////////////////////////////
 	}
 
@@ -138,7 +140,7 @@ namespace SoftEngine
 		Matrix rote;
 		MatrixRotationY(&rote,angle);
 		device_->Clear(_RGB(25,25,25));
-		Vector3 eye(0.0f,0.0f,-5.0f);
+		Vector3 eye(0.0f,0.0f,-80.0f);
 		Vector3 at(0.0f,0.0f,0.0f);
 		Vector3 up(0.0f,1.0f,0.0f);
 		MatrixLookAtLH(&view_,&eye,&at,&up);
@@ -148,13 +150,14 @@ namespace SoftEngine
 		
 		if(device_->BeginScene())
 		{
-			device_->SetWorld(&rote);
+		//	device_->SetWorld(&rote);
 			device_->SetView(&view_);
 			device_->SetProject(&proj_);
 			device_->SetViewPort();
-			device_->SetStreamSource(vertex_buffer_);
-			device_->SetIndices(index_buffer_);
-			device_->DrawIndexedPrimitive(PT_TRIANGLEIST,0,0,8,0,12);
+			device_->SetStreamSource(GetPaser()->GetVertexBuffer());
+			device_->SetIndices(GetPaser()->GetIndexBuffer());
+			device_->SetVertexDeclaration(GetPaser()->GetVertexDeclaration());
+			device_->DrawIndexedPrimitive(PT_TRIANGLEIST,0,0,8,0,parser_->GetFaceNumber());
 			device_->EndScene();
 		}
 		device_->Present();

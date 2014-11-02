@@ -16,6 +16,7 @@ namespace SoftEngine
 		virtual int Run();
 		virtual void Exit();
 		void GameMain(float elpase_time);
+		FbxPaser *GetPaser() const{ return parser_;}
 	protected:
 		virtual LRESULT MyProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) throw();
 		Device*  device_;

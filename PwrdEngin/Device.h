@@ -66,6 +66,7 @@ namespace SoftEngine
 		void *Lock(UINT offset_to_lock=0,UINT size_to_lock=0);
 		void UnLock();
 		const byte *GetBuffer() { return buffer_;}
+		UINT GetSize() const {return length_;}
 		~VertexBuffer();
 	private:
 		 byte *buffer_;
@@ -81,6 +82,7 @@ namespace SoftEngine
 		UINT *Lock(UINT offset_to_lock=0,UINT size_to_lock=0);
 		void UnLock();
 		const UINT*GetBuffer() {return buffer_;}
+		UINT GetSize() const {return length_;}
 	private:
 		UINT *buffer_;
 		UINT length_;
