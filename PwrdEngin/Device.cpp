@@ -12,7 +12,9 @@ namespace SoftEngine
 					m_iPitch(0),m_iWidth(0),m_iHeight(0),
 					m_pVertexDecl(nullptr),
 					m_pDesIndexBuffer(nullptr),
-					m_pDesVertexBuffer(nullptr)
+					m_pDesVertexBuffer(nullptr),
+					m_pEffect(nullptr),
+					m_pGameSource(nullptr)
 	{
 		memset(&m_rcClip,0,sizeof(m_rcClip));
 		MatrixIdentity(&m_matWorld);
@@ -36,6 +38,8 @@ namespace SoftEngine
 			m_pDrawImpl=new DrawImpl();
 			if(!m_pDrawImpl->Init(windows->m_hWnd,windows->m_iWidth,windows->m_iHeight,windows->m_iClientOffsetX,windows->m_iClientOffsetY,windows->m_bWindow))
 				return false;
+			m_iWidth=windows->m_iWidth;
+			m_iHeight=windows->m_iHeight;
 		}
 		return true;
 	}
@@ -258,34 +262,13 @@ namespace SoftEngine
 	bool Device::DrawIndexedTrianglelist(int base_vertex_index,UINT min_index, UINT num_vertics,UINT start_index,UINT primitiveCount)
 	{
 		assert(m_pDesVertexBuffer && m_pDesIndexBuffer &&m_pVertexDecl);
-		int position_offset=m_pVertexDecl->GetPositionOffset();
-		int strip=m_pVertexDecl->GetSize();
-		const byte *vertex_buffer_trans=m_pDesVertexBuffer->GetBuffer()+base_vertex_index*strip;
-		const UINT *index_buffer_=m_pDesIndexBuffer->GetBuffer();
-		for(UINT i=0;i<primitiveCount*3;i++)
-		{
-			RenderVertex tmp;
-			tmp.m_bVisible=true;
-			UINT pos=index_buffer_[start_index++];
-			tmp.m_vPosition=ToVector3(vertex_buffer_trans,pos,strip,position_offset);
-			m_vecRenderBuffer.push_back(tmp);
-		}
-		Matrix trans=m_matWorld*m_matView*m_matProject*m_matViewPort;
-		for(auto iter=m_vecRenderBuffer.begin();iter!=m_vecRenderBuffer.end();++iter)
-		{
-			iter->m_vPosition*=trans;
-			iter->m_vPosition.ProjectDivied();
-		}
-		for(UINT i=0;i<m_vecRenderBuffer.size()/3;)
-		{
-			Vector4 &p0=m_vecRenderBuffer[i*3+0].m_vPosition;
-			Vector4 &p1=m_vecRenderBuffer[i*3+1].m_vPosition;
-			Vector4 &p2=m_vecRenderBuffer[i*3+2].m_vPosition;
-			DrawLine(p0.x,p0.y,p1.x,p1.y);
-			DrawLine(p1.x,p1.y,p2.x,p2.y);
-			DrawLine(p2.x,p2.y,p0.x,p0.y);
-			i++;
-		}
+		assert(m_pEffect && "this is programable pipline,effect must not be null");
+		m_pEffect->SetDevice(this);
+		m_pEffect->SetVertexDeclaraton(m_pVertexDecl);
+		m_pEffect->SetVertexBuffer(m_pDesVertexBuffer);
+		m_pEffect->SetIndexBuffer(m_pDesIndexBuffer);
+		m_pEffect->SetData(m_pGameSource);
+		m_pEffect->Draw(base_vertex_index,start_index,primitiveCount);
 		return true;
 	}
 
@@ -307,10 +290,20 @@ namespace SoftEngine
 		return(1);
 	}
 
-	
+	void Device::SetEffect(IEffect *pEffect)
+	{
+		m_pEffect=pEffect;
+	}
 
-	
+	void Device::SetGameSource(void *pSrc)
+	{
+		m_pGameSource=pSrc;
+	}
 
+	Matrix* Device::GetViewPort()
+	{
+		return &m_matViewPort;
+	}
 
 	VertexDeclaration::VertexDeclaration():m_iPositionOffsetCached(0),
 		m_iColorOffsetCached(0),m_iNormalOffsetCached(0),m_iTexcoordOffsetCached(0),
@@ -480,6 +473,43 @@ namespace SoftEngine
 	void IndexBuffer::UnLock()
 	{
 		m_bLock=false;
+	}
+
+
+	void IEffect::SetVertexDeclaraton(VertexDeclaration *pVertexDecl)
+	{
+		m_pVertexDecl=pVertexDecl;
+	}
+
+	void IEffect::SetVertexBuffer(VertexBuffer *pVertexBuffer)
+	{
+		m_pDesVertexBuffer=pVertexBuffer;
+	}
+
+	void IEffect::SetIndexBuffer(IndexBuffer *pIndexBuffer)
+	{
+		m_pDesIndexBuffer=pIndexBuffer;
+	}
+
+	void IEffect::SetDevice(Device *pDevice)
+	{
+		m_pDevice=pDevice;
+	}
+
+	void IEffect::SetCullMode(CULLMODE mode)
+	{
+
+	}
+
+	IEffect::IEffect():m_pVertexDecl(NULL),m_pDesVertexBuffer(NULL),
+		m_pDesIndexBuffer(NULL),m_pDevice(NULL),m_cullmode(CULL_CCW)
+	{
+
+	}
+
+	IEffect::~IEffect()
+	{
+
 	}
 
 }

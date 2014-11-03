@@ -7,6 +7,7 @@
 #include "Device.h"
 #include "FbxPaser.h"
 #include "Camera.h"
+#include "Parameter.h"
 namespace SoftEngine
 {
 	class Game:public Application
@@ -35,6 +36,8 @@ namespace SoftEngine
 		DWORD m_dwLastFrameTime;
 		int m_iFPS;
 		EASYCamera *m_pEasyCamera;
+		IEffect *m_pEffect;
+		SeftData m_sd;
 	private:
 		void AllocConsoleDebug();
 	};

@@ -7,6 +7,7 @@
 #include <vector>
 namespace SoftEngine
 {
+	class Device;
 	struct RenderVertex
 	{
 		Vector4 m_vPosition;
@@ -88,7 +89,32 @@ namespace SoftEngine
 		UINT m_uLength;
 		bool m_bLock;
 	};
-	
+	enum CULLMODE
+	{
+		CULL_NODE=0,
+		CULL_CW,
+		CULL_CCW
+	};
+	class IEffect
+	{
+	public:
+		IEffect();
+		virtual ~IEffect();
+		void SetVertexDeclaraton(VertexDeclaration *pVertexDecl);
+		void SetVertexBuffer(VertexBuffer *pVertexBuffer);
+		void SetIndexBuffer(IndexBuffer *pIndexBuffer);
+		void SetCullMode(CULLMODE mode=CULL_CCW);
+		void SetDevice(Device *pDevice);
+		virtual void SetData(void *p)=0;
+		virtual void Draw(int base_vertex_index,UINT start_index,UINT primitiveCount)=0;
+	protected:
+		VertexDeclaration* m_pVertexDecl;	
+		VertexBuffer *m_pDesVertexBuffer;
+		IndexBuffer *m_pDesIndexBuffer;
+		
+		Device *m_pDevice;
+		CULLMODE m_cullmode;
+	};
 	class Device
 	{
 	public:
@@ -100,11 +126,14 @@ namespace SoftEngine
 		bool EndScene();
 		bool Clear(UINT color);
 		bool Present();
+		void SetEffect(IEffect *pEffect);
 		void SetWorld(const Matrix *world);
 		void SetView(const Matrix *view);
 		void SetProject(const Matrix *pro);
 		void SetStreamSource(VertexBuffer *p);
 		void SetIndices(IndexBuffer*p);
+		void SetGameSource(void *pSrc);
+		Matrix* GetViewPort();
 		VertexDeclaration* CreateVertexDeclaration(VERTEXELEMENT v[]);
 		bool SetVertexDeclaration(VertexDeclaration *p);
 		bool TextDraw(std::string text, int x,int y,DWORD color);
@@ -139,6 +168,8 @@ namespace SoftEngine
 		VertexBuffer *m_pDesVertexBuffer;
 		IndexBuffer *m_pDesIndexBuffer;
 		std::vector<RenderVertex> m_vecRenderBuffer;
+		IEffect *m_pEffect;
+		void *m_pGameSource;
 	};
 }
 #endif

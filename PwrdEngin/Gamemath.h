@@ -175,4 +175,9 @@ float Dot(const Vector3*v1,const Vector3*v2);
 float Dot(const Vector4*v1,const Vector4*v2);
 Vector3 Cross(const Vector3*v1 ,const Vector3*v2);
 Vector3 *Vec3TransformCoord(Vector3*out,const Vector3*v,const Matrix* mat);
+inline Vector3 ToVector3(const unsigned char* base_ptr,UINT pos,UINT data_size,UINT offset)
+{
+	const unsigned char* p=base_ptr+(pos*data_size+offset);
+	return Vector3(reinterpret_cast<const float*>(p));
+}
 #endif
