@@ -8,12 +8,6 @@ namespace SoftEngine
 	{
 		MatrixIdentity(&view_);
 		MatrixIdentity(&project_);
-		 FOV_;
-		float aspect_;
-		float near_plane_;
-		float far_plane_;
-		int width_;
-		int height_;
 	}
 
 

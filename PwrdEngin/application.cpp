@@ -19,12 +19,12 @@ namespace SoftEngine
 
 	void Application::WindowCreate(int width,int height,const TCHAR *title,int cmdshow)
 	{
-		assert(main_window_);
+		assert(spMainWindow);
 		try
 		{
-			main_window_->Init(width,height,title);
-			ShowWindow(*main_window_,cmdshow);
-			UpdateWindow(*main_window_);
+			spMainWindow->Init(width,height,title);
+			ShowWindow(*spMainWindow,cmdshow);
+			UpdateWindow(*spMainWindow);
 		}
 		catch(WidnowException &e)
 		{
@@ -35,7 +35,7 @@ namespace SoftEngine
 
 	void Application::Initial()
 	{
-		main_window_.reset(new Window(main_instance_));
+		spMainWindow.reset(new Window(hInstance));
 	}
 
 	int Application::Run()
@@ -100,8 +100,8 @@ namespace SoftEngine
 	void Window::Init(int _width,int Height,const TCHAR *window_name)
 	{
 		DWORD hr=0;
-		width_=_width;
-		height_=Height;
+		iWidth=_width;
+		iHeight=Height;
 		WNDCLASSEX wcex;
 		TCHAR _Regstr[]={_T("YYWINDOW")};
 		wcex.cbSize			= sizeof(WNDCLASSEX);
@@ -109,7 +109,7 @@ namespace SoftEngine
 		wcex.lpfnWndProc	= Application::WndProc;
 		wcex.cbClsExtra		= 0;
 		wcex.cbWndExtra		= 0;
-		wcex.hInstance		= main_instance;
+		wcex.hInstance		= hInstance;
 		wcex.hIcon			=  LoadIcon(NULL,IDI_APPLICATION);
 		wcex.hCursor		=  LoadCursor(NULL, IDC_ARROW);
 		wcex.hbrBackground	=	(HBRUSH)(COLOR_WINDOW+1);
@@ -117,19 +117,19 @@ namespace SoftEngine
 		wcex.lpszClassName	=	_Regstr;
 		wcex.hIconSm		=	 LoadIcon(NULL, IDI_APPLICATION);
 		hr=RegisterClassEx(&wcex);
-		hwnd_=CreateWindow(_Regstr,window_name, WS_OVERLAPPEDWINDOW,
-			CW_USEDEFAULT, CW_USEDEFAULT, width_, height_, NULL, NULL, main_instance, NULL);
+		hWnd=CreateWindow(_Regstr,window_name, WS_OVERLAPPEDWINDOW,
+			CW_USEDEFAULT, CW_USEDEFAULT, iWidth, iHeight, NULL, NULL, hInstance, NULL);
 		hr=GetLastError();
-		if(hwnd_)
+		if(hWnd)
 		{
-			if (is_windowed_)
+			if (bWindow)
 			{
 
-				RECT window_rect = {0,0,width_-1,height_-1};
-				::AdjustWindowRectEx(&window_rect,GetWindowStyle(hwnd_),GetMenu(hwnd_) != NULL,GetWindowExStyle(hwnd_));
-				client_offset_x_=-window_rect.left;
-				client_offset_y_=-window_rect.top;
-				MoveWindow(hwnd_,100,50, 
+				RECT window_rect = {0,0,iWidth-1,iHeight-1};
+				::AdjustWindowRectEx(&window_rect,GetWindowStyle(hWnd),GetMenu(hWnd) != NULL,GetWindowExStyle(hWnd));
+				iClientOffsetX=-window_rect.left;
+				iClientOffsetY=-window_rect.top;
+				MoveWindow(hWnd,100,50, 
 					window_rect.right - window_rect.left, 
 					window_rect.bottom - window_rect.top,
 					FALSE);
@@ -141,8 +141,8 @@ namespace SoftEngine
 
 	void Window::ShowWindow(int cmd_show)
 	{
-		::ShowWindow(hwnd_,cmd_show);
-		UpdateWindow(hwnd_);
+		::ShowWindow(hWnd,cmd_show);
+		UpdateWindow(hWnd);
 	}
 
 }
