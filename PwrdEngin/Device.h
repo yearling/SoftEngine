@@ -9,10 +9,10 @@ namespace SoftEngine
 {
 	struct RenderVertex
 	{
-		Vector4 position_;
-		Vector3 normal_;
-		Vector2 texcoord_;
-		bool visible;
+		Vector4 m_vPosition;
+		Vector3 m_vNormal;
+		Vector2 m_vTexcoord;
+		bool m_bVisible;
 	};
 	enum PRIMITIVETYPE
 	{
@@ -37,25 +37,25 @@ namespace SoftEngine
 #define DECL_END() {0xff,0xff,DECLUSAGE_END,0xff}
 	struct VERTEXELEMENT
 	{
-		WORD offset_;
-		BYTE type_;					//类型，即DECLEAR_TYPE
-		BYTE usage_;				//用途，即DECLEAR_USAGE
-		BYTE usage_index_;			//用途索引
+		WORD m_wOffset;
+		unsigned char m_byteType;					//类型，即DECLEAR_TYPE
+		unsigned char m_byteUsage;				//用途，即DECLEAR_USAGE
+		unsigned char m_byteUsageIndex;			//用途索引
 	};
 	class VertexDeclaration
 	{
 	public:
 		VertexDeclaration();
 		bool SetVertexDeclaration(const VERTEXELEMENT *v);
-		inline int GetPositionOffset() const {return cache_position_offset_;}
-		inline int GetSize(){ return size_;}
+		inline int GetPositionOffset() const {return m_iPositionOffsetCached;}
+		inline int GetSize(){ return m_iSize;}
 	private:
-		std::vector<VERTEXELEMENT> vec_vertex_;
-		int cache_position_offset_;
-		int cache_color_offset_;
-		int cache_normal_offset_;
-		int cache_texcoord_offset_;
-		int size_;
+		std::vector<VERTEXELEMENT> m_vecVertex;
+		int m_iPositionOffsetCached;
+		int m_iColorOffsetCached;
+		int m_iNormalOffsetCached;
+		int m_iTexcoordOffsetCached;
+		int m_iSize;
 	};
 	
 	class VertexBuffer
@@ -65,13 +65,13 @@ namespace SoftEngine
 		bool CreateBuffer(UINT length);
 		void *Lock(UINT offset_to_lock=0,UINT size_to_lock=0);
 		void UnLock();
-		const byte *GetBuffer() { return buffer_;}
-		UINT GetSize() const {return length_;}
+		const byte *GetBuffer() { return m_pBuffer;}
+		UINT GetSize() const {return m_uLength;}
 		~VertexBuffer();
 	private:
-		 byte *buffer_;
-		 UINT length_;
-		 bool locked_;
+		 byte *m_pBuffer;
+		 UINT m_uLength;
+		 bool m_bLock;
 	};
 	class IndexBuffer
 	{
@@ -81,12 +81,12 @@ namespace SoftEngine
 		bool CreateIndexBuffer(UINT length);
 		UINT *Lock(UINT offset_to_lock=0,UINT size_to_lock=0);
 		void UnLock();
-		const UINT*GetBuffer() {return buffer_;}
-		UINT GetSize() const {return length_;}
+		const UINT*GetBuffer() {return m_pBuffer;}
+		UINT GetSize() const {return m_uLength;}
 	private:
-		UINT *buffer_;
-		UINT length_;
-		bool locked_;
+		UINT *m_pBuffer;
+		UINT m_uLength;
+		bool m_bLock;
 	};
 	
 	class Device

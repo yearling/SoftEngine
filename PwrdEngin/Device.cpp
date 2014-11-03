@@ -265,22 +265,22 @@ namespace SoftEngine
 		for(UINT i=0;i<primitiveCount*3;i++)
 		{
 			RenderVertex tmp;
-			tmp.visible=true;
+			tmp.m_bVisible=true;
 			UINT pos=index_buffer_[start_index++];
-			tmp.position_=ToVector3(vertex_buffer_trans,pos,strip,position_offset);
+			tmp.m_vPosition=ToVector3(vertex_buffer_trans,pos,strip,position_offset);
 			m_vecRenderBuffer.push_back(tmp);
 		}
 		Matrix trans=m_matWorld*m_matView*m_matProject*m_matViewPort;
 		for(auto iter=m_vecRenderBuffer.begin();iter!=m_vecRenderBuffer.end();++iter)
 		{
-			iter->position_*=trans;
-			iter->position_.ProjectDivied();
+			iter->m_vPosition*=trans;
+			iter->m_vPosition.ProjectDivied();
 		}
 		for(UINT i=0;i<m_vecRenderBuffer.size()/3;)
 		{
-			Vector4 &p0=m_vecRenderBuffer[i*3+0].position_;
-			Vector4 &p1=m_vecRenderBuffer[i*3+1].position_;
-			Vector4 &p2=m_vecRenderBuffer[i*3+2].position_;
+			Vector4 &p0=m_vecRenderBuffer[i*3+0].m_vPosition;
+			Vector4 &p1=m_vecRenderBuffer[i*3+1].m_vPosition;
+			Vector4 &p2=m_vecRenderBuffer[i*3+2].m_vPosition;
 			DrawLine(p0.x,p0.y,p1.x,p1.y);
 			DrawLine(p1.x,p1.y,p2.x,p2.y);
 			DrawLine(p2.x,p2.y,p0.x,p0.y);
@@ -312,9 +312,9 @@ namespace SoftEngine
 	
 
 
-	VertexDeclaration::VertexDeclaration():cache_position_offset_(0),
-		cache_color_offset_(0),cache_normal_offset_(0),cache_texcoord_offset_(0),
-		size_(0)
+	VertexDeclaration::VertexDeclaration():m_iPositionOffsetCached(0),
+		m_iColorOffsetCached(0),m_iNormalOffsetCached(0),m_iTexcoordOffsetCached(0),
+		m_iSize(0)
 	{
 	}
 
@@ -322,54 +322,54 @@ namespace SoftEngine
 	{
 		if(v==nullptr)
 			return false;
-		vec_vertex_.clear();
-		cache_position_offset_=0;
-		cache_color_offset_=0;
-		cache_normal_offset_=0;
-		cache_texcoord_offset_=0;
-		size_=0;
+		m_vecVertex.clear();
+		m_iPositionOffsetCached=0;
+		m_iColorOffsetCached=0;
+		m_iNormalOffsetCached=0;
+		m_iTexcoordOffsetCached=0;
+		m_iSize=0;
 		if(v)
 		{
-			while(v->usage_!=DECLUSAGE_END)
+			while(v->m_byteUsage!=DECLUSAGE_END)
 			{
-				switch(v->type_)
+				switch(v->m_byteType)
 				{
 				case DECLTYPE_FLOAT1:
-						size_+=4;
+						m_iSize+=4;
 					break;
 				case DECLTYPE_FLOAT2:
-					size_+=8;
+					m_iSize+=8;
 					break;
 				case DECLTYPE_FLOAT3:
-					size_+=12;
+					m_iSize+=12;
 					break;
 				case DECLTYPE_FLOAT4:
-					size_+=16;
+					m_iSize+=16;
 					break;
 				case DECLTYPE_UINT:
-					size_+=4;
+					m_iSize+=4;
 					break;
 				default:
 					break;
 				}
-				vec_vertex_.push_back(*v);
-				switch(v->usage_)
+				m_vecVertex.push_back(*v);
+				switch(v->m_byteUsage)
 				{
 				case DECLUSAGE_POSITION:
-					 if(v->type_==DECLTYPE_FLOAT3&&v->usage_index_==0)		
-						cache_position_offset_=v->offset_;
+					 if(v->m_byteType==DECLTYPE_FLOAT3&&v->m_byteUsageIndex==0)		
+						m_iPositionOffsetCached=v->m_wOffset;
 					 break;
 				case DECLUSAGE_NORMAL:
-					 if(v->type_==DECLTYPE_FLOAT3&&v->usage_index_==0)		
-						cache_normal_offset_=v->offset_;
+					 if(v->m_byteType==DECLTYPE_FLOAT3&&v->m_byteUsageIndex==0)		
+						m_iNormalOffsetCached=v->m_wOffset;
 					 break;
 				case DECLUSAGE_TEXCOORD:
-					 if(v->type_==DECLTYPE_FLOAT3&&v->usage_index_==0)		
-						 cache_texcoord_offset_=v->offset_;
+					 if(v->m_byteType==DECLTYPE_FLOAT3&&v->m_byteUsageIndex==0)		
+						 m_iTexcoordOffsetCached=v->m_wOffset;
 					 break;
 				case DECLUSAGE_COLOR:
-					 if(v->type_==DECLTYPE_FLOAT3&&v->usage_index_==0)		
-						 cache_color_offset_=v->offset_;
+					 if(v->m_byteType==DECLTYPE_FLOAT3&&v->m_byteUsageIndex==0)		
+						 m_iColorOffsetCached=v->m_wOffset;
 						break;
 				default:
 					break;
@@ -381,32 +381,32 @@ namespace SoftEngine
 	}
 
 
-	VertexBuffer::VertexBuffer():buffer_(nullptr),locked_(false)
+	VertexBuffer::VertexBuffer():m_pBuffer(nullptr),m_bLock(false)
 	{
 
 	}
 
 	VertexBuffer::~VertexBuffer()
 	{
-		if(buffer_)
-			delete[] buffer_;
+		if(m_pBuffer)
+			delete[] m_pBuffer;
 	}
 
 	bool VertexBuffer::CreateBuffer(UINT length)
 	{
 		if(length<=0)
 			return false;
-		if(length!=length_)
+		if(length!=m_uLength)
 		{
-			if(buffer_)
-				delete[] buffer_;
+			if(m_pBuffer)
+				delete[] m_pBuffer;
 		}
 		else
 			return true;
-		buffer_=new byte[length];
-		if(buffer_)
+		m_pBuffer=new byte[length];
+		if(m_pBuffer)
 			{
-				length_=length;
+				m_uLength=length;
 				return true;
 			}
 		else 
@@ -415,32 +415,32 @@ namespace SoftEngine
 
 	void * VertexBuffer::Lock(UINT offset_to_lock,UINT size_to_lock)
 	{
-		if(locked_)
+		if(m_bLock)
 			return nullptr;
-		if(offset_to_lock>length_-1)
+		if(offset_to_lock>m_uLength-1)
 			return nullptr;
-		if(offset_to_lock+size_to_lock>length_)
+		if(offset_to_lock+size_to_lock>m_uLength)
 			return nullptr;
-		locked_=true;
-		return  static_cast<void*>(buffer_+offset_to_lock);
+		m_bLock=true;
+		return  static_cast<void*>(m_pBuffer+offset_to_lock);
 	}
 
 	void VertexBuffer::UnLock()
 	{
-		locked_=false;
+		m_bLock=false;
 	}
 
 
-	IndexBuffer::IndexBuffer():buffer_(nullptr),length_(0),locked_(false)
+	IndexBuffer::IndexBuffer():m_pBuffer(nullptr),m_uLength(0),m_bLock(false)
 	{
 
 	}
 
 	IndexBuffer::~IndexBuffer()
 	{
-		if(buffer_)
+		if(m_pBuffer)
 		{
-			delete[] buffer_;
+			delete[] m_pBuffer;
 		}
 	}
 
@@ -448,17 +448,17 @@ namespace SoftEngine
 	{
 		if(length<=0)
 			return false;
-		if(length!=length_)
+		if(length!=m_uLength)
 		{
-			if(buffer_)
-				delete[] buffer_;
+			if(m_pBuffer)
+				delete[] m_pBuffer;
 		}
 		else
 			return true;
-		buffer_=new UINT[length];
-		if(buffer_)
+		m_pBuffer=new UINT[length];
+		if(m_pBuffer)
 		{
-			length_=length;
+			m_uLength=length;
 			return true;
 		}
 		else 
@@ -467,19 +467,19 @@ namespace SoftEngine
 
 	UINT* IndexBuffer::Lock(UINT offset_to_lock/*=0*/,UINT size_to_lock/*=0*/)
 	{
-		if(locked_)
+		if(m_bLock)
 			return nullptr;
-		if(offset_to_lock>length_-1)
+		if(offset_to_lock>m_uLength-1)
 			return nullptr;
-		if(offset_to_lock+size_to_lock>length_)
+		if(offset_to_lock+size_to_lock>m_uLength)
 			return nullptr;
-		locked_=true;
-		return  static_cast<UINT*>(buffer_+offset_to_lock);
+		m_bLock=true;
+		return  static_cast<UINT*>(m_pBuffer+offset_to_lock);
 	}
 
 	void IndexBuffer::UnLock()
 	{
-		locked_=false;
+		m_bLock=false;
 	}
 
 }
