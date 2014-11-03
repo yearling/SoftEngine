@@ -94,7 +94,7 @@ namespace SoftEngine
 	public:
 		Device();
 		~Device();
-		bool Init(DrawImp* draw_imp);
+		bool Init(DrawImpl* draw_imp);
 		bool Init(const Window *windows);
 		bool BeginScene();
 		bool EndScene();
@@ -125,7 +125,7 @@ namespace SoftEngine
 		bool DrawIndexedTrianglelist(int base_vertex_index,UINT min_index,
 			UINT num_vertics,UINT start_index,UINT primitiveCount);
 	private:
-		DrawImp *draw_imp_;
+		DrawImpl *draw_imp_;
 		UINT *back_buffer_;
 		int pitch;
 		int width_;

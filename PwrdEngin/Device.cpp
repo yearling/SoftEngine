@@ -21,7 +21,7 @@ namespace SoftEngine
 		MatrixIdentity(&view_port_);
 	}
 
-	bool Device::Init(DrawImp* draw_imp)
+	bool Device::Init(DrawImpl* draw_imp)
 	{
 		draw_imp_=draw_imp;
 		return true;
@@ -33,7 +33,7 @@ namespace SoftEngine
 			return false;
 		else
 		{
-			draw_imp_=new DrawImp();
+			draw_imp_=new DrawImpl();
 			if(!draw_imp_->Init(windows->m_hWnd,windows->m_iWidth,windows->m_iHeight,windows->m_iClientOffsetX,windows->m_iClientOffsetY,windows->m_bWindow))
 				return false;
 		}
