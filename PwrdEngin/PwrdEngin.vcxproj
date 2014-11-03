@@ -53,10 +53,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <FloatingPointModel>Strict</FloatingPointModel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -77,7 +79,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="application.h" />
-    <ClInclude Include="CameraBase.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="DrawImpl.h" />
     <ClInclude Include="FBXManager.h" />
     <ClInclude Include="FbxPaser.h" />
@@ -88,7 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp" />
-    <ClCompile Include="CameraBase.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DrawImpl.cpp" />
     <ClCompile Include="FBXManager.cpp" />
     <ClCompile Include="FbxPaser.cpp" />

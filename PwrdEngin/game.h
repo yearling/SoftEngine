@@ -6,6 +6,7 @@
 #include "DrawImpl.h"
 #include "Device.h"
 #include "FbxPaser.h"
+#include "Camera.h"
 namespace SoftEngine
 {
 	class Game:public Application
@@ -17,22 +18,23 @@ namespace SoftEngine
 		virtual void Exit();
 		void PreRender(float elpase_time);
 		void Render(float elpase_time);
-		FbxPaser *GetPaser() const{ return parser_;}
-		int GetFPS() const {return FPS_;}
+		FbxPaser *GetPaser() const{ return m_pFbxPaser;}
+		int GetFPS() const {return m_iFPS;}
 	protected:
 		virtual LRESULT MyProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) throw();
-		Device*  device_;
-		VertexDeclaration *vertex_decl_;
-		VertexBuffer* vertex_buffer_;
-		IndexBuffer* index_buffer_;
-		Matrix world_;
-		Matrix proj_;
-		Matrix view_;
-		DWORD  last_time_;
-		FbxPaser *parser_;
-		int last_frame_counts_;
-		DWORD last_frame_time_;
-		int FPS_;
+		Device*  m_pDevice;
+		VertexDeclaration *m_pVertexDecl;
+		VertexBuffer* m_pVertex_buffer;
+		IndexBuffer* m_pIndexBuffer;
+		Matrix m_matWorld;
+		Matrix m_matProject;
+		Matrix m_matView;
+		DWORD  m_dwLastTime;
+		FbxPaser *m_pFbxPaser;
+		int m_iLastFrameCounts;
+		DWORD m_dwLastFrameTime;
+		int m_iFPS;
+		ArcBall* m_pArcBall;
 	private:
 		void AllocConsoleDebug();
 	};

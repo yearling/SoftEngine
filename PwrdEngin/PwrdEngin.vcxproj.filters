@@ -32,10 +32,10 @@
     <ClInclude Include="FbxPaser.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="CameraBase.h">
+    <ClInclude Include="DrawImpl.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="DrawImpl.h">
+    <ClInclude Include="Camera.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -64,10 +64,10 @@
     <ClCompile Include="FbxPaser.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="CameraBase.cpp">
+    <ClCompile Include="DrawImpl.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="DrawImpl.cpp">
+    <ClCompile Include="Camera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

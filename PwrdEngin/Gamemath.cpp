@@ -845,6 +845,44 @@ Matrix * MatrixTranslation(Matrix *out,float x,float y,float z)
 	}
 	return out;
 }
+float Matrix33(const float &_0,const float&_1,const float&_2,const float&_3,const float&_4,const float&_5,const float&_6,const float&_7,const float&_8)
+{
+	return _0*_4*_8+_1*_5*_6+_2*_3*_7-_0*_5*_7-_1*_3*_8-_2*_4*_6;
+}
+
+float MatrixYUZI(const Matrix* mat,int i,int j)
+{
+	int arr[9];
+	int pos=0;
+	for(int m=0;m<4;m++)
+		for(int n=0;n<4;n++)
+		{
+			if(m!=i && n!=j)
+				arr[pos++]=m*4+n;
+		}
+	float index=(i+j)%2==0?1.0f:-1.0f;
+	const float* mat_f=(const float*)mat;
+	return index*Matrix33(mat_f[arr[0]],mat_f[arr[1]],mat_f[arr[2]],mat_f[arr[3]],mat_f[arr[4]],mat_f[arr[5]],mat_f[arr[6]],mat_f[arr[7]],mat_f[arr[8]]);
+}
+Matrix * MatrixInverse(Matrix*out,float *determin,const Matrix *in)
+{
+	if(out==NULL||in==NULL)
+		return out;
+	float deter=MatrixDetermint(in);
+	if(deter==0)
+	{
+		if(determin)
+			*determin=0;
+		return out;
+	}
+	Matrix result;
+	memset(&result,0,sizeof(Matrix));
+	for(int i=0;i<4;i++)
+		for(int j=0;j<4;j++)
+			result.m[i][j]=MatrixYUZI(in,j,i)/deter;
+	*out=result;	
+	return out;
+}
 
 
 Quaternion Quaternion::operator*(const Quaternion & q)

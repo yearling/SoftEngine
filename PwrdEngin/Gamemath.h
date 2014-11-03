@@ -164,6 +164,7 @@ Matrix *MatrixRotationX(Matrix *out,float angle);
 Matrix *MatrixRotationY(Matrix *out,float angle);
 Matrix *MatrixRotationZ(Matrix *out,float angle);
 Matrix *MatrixTranslation(Matrix *out,float x,float y,float z);
+Matrix *MatrixInverse(Matrix*out,float *determin,const Matrix *in);
 Matrix *MatrixRotationQuaternion(Matrix *out,const Quaternion *q);
 Quaternion * QuaternionIdentity(Quaternion *q);
 void Normalize(Vector4 *v);

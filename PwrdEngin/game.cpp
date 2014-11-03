@@ -21,20 +21,20 @@ namespace SoftEngine
 		m_spMainWindow->Init(width,height,_T("Soft Engine"));
 		m_spMainWindow->ShowWindow();	
 		AllocConsoleDebug();
-		device_=new Device();
-		if(!device_->Init(m_spMainWindow.get()))
+		m_pDevice=new Device();
+		if(!m_pDevice->Init(m_spMainWindow.get()))
 			throw std::exception("Initial failed!\n");
 		VERTEXELEMENT v_list[]={
 			{0,DECLTYPE_FLOAT3,DECLUSAGE_POSITION,0},
 			DECL_END()
 		};
-		vertex_decl_=device_->CreateVertexDeclaration(v_list);
-		if(vertex_decl_)
-			device_->SetVertexDeclaration(vertex_decl_);
-		vertex_buffer_=device_->CreateVertexBuffer(sizeof(Vector3)*8);
-		index_buffer_=device_->CreateIndexBuffer(36);
-		Vector3 *vp=(Vector3*)vertex_buffer_->Lock();
-		UINT *ip=(UINT*)index_buffer_->Lock();
+		m_pVertexDecl=m_pDevice->CreateVertexDeclaration(v_list);
+		if(m_pVertexDecl)
+			m_pDevice->SetVertexDeclaration(m_pVertexDecl);
+		m_pVertex_buffer=m_pDevice->CreateVertexBuffer(sizeof(Vector3)*8);
+		m_pIndexBuffer=m_pDevice->CreateIndexBuffer(36);
+		Vector3 *vp=(Vector3*)m_pVertex_buffer->Lock();
+		UINT *ip=(UINT*)m_pIndexBuffer->Lock();
 		vp[0]=Vector3(-1.0f,-1.0f,-1.0f);
 		vp[1]=Vector3(-1.0f,1.0f,-1.0f);
 		vp[2]=Vector3(1.0f,1.0f,-1.0f);
@@ -43,7 +43,7 @@ namespace SoftEngine
 		vp[5]=Vector3(-1.0f,1.0f,1.0f);
 		vp[6]=Vector3(1.0f,1.0f,1.0f);
 		vp[7]=Vector3(1.0f,-1.0f,1.0f);
-		index_buffer_->UnLock();
+		m_pIndexBuffer->UnLock();
 		//font
 		ip[0]=0;ip[1]=1;ip[2]=2;
 		ip[3]=0;ip[4]=2;ip[5]=3;
@@ -62,14 +62,17 @@ namespace SoftEngine
 		//bottom
 		ip[30]=4;ip[31]=0;ip[32]=3;
 		ip[33]=4;ip[34]=3;ip[35]=7;
-		index_buffer_->UnLock();
+		m_pIndexBuffer->UnLock();
 		//////////////////////////////////////////////////////////////////////////
-		parser_=new FbxPaser();
-		parser_->Init(device_);
+		m_pFbxPaser=new FbxPaser();
+		m_pFbxPaser->Init(m_pDevice);
 		//parser_->Load("..\\media\\box.fbx");
 		//parser_->Load("E:\\scene_fbx\\test\\box_normal.fbx");
-		parser_->Load("E:\\scene_fbx\\ring.fbx");
+		m_pFbxPaser->Load("E:\\scene_fbx\\ring.fbx");
 		//////////////////////////////////////////////////////////////////////////
+		m_pArcBall=new ArcBall();
+		m_pArcBall->Init(m_spMainWindow->m_hWnd);
+
 	}
 
 	int Game::Run()
@@ -84,8 +87,8 @@ namespace SoftEngine
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			} 
-			float elapse_time=(float)(timeGetTime()-last_time_)/1000;
-			last_time_=timeGetTime();
+			float elapse_time=(float)(timeGetTime()-m_dwLastTime)/1000;
+			m_dwLastTime=timeGetTime();
 			PreRender(elapse_time);
 			Render(elapse_time);
 		} 
@@ -99,6 +102,11 @@ namespace SoftEngine
 
 	LRESULT Game::MyProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
+		if(m_pArcBall)
+		{
+			if(m_pArcBall->HandleMessage(hwnd,msg,wParam,lParam))
+				return S_OK;
+		}
 		switch(msg)
 		{
 		case WM_KEYDOWN:
@@ -126,14 +134,15 @@ namespace SoftEngine
 
 	Game::Game()
 	{
-		device_=nullptr;
-		vertex_decl_=nullptr;
-		vertex_buffer_=nullptr;
-		index_buffer_=nullptr;
-		last_time_=0;
-		last_frame_time_=0;
-		last_frame_counts_=0;
-		FPS_=0;
+		m_pDevice=nullptr;
+		m_pVertexDecl=nullptr;
+		m_pVertex_buffer=nullptr;
+		m_pIndexBuffer=nullptr;
+		m_dwLastTime=0;
+		m_dwLastFrameTime=0;
+		m_iLastFrameCounts=0;
+		m_iFPS=0;
+		m_pArcBall=nullptr;
 	}
 
 	void Game::Render(float elpase_time)
@@ -145,26 +154,26 @@ namespace SoftEngine
 			angle=0.0f;
 		Matrix rote;
 		MatrixRotationY(&rote,angle);
-		device_->Clear(_RGB(25,25,25));
+		m_pDevice->Clear(_RGB(25,25,25));
 		Vector3 eye(0.0f,0.0f,-80.0f);
 		Vector3 at(0.0f,0.0f,0.0f);
 		Vector3 up(0.0f,1.0f,0.0f);
-		MatrixLookAtLH(&view_,&eye,&at,&up);
+		MatrixLookAtLH(&m_matView,&eye,&at,&up);
 		
-		MatrixPerspectiveFOVLH(&proj_,PI*0.5f,(float)m_spMainWindow->m_iWidth/(float)
+		MatrixPerspectiveFOVLH(&m_matProject,PI*0.5f,(float)m_spMainWindow->m_iWidth/(float)
 			m_spMainWindow->m_iHeight,1.0f,1000.0f);
 		
-		if(device_->BeginScene())
+		if(m_pDevice->BeginScene())
 		{
 		//	device_->SetWorld(&rote);
-			device_->SetView(&view_);
-			device_->SetProject(&proj_);
-			device_->SetViewPort();
-			device_->SetStreamSource(GetPaser()->GetVertexBuffer());
-			device_->SetIndices(GetPaser()->GetIndexBuffer());
-			device_->SetVertexDeclaration(GetPaser()->GetVertexDeclaration());
-			device_->DrawIndexedPrimitive(PT_TRIANGLEIST,0,0,8,0,parser_->GetFaceNumber());
-			device_->EndScene();
+			m_pDevice->SetView(&m_matView);
+			m_pDevice->SetProject(&m_matProject);
+			m_pDevice->SetViewPort();
+			m_pDevice->SetStreamSource(GetPaser()->GetVertexBuffer());
+			m_pDevice->SetIndices(GetPaser()->GetIndexBuffer());
+			m_pDevice->SetVertexDeclaration(GetPaser()->GetVertexDeclaration());
+			m_pDevice->DrawIndexedPrimitive(PT_TRIANGLEIST,0,0,8,0,m_pFbxPaser->GetFaceNumber());
+			m_pDevice->EndScene();
 		}
 		//////////////////////////////////////////////////////////////////////////
 		//to dispaly FPS
@@ -172,13 +181,13 @@ namespace SoftEngine
 		std::string to_dispaly;
 		ss<<"FPS:"<<GetFPS();
 		to_dispaly=ss.str();
-		device_->TextDraw(to_dispaly,0,0,_RGB(255,0,0));
+		m_pDevice->TextDraw(to_dispaly,0,0,_RGB(255,0,0));
 		ss.str("");
-		ss<<"Total face number:"<<parser_->GetFaceNumber();
+		ss<<"Total face number:"<<m_pFbxPaser->GetFaceNumber();
 		to_dispaly=ss.str();
-		device_->TextDraw(to_dispaly,0,20,_RGB(0,255,0));
+		m_pDevice->TextDraw(to_dispaly,0,20,_RGB(0,255,0));
 		//////////////////////////////////////////////////////////////////////////
-		device_->Present();
+		m_pDevice->Present();
 	}
 
 	void Game::AllocConsoleDebug()
@@ -197,15 +206,15 @@ namespace SoftEngine
 	void Game::PreRender(float elpase_time)
 	{
 		//////////////////////////////////////////////////////////////////////////
-		if(timeGetTime()-last_frame_time_>1000)
+		if(timeGetTime()-m_dwLastFrameTime>1000)
 		{
-			FPS_=last_frame_counts_;
-			last_frame_counts_=0;
-			last_frame_time_=timeGetTime();
+			m_iFPS=m_iLastFrameCounts;
+			m_iLastFrameCounts=0;
+			m_dwLastFrameTime=timeGetTime();
 		}
 		else
 		{
-			last_frame_counts_++;
+			m_iLastFrameCounts++;
 		}
 
 		//////////////////////////////////////////////////////////////////////////
@@ -215,6 +224,16 @@ namespace SoftEngine
 			first=false;
 			Quaternion q(2.4f,5.1f,8.3f,2.9f);
 			cout<<q*q<<endl;
+			Matrix m;
+			MatrixRotationQuaternion(&m,&q);
+			cout<<m<<endl;	
+			float deter;
+			MatrixInverse(&m,&deter,&m);
+			cout<<m<<endl;
+			MatrixInverse(&m,&deter,&m);
+			cout<<m<<endl;
+
+			cout<<deter<<endl;
 		}
 	}
 
