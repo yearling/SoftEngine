@@ -10,11 +10,11 @@ namespace SoftEngine
 	{
 		if(!FBXManager::GetInstance().GetInitialed())
 			FBXManager::GetInstance().Init();
-		vertex_buffer_=nullptr;
-		index_buffer_=nullptr;
+		pVertexBuffer=nullptr;
+		pIndexBuffer=nullptr;
 	}
 
-	FbxPaser::FbxPaser(const string &file_name):file_name_(file_name)
+	FbxPaser::FbxPaser(const string &file_name):strFileName(file_name)
 	{
 		if(!FBXManager::GetInstance().GetInitialed())
 			FBXManager::GetInstance().Init();
@@ -24,15 +24,15 @@ namespace SoftEngine
 	{
 		if(file_name.empty())
 		{
-			file_name=file_name_;
+			file_name=strFileName;
 		}
 		else
-			file_name_=file_name;
+			strFileName=file_name;
 		if(file_name.empty())
 			return false;
 		assert(FBXManager::GetInstance().GetInitialed());
-		scene_=FBXManager::GetInstance().CreateScence(file_name,"");
-		if(scene_)
+		pScene=FBXManager::GetInstance().CreateScence(file_name,"");
+		if(pScene)
 			if(Parse())
 				return true;
 		return false;
@@ -40,7 +40,7 @@ namespace SoftEngine
 
 	bool FbxPaser::Parse()
 	{
-		assert(scene_ &&" scene_ should not be empty");
+		assert(pScene &&" scene_ should not be empty");
 		//设置顶点格式
 		VERTEXELEMENT v_list[]={
 			{0,DECLTYPE_FLOAT3,DECLUSAGE_POSITION,0},
@@ -49,9 +49,9 @@ namespace SoftEngine
 			{40,DECLTYPE_FLOAT2,DECLUSAGE_TEXCOORD,0},
 			DECL_END()
 		};
-		decl_=device_->CreateVertexDeclaration(v_list);
-		assert(decl_ && "create vertexelement error");
-		FbxNode* lRootNode = scene_->GetRootNode();
+		pVertexDecl=pDevice->CreateVertexDeclaration(v_list);
+		assert(pVertexDecl && "create vertexelement error");
+		FbxNode* lRootNode = pScene->GetRootNode();
 		ProcessNode(lRootNode);
 		return true;
 	}
@@ -60,7 +60,7 @@ namespace SoftEngine
 	{
 		if(d)
 		{
-			device_=d;
+			pDevice=d;
 			return true;
 		}else
 			return false;
@@ -100,7 +100,7 @@ namespace SoftEngine
 		if(mesh==nullptr)
 			return;
 		int triangle_count=mesh->GetPolygonCount();
-		num_faces_=triangle_count;
+		uNumFaces=triangle_count;
 		int vertex_count=0;
 		Vector3 position[3];
 		Vector4 color[3];
@@ -138,29 +138,29 @@ namespace SoftEngine
 					}
 					else
 					{
-						parse_render_data_buffer_.push_back(da);
+						vecParseRenderDataBuffer.push_back(da);
 						index_change[i]=index_cur++;
 					}
 				}
 				//反绕序
-				parse_index_buffer_.push_back(index_change[2]);
-				parse_index_buffer_.push_back(index_change[1]);
-				parse_index_buffer_.push_back(index_change[0]);
+				vecParseIndexBuffer.push_back(index_change[2]);
+				vecParseIndexBuffer.push_back(index_change[1]);
+				vecParseIndexBuffer.push_back(index_change[0]);
 
 
 		}
-		vertex_buffer_=device_->CreateVertexBuffer(parse_render_data_buffer_.size()*sizeof(FbxRenderData));
-		index_buffer_=device_->CreateIndexBuffer(parse_index_buffer_.size());
-		assert(vertex_buffer_ && "fbx create VertexBuffer failed!");
-		assert(index_buffer_ && "fbx create IndexBuffer failed!");
-		assert(parse_index_buffer_.size()==num_faces_*3);
-		void *v_buffer_data=vertex_buffer_->Lock();
-		memcpy(v_buffer_data,&parse_render_data_buffer_[0],vertex_buffer_->GetSize());
-		vertex_buffer_->UnLock();
-		assert(index_buffer_->GetSize()==parse_index_buffer_.size() && "should not be error,check the parser");
-		UINT *i_buffer_data=index_buffer_->Lock();
-		memcpy(i_buffer_data,&parse_index_buffer_[0],sizeof(UINT)*index_buffer_->GetSize());
-		index_buffer_->UnLock();
+		pVertexBuffer=pDevice->CreateVertexBuffer(vecParseRenderDataBuffer.size()*sizeof(FbxRenderData));
+		pIndexBuffer=pDevice->CreateIndexBuffer(vecParseIndexBuffer.size());
+		assert(pVertexBuffer && "fbx create VertexBuffer failed!");
+		assert(pIndexBuffer && "fbx create IndexBuffer failed!");
+		assert(vecParseIndexBuffer.size()==uNumFaces*3);
+		void *v_buffer_data=pVertexBuffer->Lock();
+		memcpy(v_buffer_data,&vecParseRenderDataBuffer[0],pVertexBuffer->GetSize());
+		pVertexBuffer->UnLock();
+		assert(pIndexBuffer->GetSize()==vecParseIndexBuffer.size() && "should not be error,check the parser");
+		UINT *i_buffer_data=pIndexBuffer->Lock();
+		memcpy(i_buffer_data,&vecParseIndexBuffer[0],sizeof(UINT)*pIndexBuffer->GetSize());
+		pIndexBuffer->UnLock();
 	}
 
 	void FbxPaser::ProcessVertex(FbxMesh* mesh,int index,Vector3 &v)
@@ -274,17 +274,17 @@ namespace SoftEngine
 
 	bool FbxPaser::FindSameRenderData(const FbxRenderData &data,UINT &pos)
 	{
-		auto iter=std::find(parse_render_data_buffer_.begin(),parse_render_data_buffer_.end(),data);
-		if(iter==parse_render_data_buffer_.end())
+		auto iter=std::find(vecParseRenderDataBuffer.begin(),vecParseRenderDataBuffer.end(),data);
+		if(iter==vecParseRenderDataBuffer.end())
 			return false;
 		else
 		{
 #if defined(DEBUG) || defined( _DEGUB)
 			//如果还有重复点，说明插入有问题
-			auto test_iter=std::find(iter+1,parse_render_data_buffer_.end(),data);
-			assert(test_iter==parse_render_data_buffer_.end());
+			auto test_iter=std::find(iter+1,vecParseRenderDataBuffer.end(),data);
+			assert(test_iter==vecParseRenderDataBuffer.end());
 #endif
-			pos=std::distance(parse_render_data_buffer_.begin(),iter);
+			pos=std::distance(vecParseRenderDataBuffer.begin(),iter);
 			return true;
 		}
 	}

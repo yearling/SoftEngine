@@ -99,9 +99,6 @@ namespace SoftEngine
 
 	LRESULT Game::MyProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		HDC hdc;
-		PAINTSTRUCT ps;
-		RECT rc;
 		switch(msg)
 		{
 		case WM_KEYDOWN:
