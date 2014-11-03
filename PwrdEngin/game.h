@@ -34,7 +34,7 @@ namespace SoftEngine
 		int m_iLastFrameCounts;
 		DWORD m_dwLastFrameTime;
 		int m_iFPS;
-		ArcBall* m_pArcBall;
+		EASYCamera *m_pEasyCamera;
 	private:
 		void AllocConsoleDebug();
 	};

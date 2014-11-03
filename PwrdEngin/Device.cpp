@@ -221,13 +221,13 @@ namespace SoftEngine
 		return nullptr;
 	}
 
-	void Device::SetWorld(Matrix *world)
+	void Device::SetWorld( const Matrix *world)
 	{
 		if(world)
 			m_matWorld=*world;
 	}
 
-	void Device::SetView(Matrix *view)
+	void Device::SetView(const Matrix *view)
 	{
 		if(view)
 			m_matView=*view;
@@ -295,7 +295,7 @@ namespace SoftEngine
 		return Vector3(reinterpret_cast<const float*>(p));
 	}
 
-	void Device::SetProject(Matrix *pro)
+	void Device::SetProject(const Matrix *pro)
 	{
 		if(pro)
 		m_matProject=*pro;

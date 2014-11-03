@@ -67,12 +67,19 @@ namespace SoftEngine
 		m_pFbxPaser=new FbxPaser();
 		m_pFbxPaser->Init(m_pDevice);
 		//parser_->Load("..\\media\\box.fbx");
-		//parser_->Load("E:\\scene_fbx\\test\\box_normal.fbx");
-		m_pFbxPaser->Load("E:\\scene_fbx\\ring.fbx");
+		m_pFbxPaser->Load("E:\\scene_fbx\\test\\box_normal.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\ring.fbx");
 		//////////////////////////////////////////////////////////////////////////
-		m_pArcBall=new ArcBall();
-		m_pArcBall->Init(m_spMainWindow->m_hWnd);
-
+		m_pEasyCamera=new EASYCamera();
+		m_pEasyCamera->SetHWND(m_spMainWindow->m_hWnd);
+		m_pEasyCamera->SetWindow(width,height);
+		m_pEasyCamera->SetRaius(40.0f);
+		Vector3 eye(0.0f,0.0f,-40.0f);
+		Vector3 at(0.0f,0.0f,0.0f);
+		Vector3 up(0.0f,1.0f,0.0f);
+		m_pEasyCamera->SetViewParam(&eye,&at);
+		m_pEasyCamera->SetProjParam(PI*0.5f,(float)m_spMainWindow->m_iWidth/(float)
+			m_spMainWindow->m_iHeight,1.0f,1000.0f);
 	}
 
 	int Game::Run()
@@ -102,9 +109,9 @@ namespace SoftEngine
 
 	LRESULT Game::MyProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		if(m_pArcBall)
+		if(m_pEasyCamera)
 		{
-			if(m_pArcBall->HandleMessage(hwnd,msg,wParam,lParam))
+			if(m_pEasyCamera->HandleMessage(hwnd,msg,wParam,lParam))
 				return S_OK;
 		}
 		switch(msg)
@@ -142,7 +149,7 @@ namespace SoftEngine
 		m_dwLastFrameTime=0;
 		m_iLastFrameCounts=0;
 		m_iFPS=0;
-		m_pArcBall=nullptr;
+		m_pEasyCamera=nullptr;
 	}
 
 	void Game::Render(float elpase_time)
@@ -153,21 +160,24 @@ namespace SoftEngine
 		if(angle>PI*2)
 			angle=0.0f;
 		Matrix rote;
+		MatrixIdentity(&rote);
 		MatrixRotationY(&rote,angle);
+//		rote=(*m_pEasyCamera->GetWorldMatrix());
 		m_pDevice->Clear(_RGB(25,25,25));
-		Vector3 eye(0.0f,0.0f,-80.0f);
+		/*Vector3 eye(0.0f,0.0f,-80.0f);
 		Vector3 at(0.0f,0.0f,0.0f);
 		Vector3 up(0.0f,1.0f,0.0f);
 		MatrixLookAtLH(&m_matView,&eye,&at,&up);
 		
 		MatrixPerspectiveFOVLH(&m_matProject,PI*0.5f,(float)m_spMainWindow->m_iWidth/(float)
-			m_spMainWindow->m_iHeight,1.0f,1000.0f);
+			m_spMainWindow->m_iHeight,1.0f,1000.0f);*/
 		
 		if(m_pDevice->BeginScene())
 		{
-		//	device_->SetWorld(&rote);
-			m_pDevice->SetView(&m_matView);
-			m_pDevice->SetProject(&m_matProject);
+			m_pDevice->SetWorld(m_pEasyCamera->GetWorldMatrix());
+			//m_pDevice->SetWorld(&rote);
+			m_pDevice->SetView(m_pEasyCamera->GetViewMatrix());
+			m_pDevice->SetProject(m_pEasyCamera->GetProjMatrix());
 			m_pDevice->SetViewPort();
 			m_pDevice->SetStreamSource(GetPaser()->GetVertexBuffer());
 			m_pDevice->SetIndices(GetPaser()->GetIndexBuffer());
@@ -216,7 +226,7 @@ namespace SoftEngine
 		{
 			m_iLastFrameCounts++;
 		}
-
+		m_pEasyCamera->FrameMove(elpase_time);
 		//////////////////////////////////////////////////////////////////////////
 		static bool first=true;
 		if(first)

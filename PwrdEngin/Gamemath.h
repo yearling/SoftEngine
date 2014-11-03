@@ -174,4 +174,5 @@ float Dot(const Vector2*v1,const Vector2*v2);
 float Dot(const Vector3*v1,const Vector3*v2);
 float Dot(const Vector4*v1,const Vector4*v2);
 Vector3 Cross(const Vector3*v1 ,const Vector3*v2);
+Vector3 *Vec3TransformCoord(Vector3*out,const Vector3*v,const Matrix* mat);
 #endif

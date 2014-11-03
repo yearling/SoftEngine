@@ -100,9 +100,9 @@ namespace SoftEngine
 		bool EndScene();
 		bool Clear(UINT color);
 		bool Present();
-		void SetWorld(Matrix *world);
-		void SetView(Matrix *view);
-		void SetProject(Matrix *pro);
+		void SetWorld(const Matrix *world);
+		void SetView(const Matrix *view);
+		void SetProject(const Matrix *pro);
 		void SetStreamSource(VertexBuffer *p);
 		void SetIndices(IndexBuffer*p);
 		VertexDeclaration* CreateVertexDeclaration(VERTEXELEMENT v[]);
