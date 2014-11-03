@@ -21,7 +21,7 @@
 #include <map>
 #include "application.h"
 #include "Gamemath.h"
-#include "DrawImp.h"
+#include "DrawImpl.h"
 #include "Device.h"
 using std::cout;
 using std::endl;

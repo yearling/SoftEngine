@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "DrawImp.h"
+#include "DrawImpl.h"
 #include <assert.h>
 
 namespace SoftEngine

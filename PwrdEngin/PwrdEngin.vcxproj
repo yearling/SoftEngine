@@ -78,7 +78,7 @@
   <ItemGroup>
     <ClInclude Include="application.h" />
     <ClInclude Include="CameraBase.h" />
-    <ClInclude Include="DrawImp.h" />
+    <ClInclude Include="DrawImpl.h" />
     <ClInclude Include="FBXManager.h" />
     <ClInclude Include="FbxPaser.h" />
     <ClInclude Include="game.h" />
@@ -89,7 +89,7 @@
   <ItemGroup>
     <ClCompile Include="application.cpp" />
     <ClCompile Include="CameraBase.cpp" />
-    <ClCompile Include="DrawImp.cpp" />
+    <ClCompile Include="DrawImpl.cpp" />
     <ClCompile Include="FBXManager.cpp" />
     <ClCompile Include="FbxPaser.cpp" />
     <ClCompile Include="game.cpp" />

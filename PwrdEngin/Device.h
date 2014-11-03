@@ -2,7 +2,7 @@
 #define __RENDER_H__
 #pragma once
 #include "stdafx.h"
-#include "DrawImp.h"
+#include "DrawImpl.h"
 #include "application.h"
 #include <vector>
 namespace SoftEngine
@@ -110,7 +110,7 @@ namespace SoftEngine
 		bool TextDraw(std::string text, int x,int y,DWORD color);
 		inline void DrawPixel(int x,int y,DWORD color=_RGB(255,255,255))
 		{
-			back_buffer_[x+y*pitch]=color;
+			m_pBackBuffer[x+y*m_iPitch]=color;
 		}
 		
 		void DrawLine(int x0,int y0,int x1,int y1,int color=_RGB(255,255,255));
@@ -125,21 +125,20 @@ namespace SoftEngine
 		bool DrawIndexedTrianglelist(int base_vertex_index,UINT min_index,
 			UINT num_vertics,UINT start_index,UINT primitiveCount);
 	private:
-		DrawImpl *draw_imp_;
-		UINT *back_buffer_;
-		int pitch;
-		int width_;
-		int height_;
-		RECT clipe_rc;
-		Matrix world_;
-		Matrix view_;
-		Matrix project_;
-		Matrix view_port_;
-		VertexDeclaration* vertex_declaration_;
-		VertexBuffer *des_vertex_buffer_;
-		IndexBuffer *des_index_buffer_;
-		
-		std::vector<RenderVertex> des_render_buffer_;
+		DrawImpl *m_pDrawImpl;
+		UINT *m_pBackBuffer;
+		int m_iPitch;
+		int m_iWidth;
+		int m_iHeight;
+		RECT m_rcClip;
+		Matrix m_matWorld;
+		Matrix m_matView;
+		Matrix m_matProject;
+		Matrix m_matViewPort;
+		VertexDeclaration* m_pVertexDecl;
+		VertexBuffer *m_pDesVertexBuffer;
+		IndexBuffer *m_pDesIndexBuffer;
+		std::vector<RenderVertex> m_vecRenderBuffer;
 	};
 }
 #endif

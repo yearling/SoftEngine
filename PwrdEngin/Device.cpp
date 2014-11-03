@@ -7,23 +7,23 @@
 using namespace std;
 namespace SoftEngine
 {
-	Device::Device():draw_imp_(nullptr),
-					back_buffer_(nullptr),
-					pitch(0),width_(0),height_(0),
-					vertex_declaration_(nullptr),
-					des_index_buffer_(nullptr),
-					des_vertex_buffer_(nullptr)
+	Device::Device():m_pDrawImpl(nullptr),
+					m_pBackBuffer(nullptr),
+					m_iPitch(0),m_iWidth(0),m_iHeight(0),
+					m_pVertexDecl(nullptr),
+					m_pDesIndexBuffer(nullptr),
+					m_pDesVertexBuffer(nullptr)
 	{
-		memset(&clipe_rc,0,sizeof(clipe_rc));
-		MatrixIdentity(&world_);
-		MatrixIdentity(&view_);
-		MatrixIdentity(&project_);
-		MatrixIdentity(&view_port_);
+		memset(&m_rcClip,0,sizeof(m_rcClip));
+		MatrixIdentity(&m_matWorld);
+		MatrixIdentity(&m_matView);
+		MatrixIdentity(&m_matProject);
+		MatrixIdentity(&m_matViewPort);
 	}
 
 	bool Device::Init(DrawImpl* draw_imp)
 	{
-		draw_imp_=draw_imp;
+		m_pDrawImpl=draw_imp;
 		return true;
 	}
 
@@ -33,8 +33,8 @@ namespace SoftEngine
 			return false;
 		else
 		{
-			draw_imp_=new DrawImpl();
-			if(!draw_imp_->Init(windows->m_hWnd,windows->m_iWidth,windows->m_iHeight,windows->m_iClientOffsetX,windows->m_iClientOffsetY,windows->m_bWindow))
+			m_pDrawImpl=new DrawImpl();
+			if(!m_pDrawImpl->Init(windows->m_hWnd,windows->m_iWidth,windows->m_iHeight,windows->m_iClientOffsetX,windows->m_iClientOffsetY,windows->m_bWindow))
 				return false;
 		}
 		return true;
@@ -42,13 +42,13 @@ namespace SoftEngine
 
 	bool Device::BeginScene()
 	{
-		assert(draw_imp_&&"render should init");
-		if(back_buffer_=draw_imp_->LockBackSurface(&pitch,&width_,&height_))
+		assert(m_pDrawImpl&&"render should init");
+		if(m_pBackBuffer=m_pDrawImpl->LockBackSurface(&m_iPitch,&m_iWidth,&m_iHeight))
 		{
-			clipe_rc.left=0;
-			clipe_rc.top=0;
-			clipe_rc.right=width_;
-			clipe_rc.bottom=height_;
+			m_rcClip.left=0;
+			m_rcClip.top=0;
+			m_rcClip.right=m_iWidth;
+			m_rcClip.bottom=m_iHeight;
 			return true;
 		}
 		return false;
@@ -56,18 +56,18 @@ namespace SoftEngine
 
 	bool Device::EndScene()
 	{
-		draw_imp_->UnlockBackSurface();
-		pitch=0;
-		width_=0;
-		height_=0;
-		back_buffer_=nullptr;
-		memset(&clipe_rc,0,sizeof(clipe_rc));
+		m_pDrawImpl->UnlockBackSurface();
+		m_iPitch=0;
+		m_iWidth=0;
+		m_iHeight=0;
+		m_pBackBuffer=nullptr;
+		memset(&m_rcClip,0,sizeof(m_rcClip));
 		return true;
 	}
 
 	void Device::DrawLine(int x0,int y0,int x1,int y1,int color)
 	{
-		if(!Draw2DClipe(clipe_rc,x0,y0,x1,y1))
+		if(!Draw2DClipe(m_rcClip,x0,y0,x1,y1))
 			return;
 		if(x0==x1 && y0==y1)
 		{
@@ -153,27 +153,27 @@ namespace SoftEngine
 
 	bool Device::Clear(UINT color)
 	{
-		draw_imp_->ClearBackBuffer(color);
+		m_pDrawImpl->ClearBackBuffer(color);
 		return true;
 	}
 
 	bool Device::Present()
 	{
-		des_render_buffer_.clear();
-		draw_imp_->Flip();
+		m_vecRenderBuffer.clear();
+		m_pDrawImpl->Flip();
 		return true;
 	}
 
 	void Device::SetViewPort(int x/*=0*/,int y/*=0*/,int width/*=0*/,int height/*=0*/,float minZ/*=0.0f*/,float maxZ/*=1.0f*/)
 	{
 		if(width==0)
-			width=width_;
+			width=m_iWidth;
 		if(height==0)
-			height=height_;
-			view_port_.m[0][0]=width/2;view_port_.m[0][1]=0.0f;view_port_.m[0][2]=0.0f;view_port_.m[0][3]=0.0f;
-			view_port_.m[1][0]=0.0f;view_port_.m[1][1]=-height/2;view_port_.m[1][2]=0.0f;view_port_.m[1][3]=0.0f;
-			view_port_.m[2][0]=0.0f;view_port_.m[2][1]=0.0f;view_port_.m[2][2]=maxZ-minZ;view_port_.m[2][3]=0.0f;
-			view_port_.m[3][0]=x+width/2;view_port_.m[3][1]=y+height/2;view_port_.m[3][2]=minZ;view_port_.m[3][3]=1.0f;
+			height=m_iHeight;
+			m_matViewPort.m[0][0]=width/2;m_matViewPort.m[0][1]=0.0f;m_matViewPort.m[0][2]=0.0f;m_matViewPort.m[0][3]=0.0f;
+			m_matViewPort.m[1][0]=0.0f;m_matViewPort.m[1][1]=-height/2;m_matViewPort.m[1][2]=0.0f;m_matViewPort.m[1][3]=0.0f;
+			m_matViewPort.m[2][0]=0.0f;m_matViewPort.m[2][1]=0.0f;m_matViewPort.m[2][2]=maxZ-minZ;m_matViewPort.m[2][3]=0.0f;
+			m_matViewPort.m[3][0]=x+width/2;m_matViewPort.m[3][1]=y+height/2;m_matViewPort.m[3][2]=minZ;m_matViewPort.m[3][3]=1.0f;
 	}
 
 	VertexDeclaration* Device::CreateVertexDeclaration(VERTEXELEMENT v[])
@@ -194,7 +194,7 @@ namespace SoftEngine
 			return false;
 		else
 			{
-				vertex_declaration_=p;
+				m_pVertexDecl=p;
 				return true;
 		}
 	}
@@ -224,23 +224,23 @@ namespace SoftEngine
 	void Device::SetWorld(Matrix *world)
 	{
 		if(world)
-			world_=*world;
+			m_matWorld=*world;
 	}
 
 	void Device::SetView(Matrix *view)
 	{
 		if(view)
-			view_=*view;
+			m_matView=*view;
 	}
 
 	void Device::SetStreamSource(VertexBuffer *p)
 	{
-		des_vertex_buffer_=p;
+		m_pDesVertexBuffer=p;
 	}
 
 	void Device::SetIndices(IndexBuffer*p)
 	{
-		des_index_buffer_=p;
+		m_pDesIndexBuffer=p;
 	}
 
 	bool Device::DrawIndexedPrimitive(PRIMITIVETYPE type,int base_vertex_index,UINT min_index, UINT num_vertics,UINT start_index,UINT primitiveCount)
@@ -257,30 +257,30 @@ namespace SoftEngine
 
 	bool Device::DrawIndexedTrianglelist(int base_vertex_index,UINT min_index, UINT num_vertics,UINT start_index,UINT primitiveCount)
 	{
-		assert(des_vertex_buffer_ && des_index_buffer_ &&vertex_declaration_);
-		int position_offset=vertex_declaration_->GetPositionOffset();
-		int strip=vertex_declaration_->GetSize();
-		const byte *vertex_buffer_trans=des_vertex_buffer_->GetBuffer()+base_vertex_index*strip;
-		const UINT *index_buffer_=des_index_buffer_->GetBuffer();
+		assert(m_pDesVertexBuffer && m_pDesIndexBuffer &&m_pVertexDecl);
+		int position_offset=m_pVertexDecl->GetPositionOffset();
+		int strip=m_pVertexDecl->GetSize();
+		const byte *vertex_buffer_trans=m_pDesVertexBuffer->GetBuffer()+base_vertex_index*strip;
+		const UINT *index_buffer_=m_pDesIndexBuffer->GetBuffer();
 		for(UINT i=0;i<primitiveCount*3;i++)
 		{
 			RenderVertex tmp;
 			tmp.visible=true;
 			UINT pos=index_buffer_[start_index++];
 			tmp.position_=ToVector3(vertex_buffer_trans,pos,strip,position_offset);
-			des_render_buffer_.push_back(tmp);
+			m_vecRenderBuffer.push_back(tmp);
 		}
-		Matrix trans=world_*view_*project_*view_port_;
-		for(auto iter=des_render_buffer_.begin();iter!=des_render_buffer_.end();++iter)
+		Matrix trans=m_matWorld*m_matView*m_matProject*m_matViewPort;
+		for(auto iter=m_vecRenderBuffer.begin();iter!=m_vecRenderBuffer.end();++iter)
 		{
 			iter->position_*=trans;
 			iter->position_.ProjectDivied();
 		}
-		for(UINT i=0;i<des_render_buffer_.size()/3;)
+		for(UINT i=0;i<m_vecRenderBuffer.size()/3;)
 		{
-			Vector4 &p0=des_render_buffer_[i*3+0].position_;
-			Vector4 &p1=des_render_buffer_[i*3+1].position_;
-			Vector4 &p2=des_render_buffer_[i*3+2].position_;
+			Vector4 &p0=m_vecRenderBuffer[i*3+0].position_;
+			Vector4 &p1=m_vecRenderBuffer[i*3+1].position_;
+			Vector4 &p2=m_vecRenderBuffer[i*3+2].position_;
 			DrawLine(p0.x,p0.y,p1.x,p1.y);
 			DrawLine(p1.x,p1.y,p2.x,p2.y);
 			DrawLine(p2.x,p2.y,p0.x,p0.y);
@@ -298,12 +298,12 @@ namespace SoftEngine
 	void Device::SetProject(Matrix *pro)
 	{
 		if(pro)
-		project_=*pro;
+		m_matProject=*pro;
 	}
 
 	bool Device::TextDraw(std::string text, int x,int y,DWORD color)
 	{
-		draw_imp_->DrawTextGDI(text,x,y,color);
+		m_pDrawImpl->DrawTextGDI(text,x,y,color);
 		return(1);
 	}
 
