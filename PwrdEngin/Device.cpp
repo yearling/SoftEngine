@@ -34,7 +34,7 @@ namespace SoftEngine
 		else
 		{
 			draw_imp_=new DrawImp();
-			if(!draw_imp_->Init(windows->hWnd,windows->iWidth,windows->iHeight,windows->iClientOffsetX,windows->iClientOffsetY,windows->bWindow))
+			if(!draw_imp_->Init(windows->m_hWnd,windows->m_iWidth,windows->m_iHeight,windows->m_iClientOffsetX,windows->m_iClientOffsetY,windows->m_bWindow))
 				return false;
 		}
 		return true;

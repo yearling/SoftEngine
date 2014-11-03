@@ -23,10 +23,10 @@ namespace SoftEngine
 		bool Init(Device *d);
 		~FbxPaser();
 		bool Load(string file_name);
-		VertexDeclaration *GetVertexDeclaration() const { return pVertexDecl;}
-		VertexBuffer *GetVertexBuffer() const {return pVertexBuffer;}
-		IndexBuffer *GetIndexBuffer() const {return pIndexBuffer;}
-		UINT GetFaceNumber() const {return uNumFaces;}
+		VertexDeclaration *GetVertexDeclaration() const { return m_pVertexDecl;}
+		VertexBuffer *GetVertexBuffer() const {return m_pVertexBuffer;}
+		IndexBuffer *GetIndexBuffer() const {return m_pIndexBuffer;}
+		UINT GetFaceNumber() const {return m_uNumFaces;}
 	private:
 		bool Parse();
 		void ProcessNode(FbxNode* node);
@@ -37,15 +37,15 @@ namespace SoftEngine
 		void ProcessNormal(FbxMesh *mesh,int index,int vertex_counter,Vector3& v);
 		bool FindSameRenderData(const FbxRenderData &data,UINT &pos);
 	private:
-		FbxScene *pScene;
-		Device *pDevice;
-		string strFileName;
-		VertexBuffer *pVertexBuffer;
-		IndexBuffer *pIndexBuffer;
-		VertexDeclaration *pVertexDecl;
-		std::vector<FbxRenderData> vecParseRenderDataBuffer;//用来保存解析后的内容，再次load时，不用解析。
-		std::vector<UINT> vecParseIndexBuffer;//用vector保存，然后放入index_buffer，可以不用，但是为了与上面保持一致
-		UINT uNumFaces;
+		FbxScene *m_pScene;
+		Device *m_pDevice;
+		string m_strFileName;
+		VertexBuffer *m_pVertexBuffer;
+		IndexBuffer *m_pIndexBuffer;
+		VertexDeclaration *m_pVertexDecl;
+		std::vector<FbxRenderData> m_vecParseRenderDataBuffer;//用来保存解析后的内容，再次load时，不用解析。
+		std::vector<UINT> m_vecParseIndexBuffer;//用vector保存，然后放入index_buffer，可以不用，但是为了与上面保持一致
+		UINT m_uNumFaces;
 	};
 }
 #endif

@@ -15,20 +15,20 @@ namespace SoftEngine
 	class Window
 	{
 	public:
-		Window(HINSTANCE hinstance):hWnd(NULL),
-			hInstance(hinstance),
-			bWindow(true),iWidth(0),iHeight(0),iClientOffsetX(0),iClientOffsetY(0){};
+		Window(HINSTANCE hinstance):m_hWnd(NULL),
+			m_hInstance(hinstance),
+			m_bWindow(true),m_iWidth(0),m_iHeight(0),m_iClientOffsetX(0),m_iClientOffsetY(0){};
 		void Init(int _width,int Height,const TCHAR *);
 		void ShowWindow(int cmd_show=SW_SHOW);
-		operator HWND(){ return hWnd;}
+		operator HWND(){ return m_hWnd;}
 	public:
-		HINSTANCE hInstance;
-		HWND hWnd;
-		int iWidth;
-		int iHeight;
-		bool bWindow;
-		int iClientOffsetX;
-		int iClientOffsetY;
+		HINSTANCE m_hInstance;
+		HWND m_hWnd;
+		int m_iWidth;
+		int m_iHeight;
+		bool m_bWindow;
+		int m_iClientOffsetX;
+		int m_iClientOffsetY;
 	};
 	class Application
 	{
@@ -50,11 +50,11 @@ namespace SoftEngine
 		void operator delete[](void *){}; 
 
 	public:
-		std::shared_ptr<Window> spMainWindow;
-		HINSTANCE hInstance;
+		std::shared_ptr<Window> m_spMainWindow;
+		HINSTANCE m_hInstance;
 	};
 
-	extern Application *YYUT_application;
+	extern Application *g_Application;
 	Application &GetApplication();
 }
 #endif

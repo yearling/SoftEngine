@@ -18,11 +18,11 @@ namespace SoftEngine
 		Application::Initial();
 		int width=800;
 		int height=600;
-		spMainWindow->Init(width,height,_T("Soft Engine"));
-		spMainWindow->ShowWindow();	
+		m_spMainWindow->Init(width,height,_T("Soft Engine"));
+		m_spMainWindow->ShowWindow();	
 		AllocConsoleDebug();
 		device_=new Device();
-		if(!device_->Init(spMainWindow.get()))
+		if(!device_->Init(m_spMainWindow.get()))
 			throw std::exception("Initial failed!\n");
 		VERTEXELEMENT v_list[]={
 			{0,DECLTYPE_FLOAT3,DECLUSAGE_POSITION,0},
@@ -151,8 +151,8 @@ namespace SoftEngine
 		Vector3 up(0.0f,1.0f,0.0f);
 		MatrixLookAtLH(&view_,&eye,&at,&up);
 		
-		MatrixPerspectiveFOVLH(&proj_,PI*0.5f,(float)spMainWindow->iWidth/(float)
-			spMainWindow->iHeight,1.0f,1000.0f);
+		MatrixPerspectiveFOVLH(&proj_,PI*0.5f,(float)m_spMainWindow->m_iWidth/(float)
+			m_spMainWindow->m_iHeight,1.0f,1000.0f);
 		
 		if(device_->BeginScene())
 		{

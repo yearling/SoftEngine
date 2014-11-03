@@ -13,15 +13,15 @@ namespace SoftEngine
 		FBXManager(void);
 		~FBXManager(void);
 		void Init();
-		static FBXManager& GetInstance(){ return instance_;}
+		static FBXManager& GetInstance(){ return fbxInstance;}
 		FbxScene* CreateScence(std::string file_path,std::string scene_name);
-		bool GetInitialed() const{ return initialed_;}
+		bool GetInitialed() const{ return m_bInitial;}
 	private:
-		static FBXManager instance_;
-		bool initialed_;
-		FbxManager *manager_;
-		FbxImporter *importer_;
-		FbxIOSettings *io_setting_;
+		static FBXManager fbxInstance;
+		bool m_bInitial;
+		FbxManager *m_pManager;
+		FbxImporter *m_pImporter;
+		FbxIOSettings *m_pIoSetting;
 	};
 	
 }
