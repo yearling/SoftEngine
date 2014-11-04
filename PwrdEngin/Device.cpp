@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <math.h>
 #include <iostream>
+#include <algorithm>
 using namespace std;
 namespace SoftEngine
 {
@@ -13,8 +14,11 @@ namespace SoftEngine
 					m_pVertexDecl(nullptr),
 					m_pDesIndexBuffer(nullptr),
 					m_pDesVertexBuffer(nullptr),
-					m_pEffect(nullptr),
-					m_pGameSource(nullptr)
+					m_pGameSource(nullptr),
+					m_cullmode(CULL_CCW),
+					m_fillmode(FILL_SOLID),
+					m_pPs(nullptr),
+					m_pVs(nullptr)
 	{
 		memset(&m_rcClip,0,sizeof(m_rcClip));
 		MatrixIdentity(&m_matWorld);
@@ -22,6 +26,8 @@ namespace SoftEngine
 		MatrixIdentity(&m_matProject);
 		MatrixIdentity(&m_matViewPort);
 	}
+
+	
 
 	bool Device::Init(DrawImpl* draw_imp)
 	{
@@ -55,6 +61,7 @@ namespace SoftEngine
 			m_rcClip.bottom=m_iHeight;
 			return true;
 		}
+		
 		return false;
 	}
 
@@ -69,32 +76,60 @@ namespace SoftEngine
 		return true;
 	}
 
-	void Device::DrawLine(int x0,int y0,int x1,int y1,int color)
+	void Device::DrawLine(const VSShaderOutput &out0,const VSShaderOutput &out1)
 	{
-		if(!Draw2DClipe(m_rcClip,x0,y0,x1,y1))
+		int cx0,cy0,cx1,cy1,x0,y0,x1,y1;
+		cx0=x0=out0.m_vScreenPosition.x;
+		cy0= y0=out0.m_vScreenPosition.y;
+		cx1= x1=out1.m_vScreenPosition.x;
+		cy1= y1=out1.m_vScreenPosition.y;
+		//都剪裁掉了
+		if(!Draw2DClipe(m_rcClip,cx0,cy0,cx1,cy1))
 			return;
-		if(x0==x1 && y0==y1)
+		int color;
+		float lerp;
+		VSShaderOutput tmp;
+		//退化为一个点
+		if(cx0==cx1 && cy0==cy1)
 		{
-			DrawPixel(x0,y0,color);
+			lerp=float(cx0-x0)/float(x1-x0);
+			tmp=Lerp(out0,out1,lerp);	
+			color=m_pPs->PSMain(tmp);
+			DrawPixel(cx0,cy0,color);
 			return;
 		}
 		int dx,dy;
-		dx=x1-x0;
-		dy=y1-y0;
+		dx=cx1-cx0;
+		dy=cy1-cy0;
 		int step;
-		abs(dx)>abs(dy)?step=abs(dx):step=abs(dy);
+		float lerpstep;
+		if(abs(dx)>abs(dy))
+		{
+			step=abs(dx);
+			lerp=(float)(cx0-x0)/(float)(x1-x0);
+			lerpstep=1.0f/(float)(x1-x0);
+		}
+		else
+		{
+			step=abs(dy);
+			lerp=(float)(cy0-y0)/(float)(y1-y0);
+			lerpstep=1.0f/(float)(y1-y0);
+		}
 		float x_add=static_cast<float>(dx)/static_cast<float>(step);
 		float y_add=static_cast<float>(dy)/static_cast<float>(step);
-		float x=x0;
-		float y=y0;
+		float x=cx0;
+		float y=cy0;
 		for(int i=0;i<step;i++)
 		{
+			tmp=Lerp(out0,out1,lerp);	
+			color=m_pPs->PSMain(tmp);
 			DrawPixel(Round(x),Round(y),color);
 			x+=x_add;
 			y+=y_add;
+			lerp+=lerpstep;
 		}
-
 	}
+
 	inline void linerLerp(const int & x0,const int &y0,const int& x1,const int &y1,float lerp,int &des_x,int &des_y)
 	{
 			des_x=x0+(x1-x0)*lerp;
@@ -225,17 +260,7 @@ namespace SoftEngine
 		return nullptr;
 	}
 
-	void Device::SetWorld( const Matrix *world)
-	{
-		if(world)
-			m_matWorld=*world;
-	}
 
-	void Device::SetView(const Matrix *view)
-	{
-		if(view)
-			m_matView=*view;
-	}
 
 	void Device::SetStreamSource(VertexBuffer *p)
 	{
@@ -262,14 +287,89 @@ namespace SoftEngine
 	bool Device::DrawIndexedTrianglelist(int base_vertex_index,UINT min_index, UINT num_vertics,UINT start_index,UINT primitiveCount)
 	{
 		assert(m_pDesVertexBuffer && m_pDesIndexBuffer &&m_pVertexDecl);
-		assert(m_pEffect && "this is programable pipline,effect must not be null");
-		m_pEffect->SetDevice(this);
-		m_pEffect->SetVertexDeclaraton(m_pVertexDecl);
-		m_pEffect->SetVertexBuffer(m_pDesVertexBuffer);
-		m_pEffect->SetIndexBuffer(m_pDesIndexBuffer);
-		m_pEffect->SetData(m_pGameSource);
-		m_pEffect->Draw(base_vertex_index,start_index,primitiveCount);
+		FillPipline(base_vertex_index,num_vertics,start_index,primitiveCount);
+		VSShaderOutput tmp;
+		std::for_each(m_vecRenderBuffer.begin(),m_vecRenderBuffer.end(),[&](RenderVertex & v)
+		{
+			m_pVs->VSMain(v,tmp);
+			tmp.m_vScreenPosition=tmp.m_vPosition*m_matViewPort;
+			tmp.m_vScreenPosition.ProjectDivied();
+			m_vecVSOutput.push_back(tmp);
+		});
+		//////////////////////////////////////////////////////////////////////////
+		if(m_cullmode!=CULL_NODE)
+		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		{
+			VSShaderOutput &out0=m_vecVSOutput[m_vecIndexBuffer[i++]];
+			VSShaderOutput &out1=m_vecVSOutput[m_vecIndexBuffer[i++]];
+			VSShaderOutput &out2=m_vecVSOutput[m_vecIndexBuffer[i++]];
+			Vector4 v0=out0.m_vScreenPosition;
+			Vector4 v1=out1.m_vScreenPosition;
+			Vector4 v2=out2.m_vScreenPosition;
+			Vector3 v01=Vector3(v1.x-v0.x,v1.y-v0.y,0.0f);
+			Vector3 v12=Vector3(v2.x-v1.x,v2.y-v1.y,0.0f);
+			Vector3 vCull=v01^v12;
+			if((m_cullmode==CULL_CCW && vCull.z<0 )||(m_cullmode==CULL_CW &&vCull.z>0))
+			{
+				out0.m_bVisible=false;
+				out1.m_bVisible=false;
+				out2.m_bVisible=false;
+			}
+		}
+		switch(m_fillmode)
+		{
+		case FILL_POINT:
+			break;
+		case FILL_WIREFRAME:
+			FillWireFrame();
+			break;
+		case FILL_SOLID:
+			break;
+		default:
+			break;
+		}
 		return true;
+	}
+	void Device::FillPipline(int base_vertex_index,UINT num_vertics,UINT start_index,UINT primitiveCount)
+	{
+		m_vecRenderBuffer.clear();
+		m_vecIndexBuffer.clear();
+		m_vecVSOutput.clear();
+		int position_offset=m_pVertexDecl->GetPositionOffset();
+		int strip=m_pVertexDecl->GetSize();
+		const byte *vertex_buffer_trans=m_pDesVertexBuffer->GetBuffer()+base_vertex_index*strip;
+		const UINT *index_buffer_=m_pDesIndexBuffer->GetBuffer();
+		RenderVertex tmp_vertex;
+		UINT  tmp_index;
+		for(UINT i=0;i<num_vertics;i++)
+		{
+			tmp_vertex.m_bVisible=true;
+			tmp_vertex.m_vPosition=ToVector3(vertex_buffer_trans,i,strip,position_offset);
+			m_vecRenderBuffer.push_back(tmp_vertex);
+		}
+		for(UINT i=0;i<primitiveCount*3;i++)
+		{
+				tmp_index=index_buffer_[start_index++];
+				m_vecIndexBuffer.push_back(tmp_index);
+		}
+	}
+	//画线框
+	void Device::FillWireFrame()
+	{
+		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		{
+			int index0=m_vecIndexBuffer[i++];
+			int index1=m_vecIndexBuffer[i++];
+			int index2=m_vecIndexBuffer[i++];
+			if(m_vecVSOutput[index0].m_bVisible==true ||
+				m_vecVSOutput[index1].m_bVisible==true||
+				m_vecVSOutput[index2].m_bVisible==true)
+			{
+				DrawLine(m_vecVSOutput[index0],m_vecVSOutput[index1]);
+				DrawLine(m_vecVSOutput[index1],m_vecVSOutput[index2]);
+				DrawLine(m_vecVSOutput[index2],m_vecVSOutput[index0]);
+			}
+		}
 	}
 
 	Vector3 Device::ToVector3(const byte* base_ptr,UINT pos,UINT data_size,UINT offset)
@@ -278,22 +378,13 @@ namespace SoftEngine
 		return Vector3(reinterpret_cast<const float*>(p));
 	}
 
-	void Device::SetProject(const Matrix *pro)
-	{
-		if(pro)
-		m_matProject=*pro;
-	}
-
-	bool Device::TextDraw(std::string text, int x,int y,DWORD color)
+		bool Device::TextDraw(std::string text, int x,int y,DWORD color)
 	{
 		m_pDrawImpl->DrawTextGDI(text,x,y,color);
 		return(1);
 	}
 
-	void Device::SetEffect(IEffect *pEffect)
-	{
-		m_pEffect=pEffect;
-	}
+	
 
 	void Device::SetGameSource(void *pSrc)
 	{
@@ -304,6 +395,27 @@ namespace SoftEngine
 	{
 		return &m_matViewPort;
 	}
+
+
+
+	void * Device::GetGameSource()
+	{
+		return m_pGameSource;
+	}
+
+	void Device::VSSetData()
+	{
+		if(m_pVs)
+			m_pVs->BeginSetGlobalParam();
+	}
+
+	void Device::PSSetData()
+	{
+		if(m_pPs)
+			m_pPs->BeginSetGlobalParam();
+	}
+
+
 
 	VertexDeclaration::VertexDeclaration():m_iPositionOffsetCached(0),
 		m_iColorOffsetCached(0),m_iNormalOffsetCached(0),m_iTexcoordOffsetCached(0),
@@ -476,40 +588,49 @@ namespace SoftEngine
 	}
 
 
-	void IEffect::SetVertexDeclaraton(VertexDeclaration *pVertexDecl)
+	
+	IVertexShader::IVertexShader(Device *p)
 	{
-		m_pVertexDecl=pVertexDecl;
+		m_pDevice=p;
 	}
 
-	void IEffect::SetVertexBuffer(VertexBuffer *pVertexBuffer)
+	void * IVertexShader::GetGobalData()
 	{
-		m_pDesVertexBuffer=pVertexBuffer;
+		return m_pDevice->GetGameSource();
 	}
 
-	void IEffect::SetIndexBuffer(IndexBuffer *pIndexBuffer)
-	{
-		m_pDesIndexBuffer=pIndexBuffer;
-	}
-
-	void IEffect::SetDevice(Device *pDevice)
-	{
-		m_pDevice=pDevice;
-	}
-
-	void IEffect::SetCullMode(CULLMODE mode)
+	IVertexShader::~IVertexShader()
 	{
 
 	}
 
-	IEffect::IEffect():m_pVertexDecl(NULL),m_pDesVertexBuffer(NULL),
-		m_pDesIndexBuffer(NULL),m_pDevice(NULL),m_cullmode(CULL_CCW)
+
+	IPixelShader::IPixelShader(Device *p)
+	{
+		m_pDevice=p;
+	}
+
+	void * IPixelShader::GetGlobalData()
+	{
+		return m_pDevice->GetGameSource();
+	}
+
+	IPixelShader::~IPixelShader()
 	{
 
 	}
 
-	IEffect::~IEffect()
+	SoftEngine::VSShaderOutput Lerp(const VSShaderOutput &out0,const VSShaderOutput &out1,float f)
 	{
-
+		VSShaderOutput tmp;
+		tmp.m_vScreenPosition=Lerp(out0.m_vScreenPosition,out1.m_vScreenPosition,f);
+		tmp.m_vNormal=Lerp(out0.m_vNormal,out1.m_vNormal,f);
+		tmp.m_vWordPOsition=Lerp(out0.m_vWordPOsition,out1.m_vWordPOsition,f);
+		tmp.m_bVisible=out0.m_bVisible && out1.m_bVisible;
+		tmp.m_vColor=Lerp(out0.m_vColor,out1.m_vColor,f);
+		tmp.m_vTexcoord=Lerp(out0.m_vTexcoord,out1.m_vTexcoord,f);
+		tmp.m_vPosition=Lerp(out0.m_vPosition,out1.m_vPosition,f);
+		return tmp;
 	}
 
 }

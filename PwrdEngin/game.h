@@ -36,8 +36,9 @@ namespace SoftEngine
 		DWORD m_dwLastFrameTime;
 		int m_iFPS;
 		EASYCamera *m_pEasyCamera;
-		IEffect *m_pEffect;
 		SeftData m_sd;
+		IVertexShader *m_pVS;
+		IPixelShader *m_pPS;
 	private:
 		void AllocConsoleDebug();
 	};

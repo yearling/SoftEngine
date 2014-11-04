@@ -13,8 +13,20 @@ namespace SoftEngine
 		Vector4 m_vPosition;
 		Vector3 m_vNormal;
 		Vector2 m_vTexcoord;
+		Vector4 m_vColor;
 		bool m_bVisible;
 	};
+	struct VSShaderOutput
+	{
+		Vector4 m_vScreenPosition;
+		Vector4 m_vPosition;
+		Vector3 m_vNormal;
+		Vector3 m_vWordPOsition;
+		Vector2 m_vTexcoord;
+		Vector4 m_vColor;
+		bool m_bVisible;
+	};
+	VSShaderOutput Lerp(const VSShaderOutput &out0,const VSShaderOutput &out1,float f);
 	enum PRIMITIVETYPE
 	{
 		PT_TRIANGLEIST=0,
@@ -95,25 +107,36 @@ namespace SoftEngine
 		CULL_CW,
 		CULL_CCW
 	};
-	class IEffect
+	enum FILLMODE
+	{
+		FILL_POINT,
+		FILL_WIREFRAME,
+		FILL_SOLID
+	};
+	
+	class IVertexShader
 	{
 	public:
-		IEffect();
-		virtual ~IEffect();
-		void SetVertexDeclaraton(VertexDeclaration *pVertexDecl);
-		void SetVertexBuffer(VertexBuffer *pVertexBuffer);
-		void SetIndexBuffer(IndexBuffer *pIndexBuffer);
-		void SetCullMode(CULLMODE mode=CULL_CCW);
-		void SetDevice(Device *pDevice);
-		virtual void SetData(void *p)=0;
-		virtual void Draw(int base_vertex_index,UINT start_index,UINT primitiveCount)=0;
-	protected:
-		VertexDeclaration* m_pVertexDecl;	
-		VertexBuffer *m_pDesVertexBuffer;
-		IndexBuffer *m_pDesIndexBuffer;
-		
-		Device *m_pDevice;
-		CULLMODE m_cullmode;
+		IVertexShader(Device *p);
+		void *GetGobalData();
+		virtual ~IVertexShader()=0;
+		virtual void VSMain(RenderVertex &v,VSShaderOutput &out)=0;
+		virtual void BeginSetGlobalParam()=0;
+	private:
+		Device* m_pDevice;
+		void *m_pData;
+	};
+	class IPixelShader
+	{
+	public:
+		IPixelShader(Device *p);
+		void *GetGlobalData();
+		virtual ~IPixelShader()=0;
+		virtual int PSMain(VSShaderOutput &)=0;
+		virtual void BeginSetGlobalParam()=0;
+	private:
+		Device* m_pDevice;
+		void *m_pData;
 	};
 	class Device
 	{
@@ -126,13 +149,16 @@ namespace SoftEngine
 		bool EndScene();
 		bool Clear(UINT color);
 		bool Present();
-		void SetEffect(IEffect *pEffect);
-		void SetWorld(const Matrix *world);
-		void SetView(const Matrix *view);
-		void SetProject(const Matrix *pro);
 		void SetStreamSource(VertexBuffer *p);
 		void SetIndices(IndexBuffer*p);
 		void SetGameSource(void *pSrc);
+		void SetVS(IVertexShader*p){m_pVs=p;}
+		void VSSetData();
+		void PSSetData();
+		void SetPS(IPixelShader*p){m_pPs=p;}
+		void SetCullMode(CULLMODE mode=CULL_CCW) { m_cullmode=mode;}
+		void SetFillMode(FILLMODE mode=FILL_SOLID) {m_fillmode=mode;}
+		void *GetGameSource();
 		Matrix* GetViewPort();
 		VertexDeclaration* CreateVertexDeclaration(VERTEXELEMENT v[]);
 		bool SetVertexDeclaration(VertexDeclaration *p);
@@ -143,6 +169,7 @@ namespace SoftEngine
 		}
 		
 		void DrawLine(int x0,int y0,int x1,int y1,int color=_RGB(255,255,255));
+		void DrawLine(const VSShaderOutput &out0,const VSShaderOutput &out1);
 		bool Draw2DClipe(const RECT &rc,int & x0,int &y0,int &x1,int &y1);
 		void SetViewPort( int x=0,int y=0,int width=0,int height=0,float minZ=0.0f,float maxZ=1.0f);
 		VertexBuffer* CreateVertexBuffer(UINT length);
@@ -153,6 +180,9 @@ namespace SoftEngine
 		inline Vector3 ToVector3(const byte* base_ptr,UINT pos,UINT data_size,UINT offset);
 		bool DrawIndexedTrianglelist(int base_vertex_index,UINT min_index,
 			UINT num_vertics,UINT start_index,UINT primitiveCount);
+		void FillPipline(int base_vertex_index,UINT num_vertics,UINT start_index,UINT primitiveCount);
+		void FillWireFrame();
+		void FillWireFrame(int index0,int index1);
 	private:
 		DrawImpl *m_pDrawImpl;
 		UINT *m_pBackBuffer;
@@ -168,8 +198,13 @@ namespace SoftEngine
 		VertexBuffer *m_pDesVertexBuffer;
 		IndexBuffer *m_pDesIndexBuffer;
 		std::vector<RenderVertex> m_vecRenderBuffer;
-		IEffect *m_pEffect;
+		std::vector<VSShaderOutput> m_vecVSOutput;
+		std::vector<UINT> m_vecIndexBuffer;
 		void *m_pGameSource;
+		IVertexShader *m_pVs;
+		IPixelShader *m_pPs;
+		CULLMODE m_cullmode;
+		FILLMODE m_fillmode;
 	};
 }
 #endif

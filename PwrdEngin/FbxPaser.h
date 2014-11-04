@@ -27,6 +27,7 @@ namespace SoftEngine
 		VertexBuffer *GetVertexBuffer() const {return m_pVertexBuffer;}
 		IndexBuffer *GetIndexBuffer() const {return m_pIndexBuffer;}
 		UINT GetFaceNumber() const {return m_uNumFaces;}
+		UINT GetVertexNumber() const {return m_uNumVertex;}
 	private:
 		bool Parse();
 		void ProcessNode(FbxNode* node);
@@ -46,6 +47,7 @@ namespace SoftEngine
 		std::vector<FbxRenderData> m_vecParseRenderDataBuffer;//用来保存解析后的内容，再次load时，不用解析。
 		std::vector<UINT> m_vecParseIndexBuffer;//用vector保存，然后放入index_buffer，可以不用，但是为了与上面保持一致
 		UINT m_uNumFaces;
+		UINT m_uNumVertex;
 	};
 }
 #endif

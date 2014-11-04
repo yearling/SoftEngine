@@ -12,12 +12,16 @@ namespace SoftEngine
 			FBXManager::GetInstance().Init();
 		m_pVertexBuffer=nullptr;
 		m_pIndexBuffer=nullptr;
+		m_uNumFaces=0;
+		m_uNumVertex=0;
 	}
 
 	FbxPaser::FbxPaser(const string &file_name):m_strFileName(file_name)
 	{
 		if(!FBXManager::GetInstance().GetInitialed())
 			FBXManager::GetInstance().Init();
+		m_uNumFaces=0;
+		m_uNumVertex=0;
 	}
 
 	bool FbxPaser::Load(string file_name)
@@ -121,6 +125,7 @@ namespace SoftEngine
 				ProcessNormal(mesh,ctrl_point_index,vertex_count,normal[j]);
 				vertex_count++;
 			}
+			
 			//法向取反,z轴取反
 				for(int i=0;i<3;i++)
 				{
@@ -146,9 +151,8 @@ namespace SoftEngine
 				m_vecParseIndexBuffer.push_back(index_change[2]);
 				m_vecParseIndexBuffer.push_back(index_change[1]);
 				m_vecParseIndexBuffer.push_back(index_change[0]);
-
-
 		}
+		m_uNumVertex=m_vecParseRenderDataBuffer.size();
 		m_pVertexBuffer=m_pDevice->CreateVertexBuffer(m_vecParseRenderDataBuffer.size()*sizeof(FbxRenderData));
 		m_pIndexBuffer=m_pDevice->CreateIndexBuffer(m_vecParseIndexBuffer.size());
 		assert(m_pVertexBuffer && "fbx create VertexBuffer failed!");

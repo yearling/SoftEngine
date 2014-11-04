@@ -341,6 +341,16 @@ float Vector4::operator*(const Vector4 &v) const
 	return x*v.x+y*v.y+z*v.z+w*v.w;
 }
 
+Vector4 Vector4::operator*(const Matrix &m)
+{
+	Vector4 tmp;
+	tmp.x=x*m.m[0][0]+y*m.m[1][0]+z*m.m[2][0]+w*m.m[3][0];
+	tmp.y=x*m.m[0][1]+y*m.m[1][1]+z*m.m[2][1]+w*m.m[3][1];
+	tmp.z=x*m.m[0][2]+y*m.m[1][2]+z*m.m[2][2]+w*m.m[3][2];
+	tmp.w=x*m.m[0][3]+y*m.m[1][3]+z*m.m[2][3]+w*m.m[3][3];
+	return tmp;
+}
+
 Vector4& Vector4::operator*=(const Matrix &m)
 {
 	Vector4 tmp(*this);
@@ -406,6 +416,15 @@ Vector4& Vector4::ProjectDivied()
 	z=z/w;
 	w=1.0f;
 	return *this;
+}
+
+int Vector4::ToColor() const
+{
+	int a=x*255;
+	int r=y*255;
+	int g=z*255;
+	int b=w*255;
+	return _ARGB(a,r,g,b);
 }
 
 std::ostream& operator<<(std::ostream & out,Vector4&v)
@@ -892,6 +911,34 @@ Vector3 * Vec3TransformCoord(Vector3*out,const Vector3*v,const Matrix* mat)
 	v4*=(*mat);
 	*out=v4.ProjectDivied();
 	return out;
+}
+
+Vector2 Lerp(const Vector2 &v0,const Vector2&v1,float f)
+{
+	return Vector2(v0.x*(1-f)+v1.x*f,v0.y*(1-f)+v1.y*f);
+}
+
+Vector3 Lerp(const Vector3 &v0,const Vector3&v1,float f)
+{
+	return Vector3(v0.x*(1-f)+v1.x*f,
+				   v0.y*(1-f)+v1.y*f,
+				   v0.z*(1-f)+v1.z*f);
+}
+
+Vector4 Lerp(const Vector4 &v0,const Vector4&v1,float f)
+{
+	return Vector4(v0.x*(1-f)+v1.x*f,
+				   v0.y*(1-f)+v1.y*f,
+				   v0.z*(1-f)+v1.z*f,
+				   v0.w*(1-f)+v1.w*f);
+}
+int ToColor(const Vector4 &v)
+{
+	int a=v.x*255;
+	int r=v.y*255;
+	int g=v.z*255;
+	int b=v.w*255;
+	return _ARGB(a,r,g,b);
 }
 
 
