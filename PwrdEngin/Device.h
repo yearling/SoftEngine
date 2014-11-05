@@ -211,6 +211,7 @@ namespace SoftEngine
 		IPixelShader *m_pPs;
 		CULLMODE m_cullmode;
 		FILLMODE m_fillmode;
+		int addCount;
 	};
 }
 #endif

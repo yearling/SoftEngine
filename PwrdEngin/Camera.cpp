@@ -456,6 +456,17 @@ namespace SoftEngine
 		world_._42=lookat_.y;
 		world_._43=lookat_.z;
 		last_world_rotate=world_rotate_view;
+		static float x_pos=0.0f;
+		if(key_mask_[KEY_MOVE_LEFT]==true)
+		{
+			x_pos-=0.5f;
+			
+		}
+		if(key_mask_[KEY_MOVE_RIGHT]==true)
+		{
+			x_pos+=0.5f;
+		}
+			world_._41+=x_pos;
 	}
 
 }

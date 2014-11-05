@@ -297,7 +297,9 @@ namespace SoftEngine
 			m_pVs->VSMain(v,tmp);
 			tmp.m_vScreenPosition=tmp.m_vPosition*m_matViewPort;
 			tmp.m_vScreenPosition.ProjectDivied();
-			tmp.m_vProjectCutting=tmp.m_vPosition.ProjectDivied();
+			tmp.m_vProjectCutting=tmp.m_vPosition;
+			tmp.m_vProjectCutting.ProjectDivied();
+			//tmp.m_vProjectCutting=tmp.m_vPosition.ProjectDivied();
 			m_vecVSOutput.push_back(tmp);
 		});
 
@@ -325,20 +327,27 @@ namespace SoftEngine
 		UINT           edges_index[3]; 
 		for(UINT i=0;i<m_vecIndexBuffer.size();)
 		{
+			bool isculled=true;
 			for(int j=0;j<3;j++,i++)
+			{
 				edges_index[j]=m_vecIndexBuffer[i];
+				if(m_vecVSOutput[edges_index[j]].m_bVisible=true)
+					isculled=false;
+			}
+			if(isculled)
+				continue;
 			////near plane
-			//FaceCull(edges_index,Plane(0,0,1,0));
+			FaceCull(edges_index,Plane(0,0,1,0));
 			//left
 			FaceCull(edges_index,Plane(1,0,0,1));
 			////right
-			//FaceCull(edges_index,Plane(-1,0,0,1));
+			FaceCull(edges_index,Plane(-1,0,0,1));
 			////top
-			//FaceCull(edges_index,Plane(0,-1,0,1));
+			FaceCull(edges_index,Plane(0,-1,0,1));
 			////bottom
-			//FaceCull(edges_index,Plane(0,1,0,1));
+			FaceCull(edges_index,Plane(0,1,0,1));
 			////far 
-			//FaceCull(edges_index,Plane(0,0,-1,1));
+			FaceCull(edges_index,Plane(0,0,-1,1));
 		}
 		switch(m_fillmode)
 		{
@@ -360,6 +369,7 @@ namespace SoftEngine
 		m_vecRenderBuffer.clear();
 		m_vecIndexBuffer.clear();
 		m_vecVSOutput.clear();
+		addCount=0;
 		int position_offset=m_pVertexDecl->GetPositionOffset();
 		assert(position_offset==0 && "position offset should be 0");
 		int iColorOffset=m_pVertexDecl->GetColorOffset();
@@ -424,18 +434,21 @@ namespace SoftEngine
 		outVertex.m_bVisible=false;	
 		float lerp0out=-cullPlane*inVertex0.m_vProjectCutting/(cullPlane*(outVertex.m_vProjectCutting-inVertex0.m_vProjectCutting));
 		float lerp1out=-cullPlane*inVertex1.m_vProjectCutting/(cullPlane*(outVertex.m_vProjectCutting-inVertex1.m_vProjectCutting));
+		if(fabs(1-lerp0out)<0.001|| fabs(1-lerp1out)<0.001 )
+			return;
 		VSShaderOutput new0Out=PrespectLerp(inVertex0,outVertex,lerp0out);
 		VSShaderOutput new1Out=PrespectLerp(inVertex1,outVertex,lerp1out);	
 		//形成inVertx0 inVertx1 new0Out的新顶点
 		m_vecIndexBuffer.push_back(inIndex0);
 		m_vecIndexBuffer.push_back(inIndex1);
-		m_vecIndexBuffer.push_back(m_vecVSOutput.size());
 		m_vecVSOutput.push_back(new0Out);
+		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
 		//形成new0Out inVertx1 new1Out的新顶点
 		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
-		m_vecIndexBuffer.push_back(inIndex1);
-		m_vecIndexBuffer.push_back(m_vecVSOutput.size());
 		m_vecVSOutput.push_back(new1Out);
+		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
+		m_vecIndexBuffer.push_back(inIndex1);
+		std::cout<<"two"<<addCount++<<std::endl;
 	}
 	void Device::OneVertexInView(UINT inIndex,UINT outIndex0,UINT outIndex1,const Plane &cullPlane)
 	{
@@ -447,6 +460,8 @@ namespace SoftEngine
 		out1Vertex.m_bVisible=false;
 		float lerpIn0=-cullPlane*inVertex.m_vProjectCutting/(cullPlane*(out0Vertex.m_vProjectCutting-inVertex.m_vProjectCutting));
 		float lerpIn1=-cullPlane*inVertex.m_vProjectCutting/(cullPlane*(out1Vertex.m_vProjectCutting-inVertex.m_vProjectCutting));
+		if(fabs(1-lerpIn0)<0.00001 && fabs(1-lerpIn1)<0.0001)
+			return;
 		VSShaderOutput newIn0=PrespectLerp(inVertex,out0Vertex,lerpIn0);
 		VSShaderOutput newIn1=PrespectLerp(inVertex,out0Vertex,lerpIn0);
 		newIn0.m_bVisible=true;
@@ -456,6 +471,7 @@ namespace SoftEngine
 		m_vecIndexBuffer.push_back(m_vecVSOutput.size()+1);
 		m_vecVSOutput.push_back(newIn0);
 		m_vecVSOutput.push_back(newIn1);
+		std::cout<<"one:"<<addCount++<<std::endl;
 	}
 
 	//画线框
@@ -740,12 +756,12 @@ namespace SoftEngine
 		float repo_z3=(1-f)*repo_z0+f*repo_z1;
 		float z3=1/repo_z3;
 		tmp.m_vScreenPosition=Lerp(out0.m_vScreenPosition,out1.m_vScreenPosition,f);
-		tmp.m_vProjectCutting=Lerp(out0.m_vProjectCutting/repo_z0,out1.m_vProjectCutting/repo_z1,f)*z3;
-		tmp.m_vPosition=Lerp(out0.m_vPosition/repo_z0,out1.m_vPosition/repo_z1,f)*z3;
-		tmp.m_vNormal=Lerp(out0.m_vNormal/repo_z0,out1.m_vNormal/repo_z1,f)*z3;
-		tmp.m_vWordPOsition=Lerp(out0.m_vWordPOsition/repo_z0,out1.m_vWordPOsition/repo_z1,f)*z3;
-		tmp.m_vTexcoord=Lerp(out0.m_vTexcoord/repo_z0,out1.m_vTexcoord/repo_z1,f)*z3;
-		tmp.m_vColor=Lerp(out0.m_vColor/repo_z0,out1.m_vColor/repo_z1,f)*z3;
+		tmp.m_vProjectCutting=Lerp(out0.m_vProjectCutting*repo_z0,out1.m_vProjectCutting*repo_z1,f)*z3;
+		tmp.m_vPosition=Lerp(out0.m_vPosition*repo_z0,out1.m_vPosition*repo_z1,f)*z3;
+		tmp.m_vNormal=Lerp(out0.m_vNormal*repo_z0,out1.m_vNormal*repo_z1,f)*z3;
+		tmp.m_vWordPOsition=Lerp(out0.m_vWordPOsition*repo_z0,out1.m_vWordPOsition*repo_z1,f)*z3;
+		tmp.m_vTexcoord=Lerp(out0.m_vTexcoord*repo_z0,out1.m_vTexcoord*repo_z1,f)*z3;
+		tmp.m_vColor=Lerp(out0.m_vColor*repo_z0,out1.m_vColor*repo_z1,f)*z3;
 		tmp.m_bVisible=out0.m_bVisible || out1.m_bVisible;
 		return tmp;
 	}

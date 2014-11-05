@@ -158,7 +158,7 @@ namespace SoftEngine
 		m_pIndexBuffer=m_pDevice->CreateIndexBuffer(m_vecParseIndexBuffer.size());
 		assert(m_pVertexBuffer && "fbx create VertexBuffer failed!");
 		assert(m_pIndexBuffer && "fbx create IndexBuffer failed!");
-		assert(m_vecParseIndexBuffer.size()==m_uNumFaces*3);
+		//assert(m_vecParseIndexBuffer.size()==m_uNumFaces*3);
 		void *v_buffer_data=m_pVertexBuffer->Lock();
 		memcpy(v_buffer_data,&m_vecParseRenderDataBuffer[0],m_pVertexBuffer->GetSize());
 		m_pVertexBuffer->UnLock();
