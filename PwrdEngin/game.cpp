@@ -33,9 +33,9 @@ namespace SoftEngine
 		m_pFbxPaser->Init(m_pDevice);
 		//parser_->Load("..\\media\\box.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\box_normal.fbx");
-	//	m_pFbxPaser->Load("E:\\scene_fbx\\ring.fbx");
-		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\pyramid.fbx");
-		m_pFbxPaser->Load("E:\\scene_fbx\\test\\rectangle.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\ring.fbx");
+		m_pFbxPaser->Load("E:\\scene_fbx\\test\\pyramid.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\rectangle.fbx");
 		//////////////////////////////////////////////////////////////////////////
 		m_pEasyCamera=new EASYCamera();
 		m_pEasyCamera->SetHWND(m_spMainWindow->m_hWnd);

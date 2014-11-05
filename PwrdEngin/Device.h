@@ -187,6 +187,7 @@ namespace SoftEngine
 		void FillWireFrame(int index0,int index1);
 		void FillSolid();
 		void FaceCull(UINT index[3],const Plane &CullPlane);
+		void NearCull(UINT index[3],const Plane &CullPlane);
 		void OneVertexInView(UINT inIndex,UINT outIndex0,UINT outIndex1,const Plane &cullPlane);
 		void TwoVertexInView(UINT inIndex0,UINT inIndex1,UINT outIndex,const Plane &cullPlane);
 	private:

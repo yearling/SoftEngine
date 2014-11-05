@@ -84,8 +84,8 @@ namespace SoftEngine
 		cx1= x1=out1.m_vScreenPosition.x;
 		cy1= y1=out1.m_vScreenPosition.y;
 		//都剪裁掉了
-		if(!Draw2DClipe(m_rcClip,cx0,cy0,cx1,cy1))
-			return;
+		/*if(!Draw2DClipe(m_rcClip,cx0,cy0,cx1,cy1))
+			return;*/
 		int color;
 		float lerp;
 		VSShaderOutput tmp;
@@ -327,25 +327,50 @@ namespace SoftEngine
 		UINT           edges_index[3]; 
 		for(UINT i=0;i<m_vecIndexBuffer.size();)
 		{
-			bool isculled=true;
 			for(int j=0;j<3;j++,i++)
-			{
 				edges_index[j]=m_vecIndexBuffer[i];
-				if(m_vecVSOutput[edges_index[j]].m_bVisible=true)
-					isculled=false;
-			}
-			if(isculled)
-				continue;
+			////near plane
+			NearCull(edges_index,Plane(0,0,1,1));
+		}
+		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		{
+			for(int j=0;j<3;j++,i++)
+				edges_index[j]=m_vecIndexBuffer[i];
 			////near plane
 			FaceCull(edges_index,Plane(0,0,1,0));
+		}
+		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		{
+			for(int j=0;j<3;j++,i++)
+				edges_index[j]=m_vecIndexBuffer[i];
 			//left
 			FaceCull(edges_index,Plane(1,0,0,1));
+		}
+		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		{
+			for(int j=0;j<3;j++,i++)
+				edges_index[j]=m_vecIndexBuffer[i];
 			////right
 			FaceCull(edges_index,Plane(-1,0,0,1));
+		}
+		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		{
+			for(int j=0;j<3;j++,i++)
+				edges_index[j]=m_vecIndexBuffer[i];
 			////top
 			FaceCull(edges_index,Plane(0,-1,0,1));
+		}
+		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		{
+			for(int j=0;j<3;j++,i++)
+				edges_index[j]=m_vecIndexBuffer[i];
 			////bottom
 			FaceCull(edges_index,Plane(0,1,0,1));
+		}
+		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		{
+			for(int j=0;j<3;j++,i++)
+				edges_index[j]=m_vecIndexBuffer[i];
 			////far 
 			FaceCull(edges_index,Plane(0,0,-1,1));
 		}
@@ -379,17 +404,15 @@ namespace SoftEngine
 		const UINT *index_buffer_=m_pDesIndexBuffer->GetBuffer();
 		RenderVertex tmp_vertex;
 		UINT  tmp_index;
-		for(UINT i=0;i<num_vertics;i++)
-		{
-			tmp_vertex.m_bVisible=true;
-			tmp_vertex.m_vPosition=ToVector3(vertex_buffer_trans,i,strip,position_offset);
-			tmp_vertex.m_vColor=ToVector4(vertex_buffer_trans,i,strip,iColorOffset);
-			m_vecRenderBuffer.push_back(tmp_vertex);
-		}
+		
 		for(UINT i=0;i<primitiveCount*3;i++)
 		{
 				tmp_index=index_buffer_[start_index++];
-				m_vecIndexBuffer.push_back(tmp_index);
+				tmp_vertex.m_bVisible=true;
+				tmp_vertex.m_vPosition=ToVector3(vertex_buffer_trans,tmp_index,strip,position_offset);
+				tmp_vertex.m_vColor=ToVector4(vertex_buffer_trans,tmp_index,strip,iColorOffset);
+				m_vecRenderBuffer.push_back(tmp_vertex);
+				m_vecIndexBuffer.push_back(i);
 		}
 	}
 	void Device::FaceCull(UINT index[3],const Plane &CullPlane)
@@ -399,8 +422,11 @@ namespace SoftEngine
 		UINT outside_index[3];
 		int inside_count=0;
 		int outside_count=0;
+		bool allInvisibal=true;
 		for(int i=0;i<3;i++)
 		{
+			if(m_vecVSOutput[index[i]].m_bVisible==true)
+				 allInvisibal=false;
 			cull[i]=CullPlane*m_vecVSOutput[index[i]].m_vProjectCutting;
 			if(cull[i]>0)
 			{
@@ -408,8 +434,9 @@ namespace SoftEngine
 			}
 			else
 				outside_index[outside_count++]=index[i];
-
 		}
+		if(allInvisibal)
+			return;
 		if(outside_count==3)
 		{
 			for(int i=0;i<3;i++)
@@ -417,7 +444,6 @@ namespace SoftEngine
 		}
 		if(inside_count==1)
 		{
-			//OneVertexInView(inside_index[0],outside_index[0],outside_index[1]);	
 			OneVertexInView(inside_index[0],outside_index[0],outside_index[1],CullPlane);
 		}
 		if(inside_count==2)
@@ -434,20 +460,18 @@ namespace SoftEngine
 		outVertex.m_bVisible=false;	
 		float lerp0out=-cullPlane*inVertex0.m_vProjectCutting/(cullPlane*(outVertex.m_vProjectCutting-inVertex0.m_vProjectCutting));
 		float lerp1out=-cullPlane*inVertex1.m_vProjectCutting/(cullPlane*(outVertex.m_vProjectCutting-inVertex1.m_vProjectCutting));
-		if(fabs(1-lerp0out)<0.001|| fabs(1-lerp1out)<0.001 )
-			return;
 		VSShaderOutput new0Out=PrespectLerp(inVertex0,outVertex,lerp0out);
+		new0Out.m_bVisible=true;
 		VSShaderOutput new1Out=PrespectLerp(inVertex1,outVertex,lerp1out);	
+		new1Out.m_bVisible=true;
 		//形成inVertx0 inVertx1 new0Out的新顶点
-		m_vecIndexBuffer.push_back(inIndex0);
-		m_vecIndexBuffer.push_back(inIndex1);
-		m_vecVSOutput.push_back(new0Out);
-		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
+		outVertex=new1Out;
 		//形成new0Out inVertx1 new1Out的新顶点
+		m_vecVSOutput.push_back(new0Out);
 		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
 		m_vecVSOutput.push_back(new1Out);
 		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
-		m_vecIndexBuffer.push_back(inIndex1);
+		m_vecIndexBuffer.push_back(inIndex0);
 		std::cout<<"two"<<addCount++<<std::endl;
 	}
 	void Device::OneVertexInView(UINT inIndex,UINT outIndex0,UINT outIndex1,const Plane &cullPlane)
@@ -456,21 +480,16 @@ namespace SoftEngine
 		VSShaderOutput &inVertex=m_vecVSOutput[inIndex];
 		VSShaderOutput &out0Vertex=m_vecVSOutput[outIndex0];
 		VSShaderOutput &out1Vertex=m_vecVSOutput[outIndex1];
-		out0Vertex.m_bVisible=false;
-		out1Vertex.m_bVisible=false;
 		float lerpIn0=-cullPlane*inVertex.m_vProjectCutting/(cullPlane*(out0Vertex.m_vProjectCutting-inVertex.m_vProjectCutting));
 		float lerpIn1=-cullPlane*inVertex.m_vProjectCutting/(cullPlane*(out1Vertex.m_vProjectCutting-inVertex.m_vProjectCutting));
-		if(fabs(1-lerpIn0)<0.00001 && fabs(1-lerpIn1)<0.0001)
-			return;
+	/*	if(fabs(1-lerpIn0)<0.000001 && fabs(1-lerpIn1)<0.000001)
+			return;*/
 		VSShaderOutput newIn0=PrespectLerp(inVertex,out0Vertex,lerpIn0);
-		VSShaderOutput newIn1=PrespectLerp(inVertex,out0Vertex,lerpIn0);
+		VSShaderOutput newIn1=PrespectLerp(inVertex,out1Vertex,lerpIn1);
 		newIn0.m_bVisible=true;
 		newIn1.m_bVisible=true;
-		m_vecIndexBuffer.push_back(inIndex);
-		m_vecIndexBuffer.push_back(m_vecVSOutput.size());
-		m_vecIndexBuffer.push_back(m_vecVSOutput.size()+1);
-		m_vecVSOutput.push_back(newIn0);
-		m_vecVSOutput.push_back(newIn1);
+		m_vecVSOutput[outIndex0]=newIn0;
+		m_vecVSOutput[outIndex1]=newIn1;
 		std::cout<<"one:"<<addCount++<<std::endl;
 	}
 
@@ -541,6 +560,23 @@ namespace SoftEngine
 	{
 		if(m_pPs)
 			m_pPs->BeginSetGlobalParam();
+	}
+
+	void Device::NearCull(UINT index[3],const Plane &CullPlane)
+	{
+		float cull;
+		bool allInvisibal=false;
+		for(int i=0;i<3;i++)
+		{
+			cull=CullPlane*m_vecVSOutput[index[i]].m_vProjectCutting;
+			if(cull<0)
+				allInvisibal=true;
+		}
+		if(allInvisibal)
+		{
+			for(int i=0;i<3;i++)
+				m_vecVSOutput[index[i]].m_bVisible=true;
+		}
 	}
 
 	
