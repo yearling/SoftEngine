@@ -93,7 +93,7 @@ namespace SoftEngine
 		if(cx0==cx1 && cy0==cy1)
 		{
 			lerp=float(cx0-x0)/float(x1-x0);
-			tmp=Lerp(out0,out1,lerp);	
+			tmp=PrespectLerp(out0,out1,lerp);	
 			color=m_pPs->PSMain(tmp);
 			DrawPixel(cx0,cy0,color);
 			return;
@@ -124,7 +124,7 @@ namespace SoftEngine
 		float y=cy0;
 		for(int i=0;i<step;i++)
 		{
-			tmp=Lerp(out0,out1,lerp);	
+			tmp=PrespectLerp(out0,out1,lerp);	
 			color=m_pPs->PSMain(tmp);
 			DrawPixel(Round(x),Round(y),color);
 			x+=x_add;
@@ -297,6 +297,7 @@ namespace SoftEngine
 			m_pVs->VSMain(v,tmp);
 			tmp.m_vScreenPosition=tmp.m_vPosition*m_matViewPort;
 			tmp.m_vScreenPosition.ProjectDivied();
+			tmp.m_vProjectCutting=tmp.m_vPosition.ProjectDivied();
 			m_vecVSOutput.push_back(tmp);
 		});
 
@@ -319,6 +320,25 @@ namespace SoftEngine
 				out1.m_bVisible=false;
 				out2.m_bVisible=false;
 			}
+		}
+		//////////////////////////////////////////////////////////////////////////
+		UINT           edges_index[3]; 
+		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		{
+			for(int j=0;j<3;j++,i++)
+				edges_index[j]=m_vecIndexBuffer[i];
+			////near plane
+			//FaceCull(edges_index,Plane(0,0,1,0));
+			//left
+			FaceCull(edges_index,Plane(1,0,0,1));
+			////right
+			//FaceCull(edges_index,Plane(-1,0,0,1));
+			////top
+			//FaceCull(edges_index,Plane(0,-1,0,1));
+			////bottom
+			//FaceCull(edges_index,Plane(0,1,0,1));
+			////far 
+			//FaceCull(edges_index,Plane(0,0,-1,1));
 		}
 		switch(m_fillmode)
 		{
@@ -362,6 +382,82 @@ namespace SoftEngine
 				m_vecIndexBuffer.push_back(tmp_index);
 		}
 	}
+	void Device::FaceCull(UINT index[3],const Plane &CullPlane)
+	{
+		float cull[3];
+		UINT inside_index[3];
+		UINT outside_index[3];
+		int inside_count=0;
+		int outside_count=0;
+		for(int i=0;i<3;i++)
+		{
+			cull[i]=CullPlane*m_vecVSOutput[index[i]].m_vProjectCutting;
+			if(cull[i]>0)
+			{
+				inside_index[inside_count++]=index[i];
+			}
+			else
+				outside_index[outside_count++]=index[i];
+
+		}
+		if(outside_count==3)
+		{
+			for(int i=0;i<3;i++)
+				m_vecVSOutput[index[i]].m_bVisible=false;
+		}
+		if(inside_count==1)
+		{
+			//OneVertexInView(inside_index[0],outside_index[0],outside_index[1]);	
+			OneVertexInView(inside_index[0],outside_index[0],outside_index[1],CullPlane);
+		}
+		if(inside_count==2)
+		{
+			TwoVertexInView(inside_index[0],inside_index[1],outside_index[0],CullPlane);
+		}
+		
+	}
+	void Device::TwoVertexInView(UINT inIndex0,UINT inIndex1,UINT outIndex,const Plane &cullPlane)
+	{
+		VSShaderOutput &inVertex0=m_vecVSOutput[inIndex0];
+		VSShaderOutput &inVertex1=m_vecVSOutput[inIndex1];
+		VSShaderOutput &outVertex=m_vecVSOutput[outIndex];
+		outVertex.m_bVisible=false;	
+		float lerp0out=-cullPlane*inVertex0.m_vProjectCutting/(cullPlane*(outVertex.m_vProjectCutting-inVertex0.m_vProjectCutting));
+		float lerp1out=-cullPlane*inVertex1.m_vProjectCutting/(cullPlane*(outVertex.m_vProjectCutting-inVertex1.m_vProjectCutting));
+		VSShaderOutput new0Out=PrespectLerp(inVertex0,outVertex,lerp0out);
+		VSShaderOutput new1Out=PrespectLerp(inVertex1,outVertex,lerp1out);	
+		//形成inVertx0 inVertx1 new0Out的新顶点
+		m_vecIndexBuffer.push_back(inIndex0);
+		m_vecIndexBuffer.push_back(inIndex1);
+		m_vecIndexBuffer.push_back(m_vecVSOutput.size());
+		m_vecVSOutput.push_back(new0Out);
+		//形成new0Out inVertx1 new1Out的新顶点
+		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
+		m_vecIndexBuffer.push_back(inIndex1);
+		m_vecIndexBuffer.push_back(m_vecVSOutput.size());
+		m_vecVSOutput.push_back(new1Out);
+	}
+	void Device::OneVertexInView(UINT inIndex,UINT outIndex0,UINT outIndex1,const Plane &cullPlane)
+	{
+
+		VSShaderOutput &inVertex=m_vecVSOutput[inIndex];
+		VSShaderOutput &out0Vertex=m_vecVSOutput[outIndex0];
+		VSShaderOutput &out1Vertex=m_vecVSOutput[outIndex1];
+		out0Vertex.m_bVisible=false;
+		out1Vertex.m_bVisible=false;
+		float lerpIn0=-cullPlane*inVertex.m_vProjectCutting/(cullPlane*(out0Vertex.m_vProjectCutting-inVertex.m_vProjectCutting));
+		float lerpIn1=-cullPlane*inVertex.m_vProjectCutting/(cullPlane*(out1Vertex.m_vProjectCutting-inVertex.m_vProjectCutting));
+		VSShaderOutput newIn0=PrespectLerp(inVertex,out0Vertex,lerpIn0);
+		VSShaderOutput newIn1=PrespectLerp(inVertex,out0Vertex,lerpIn0);
+		newIn0.m_bVisible=true;
+		newIn1.m_bVisible=true;
+		m_vecIndexBuffer.push_back(inIndex);
+		m_vecIndexBuffer.push_back(m_vecVSOutput.size());
+		m_vecIndexBuffer.push_back(m_vecVSOutput.size()+1);
+		m_vecVSOutput.push_back(newIn0);
+		m_vecVSOutput.push_back(newIn1);
+	}
+
 	//画线框
 	void Device::FillWireFrame()
 	{
@@ -431,8 +527,7 @@ namespace SoftEngine
 			m_pPs->BeginSetGlobalParam();
 	}
 
-
-
+	
 
 	VertexDeclaration::VertexDeclaration():m_iPositionOffsetCached(0),
 		m_iColorOffsetCached(0),m_iNormalOffsetCached(0),m_iTexcoordOffsetCached(0),
@@ -637,16 +732,35 @@ namespace SoftEngine
 
 	}
 
+	SoftEngine::VSShaderOutput PrespectLerp(const VSShaderOutput &out0,const VSShaderOutput &out1,float f)
+	{
+		VSShaderOutput tmp;
+		float repo_z0=1/out0.m_vPosition.w;
+		float repo_z1=1/out1.m_vPosition.w;
+		float repo_z3=(1-f)*repo_z0+f*repo_z1;
+		float z3=1/repo_z3;
+		tmp.m_vScreenPosition=Lerp(out0.m_vScreenPosition,out1.m_vScreenPosition,f);
+		tmp.m_vProjectCutting=Lerp(out0.m_vProjectCutting/repo_z0,out1.m_vProjectCutting/repo_z1,f)*z3;
+		tmp.m_vPosition=Lerp(out0.m_vPosition/repo_z0,out1.m_vPosition/repo_z1,f)*z3;
+		tmp.m_vNormal=Lerp(out0.m_vNormal/repo_z0,out1.m_vNormal/repo_z1,f)*z3;
+		tmp.m_vWordPOsition=Lerp(out0.m_vWordPOsition/repo_z0,out1.m_vWordPOsition/repo_z1,f)*z3;
+		tmp.m_vTexcoord=Lerp(out0.m_vTexcoord/repo_z0,out1.m_vTexcoord/repo_z1,f)*z3;
+		tmp.m_vColor=Lerp(out0.m_vColor/repo_z0,out1.m_vColor/repo_z1,f)*z3;
+		tmp.m_bVisible=out0.m_bVisible || out1.m_bVisible;
+		return tmp;
+	}
+
 	SoftEngine::VSShaderOutput Lerp(const VSShaderOutput &out0,const VSShaderOutput &out1,float f)
 	{
 		VSShaderOutput tmp;
 		tmp.m_vScreenPosition=Lerp(out0.m_vScreenPosition,out1.m_vScreenPosition,f);
+		tmp.m_vProjectCutting=Lerp(out0.m_vProjectCutting,out1.m_vProjectCutting,f);
+		tmp.m_vPosition=Lerp(out0.m_vPosition,out1.m_vPosition,f);
 		tmp.m_vNormal=Lerp(out0.m_vNormal,out1.m_vNormal,f);
 		tmp.m_vWordPOsition=Lerp(out0.m_vWordPOsition,out1.m_vWordPOsition,f);
-		tmp.m_bVisible=out0.m_bVisible && out1.m_bVisible;
-		tmp.m_vColor=Lerp(out0.m_vColor,out1.m_vColor,f);
 		tmp.m_vTexcoord=Lerp(out0.m_vTexcoord,out1.m_vTexcoord,f);
-		tmp.m_vPosition=Lerp(out0.m_vPosition,out1.m_vPosition,f);
+		tmp.m_vColor=Lerp(out0.m_vColor,out1.m_vColor,f);
+		tmp.m_bVisible=out0.m_bVisible || out1.m_bVisible;
 		return tmp;
 	}
 

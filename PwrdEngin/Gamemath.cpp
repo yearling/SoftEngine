@@ -951,3 +951,13 @@ Quaternion Quaternion::operator*(const Quaternion & q)
 	p.z=w*q.z+x*q.y-y*q.x+z*q.w;
 	return p;
 }
+
+float Plane::operator*(const Vector3& v) const 
+{
+	return x*v.x+y*v.y+z*v.z+w;
+}
+
+float Plane::operator*(const Vector4& v) const
+{
+	return x*v.x+y*v.y+z*v.z+w*v.w;
+}

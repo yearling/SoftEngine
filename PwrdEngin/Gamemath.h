@@ -156,6 +156,14 @@ public:
 	float z;
 	float w;
 };
+class Plane:public Vector4
+{
+public:
+	Plane(){};
+	Plane(float a,float b,float c,float d):Vector4(a,b,c,d){};
+	float operator*(const Vector3& v) const ;
+	float operator*(const Vector4& v) const; 
+};
 Matrix *MatrixMultiply(Matrix *out,const Matrix *pm1,const Matrix *pm2);
 float MatrixDetermint(const Matrix *in,float *f=nullptr);
 void MatrixIdentity(Matrix *in_out);

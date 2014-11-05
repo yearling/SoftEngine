@@ -19,6 +19,7 @@ namespace SoftEngine
 	struct VSShaderOutput
 	{
 		Vector4 m_vScreenPosition;
+		Vector4 m_vProjectCutting;
 		Vector4 m_vPosition;
 		Vector3 m_vNormal;
 		Vector3 m_vWordPOsition;
@@ -26,6 +27,7 @@ namespace SoftEngine
 		Vector4 m_vColor;
 		bool m_bVisible;
 	};
+	VSShaderOutput PrespectLerp(const VSShaderOutput &out0,const VSShaderOutput &out1,float f);
 	VSShaderOutput Lerp(const VSShaderOutput &out0,const VSShaderOutput &out1,float f);
 	enum PRIMITIVETYPE
 	{
@@ -184,6 +186,9 @@ namespace SoftEngine
 		void FillWireFrame();
 		void FillWireFrame(int index0,int index1);
 		void FillSolid();
+		void FaceCull(UINT index[3],const Plane &CullPlane);
+		void OneVertexInView(UINT inIndex,UINT outIndex0,UINT outIndex1,const Plane &cullPlane);
+		void TwoVertexInView(UINT inIndex0,UINT inIndex1,UINT outIndex,const Plane &cullPlane);
 	private:
 		DrawImpl *m_pDrawImpl;
 		UINT *m_pBackBuffer;

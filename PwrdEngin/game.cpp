@@ -40,7 +40,7 @@ namespace SoftEngine
 		m_pEasyCamera->SetHWND(m_spMainWindow->m_hWnd);
 		m_pEasyCamera->SetWindow(width,height);
 		m_pEasyCamera->SetRaius(40.0f);
-		Vector3 eye(0.0f,0.0f,-80.0f);
+		Vector3 eye(0.0f,0.0f,-40.0f);
 		Vector3 at(0.0f,0.0f,0.0f);
 		Vector3 up(0.0f,1.0f,0.0f);
 		m_pEasyCamera->SetViewParam(&eye,&at);
