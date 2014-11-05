@@ -70,12 +70,6 @@ namespace SoftEngine
 		virtual void SetDragRect(RECT &rc) {drag_rc_=rc;}
 		void SetHWND(HWND hwnd){ hwnd_=hwnd;}
 		void SetWindow(int width,int height){width_=width;height_=height;}
-		void SetDrag(bool movement_drag,float total_drag_time_to_zero=0.25f)
-		{
-			movement_drag_=movement_drag;
-			total_drag_time_to_zero_=total_drag_time_to_zero;
-		}
-		void SetEnablePositionMovment(bool enable){ enable_position_movement_=enable;}
 		void SetScalers(float rotation_scaler=0.01f,float move_scaler=5.0f){ rotation_scaler_=rotation_scaler;move_scaler_=move_scaler;}
 		const Matrix * GetViewMatrix() const { return & view_;}
 		const Matrix * GetProjMatrix() const { return & pro_;}
@@ -83,17 +77,11 @@ namespace SoftEngine
 		const Vector3 * GetLookatPt() const { return & lookat_;}
 		float GetNearClip() const { return near_plane_;}
 		float GetFarClip() const { return far_plane_;}
-		bool IsBeingDragged() const { return (mouse_lbutton_down_ || mouse_rbutton_down_ ||mouse_mbutton_down_);}
-		bool IsMouseLButtonDown() const { return mouse_lbutton_down_;}
-		bool IsMouseMButtonDown() const { return mouse_mbutton_down_;}
-		bool IsMouseRButtonDown() const { return mouse_rbutton_down_;}
 	protected:
 		bool IsKeyDown(BYTE key) const 
 		{
 			return key_mask_[key];
 		}
-		void UpdateMouseDelta();
-		void UpdateVelocity(float elapse_time);
 		void GetInput(bool reset_cursor_after_move);
 		Matrix view_;
 		Matrix pro_;
@@ -101,13 +89,8 @@ namespace SoftEngine
 		bool key_mask_[KEY_MOVE_MAX];//存放各CAM的状态，主要是key控制的状态
 		Vector3 keyboard_direction_;
 		POINT last_mouse_position_;
-		bool mouse_lbutton_down_;
-		bool mouse_mbutton_down_;
-		bool mouse_rbutton_down_;
-		int current_button_mask_;//存放各种由mouse控制的state
 		int mouse_wheel_delta_;
 		Vector2 mouse_delta_;
-		float frames_to_smooth_mouse_delta_;
 		Vector3 default_eye_;
 		Vector3 default_lookat_;
 		Vector3 eye_;
@@ -116,20 +99,12 @@ namespace SoftEngine
 		float camera_pitch_angle_;
 		RECT drag_rc_;
 		Vector3 velocity_;
-		bool movement_drag_;
-		Vector3 velocity_drag_;
-		float drag_timer_;
-		float total_drag_time_to_zero_;
-		Vector2 rot_velocity;
 		float FOV_;
 		float aspect_;
 		float near_plane_;
 		float far_plane_;
 		float rotation_scaler_;
 		float move_scaler_;
-		bool invert_pitch_;
-		bool enable_position_movement_;
-		bool enable_Y_axis_movement_;
 		bool clip_to_boundary_;
 		Vector3 min_boundary_;
 		Vector3 max_boundary_;

@@ -97,6 +97,7 @@ namespace SoftEngine
 				m_pDevice->PSSetData();
 				m_pDevice->VSSetData();
 				m_pDevice->SetCullMode(CULL_NONE);
+				//m_pDevice->SetFillMode(FILL_SOLID);
 				m_pDevice->SetFillMode(FILL_WIREFRAME);
 				m_pDevice->DrawIndexedPrimitive(PT_TRIANGLEIST,0,0,m_pFbxPaser->GetVertexNumber(),0,m_pFbxPaser->GetFaceNumber());
 				m_pDevice->EndScene();

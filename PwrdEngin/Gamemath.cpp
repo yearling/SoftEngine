@@ -905,7 +905,7 @@ Matrix * MatrixInverse(Matrix*out,float *determin,const Matrix *in)
 
 Vector3 * Vec3TransformCoord(Vector3*out,const Vector3*v,const Matrix* mat)
 {
-	if(v==nullptr||mat==nullptr||out)
+	if(v==nullptr||mat==nullptr||out==nullptr)
 		return nullptr;
 	Vector4 v4(v->x,v->y,v->z,1.0f);
 	v4*=(*mat);

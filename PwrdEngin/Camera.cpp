@@ -12,27 +12,14 @@ namespace SoftEngine
 		SetViewParam(&eye,&lookat);
 		SetProjParam(PI/4,1.0f,1.0f,1000.f);
 		GetCursorPos(&last_mouse_position_);
-		mouse_lbutton_down_=false;
-		mouse_mbutton_down_=false;
-		mouse_rbutton_down_=false;
-		current_button_mask_=0;
 		mouse_wheel_delta_=0;
 		camera_yaw_angle_=0.0f;
 		camera_pitch_angle_=0.0f;
 		SetRect(&drag_rc_,LONG_MIN,LONG_MIN,LONG_MAX,LONG_MAX);
 		velocity_=Vector3(0.0f,0.0f,0.0f);
-		movement_drag_=false;
-		velocity_drag_=Vector3(0,0,0);
-		drag_timer_=0.0f;
-		total_drag_time_to_zero_=0.25;
-		rot_velocity=Vector2(0,0);
 		rotation_scaler_=0.01f;
 		move_scaler_=5.0f;
-		invert_pitch_=false;
-		enable_position_movement_=true;
-		enable_Y_axis_movement_=true;
 		mouse_delta_=Vector2(0,0);
-		frames_to_smooth_mouse_delta_=2.0f;
 		clip_to_boundary_=false;
 		min_boundary_=Vector3(-1,-1,-1);
 		max_boundary_=Vector3(1,1,1);
@@ -115,67 +102,6 @@ namespace SoftEngine
 				}
 				break;
 			}
-		case WM_RBUTTONDOWN:
-		case WM_MBUTTONDOWN:
-		case WM_LBUTTONDOWN:
-		case WM_RBUTTONDBLCLK:
-		case WM_MBUTTONDBLCLK:
-		case WM_LBUTTONDBLCLK:
-			{
-				POINT cursor_pos={(short)LOWORD(lParam),(short)HIWORD(lParam)};
-				if((uMsg==WM_LBUTTONDOWN ||uMsg==WM_LBUTTONDBLCLK ) && PtInRect(&drag_rc_,cursor_pos) )
-				{
-					mouse_lbutton_down_=true;
-				}
-
-				if((uMsg==WM_MBUTTONDOWN ||uMsg==WM_MBUTTONDBLCLK ) && PtInRect(&drag_rc_,cursor_pos) )
-				{
-					mouse_mbutton_down_=true;
-				}
-				if((uMsg==WM_RBUTTONDOWN ||uMsg==WM_RBUTTONDBLCLK ) && PtInRect(&drag_rc_,cursor_pos) )
-				{
-					mouse_rbutton_down_=true;
-				}
-				SetCapture(hwnd);
-				GetCursorPos(&last_mouse_position_);
-				return true;
-			}
-		case WM_LBUTTONUP:
-		case WM_MBUTTONUP:
-		case WM_RBUTTONUP:
-			{
-				if(uMsg==WM_LBUTTONUP)
-				{
-					mouse_lbutton_down_=false;
-				}
-				if(uMsg==WM_MBUTTONUP)
-				{
-					mouse_mbutton_down_=false;
-				}
-				if(uMsg==WM_RBUTTONUP)
-				{
-					mouse_rbutton_down_=false;
-				}
-				if(!mouse_lbutton_down_ && !mouse_mbutton_down_ && !mouse_rbutton_down_)
-				{
-					ReleaseCapture();
-				}
-				break;
-			}
-		case WM_CAPTURECHANGED:
-			{
-				if((HWND)lParam !=hwnd)
-				{
-					if(mouse_lbutton_down_||mouse_mbutton_down_||mouse_rbutton_down_)
-					{
-						mouse_lbutton_down_=false;
-						mouse_mbutton_down_=false;
-						mouse_rbutton_down_=false;
-						ReleaseCapture();
-					}
-				}
-				break;
-			}
 		case WM_MOUSEWHEEL:
 			mouse_wheel_delta_+=(short)HIWORD(wParam);
 			break;
@@ -200,14 +126,10 @@ namespace SoftEngine
 			keyboard_direction_.z+=1.0f;
 		if(key_mask_[KEY_MOVE_BACKWARD])
 			keyboard_direction_.z-=1.0f;
-		if(enable_Y_axis_movement_)
-		{
-			
 		if(key_mask_[KEY_MOVE_UP])
 			keyboard_direction_.y+=1.0f;
 		if(key_mask_[KEY_MOVE_DOWN])
 			keyboard_direction_.y-=1.0f;
-		}
 		if(key_mask_[KEY_MOVE_RIGHT])
 			keyboard_direction_.x+=1.0f;
 		if(key_mask_[KEY_MOVE_LEFT])
@@ -305,60 +227,6 @@ namespace SoftEngine
 
 	bool ArcBall::HandleMessage(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 	{
-		int mouse_x=(short)LOWORD(lParam);
-		int mouse_y=(short)HIWORD(lParam);
-		switch(uMsg)
-		{
-		case WM_LBUTTONDOWN:
-		case WM_LBUTTONDBLCLK:
-			SetCapture(hwnd);
-			OnBegin(mouse_x,mouse_y);
-			return true;
-		case WM_LBUTTONUP:
-			ReleaseCapture();
-			OnEnd();
-			return true;
-		case WM_CAPTURECHANGED:
-			if((HWND)lParam!=hwnd)
-			{
-				ReleaseCapture();
-				OnEnd();
-			}
-			return true;
-		case WM_RBUTTONDOWN:
-		case WM_RBUTTONDBLCLK:
-		case WM_MBUTTONDOWN:
-		case WM_MBUTTONDBLCLK:
-			SetCapture(hwnd);
-			m_pointLastMouse.x=mouse_x;
-			m_pointLastMouse.y=mouse_y;
-			return true;
-		case WM_RBUTTONUP:
-		case WM_MBUTTONUP:
-			ReleaseCapture();
-			return true;
-		case WM_MOUSEMOVE:
-			if(MK_LBUTTON &wParam)
-			{
-				OnMove(mouse_x,mouse_y);
-			}
-			else if((MK_RBUTTON & wParam )||(MK_MBUTTON & wParam))
-			{
-				float delta_x=(m_pointLastMouse.x-mouse_x)*m_fRadiusTranlation/m_iWidth;
-				float delta_y=(m_pointLastMouse.y-mouse_y)*m_fRadiusTranlation/m_iHeight;
-				if(wParam & MK_RBUTTON)
-				{
-					MatrixTranslation(&m_matTranslationDelta,-2*delta_x,2*delta_y,0.0f);
-					MatrixMultiply(&m_matTranslation,&m_matTranslation,&m_matTranslationDelta);
-				}
-				else
-				{
-					MatrixTranslation(&m_matTranslationDelta,0.0f,0.0f,5*delta_y);
-					MatrixMultiply(&m_matTranslation,&m_matTranslation,&m_matTranslationDelta);
-				}
-			}
-			return true;
-		}
 		return false;
 	}
 
@@ -367,6 +235,7 @@ namespace SoftEngine
 	{
 		radius_=10.0f;
 		MatrixIdentity(&world_);
+		MatrixIdentity(&view_);
 		MatrixIdentity(&last_world_rotate);
 		MatrixIdentity(&final_world_rotate);
 	}
@@ -410,9 +279,6 @@ namespace SoftEngine
 			int y=(short)HIWORD(lParam);
 			view_arcball_.OnEnd();
 		}
-
-
-
 		if(uMsg==WM_CAPTURECHANGED)
 		{
 			if(hwnd!=(HWND)lParam)
@@ -425,48 +291,30 @@ namespace SoftEngine
 
 	void EASYCamera::FrameMove(float elapse_time)
 	{
-		//Matrix view_arcball;
-		//MatrixInverse(&view_arcball,nullptr,view_arcball_.GetRotationMatrix());
-		//Vector3 local_ahead(0.0f,0.0f,1.0f);
-		//Vector3 local_up(0.0f,1.0f,0.0f);
-		//Vector3 world_lookat,world_up;
-		//Vec3TransformCoord(&world_up,&local_up,&view_arcball);
-		//Vec3TransformCoord(&world_lookat,&local_ahead,&view_arcball);
-		//eye_=lookat_-world_lookat*radius_;
-		//MatrixLookAtLH(&view_,&eye_,&lookat_,&world_up);
-		//Matrix view_inverse;
-		//Matrix world_rotate_view=*world_arcball_.GetRotationMatrix();
-		//Matrix last_world_rotate_invert;
-		//MatrixInverse(&last_world_rotate_invert,nullptr,&last_world_rotate);
-		//MatrixInverse(&view_inverse,nullptr,&view_);
-		//final_world_rotate*=view_*last_world_rotate_invert*world_rotate_view*view_inverse;
-		////这个时候也不知道旋转哪去了，who care,最后把那放到指定位置就行了。
-		//world_=final_world_rotate;
-		//world_._41=lookat_.x;
-		//world_._42=lookat_.y;
-		//world_._43=lookat_.z;
-		//last_world_rotate=world_rotate_view;
-		//////////////////////////////////////////////////////////////////////////
-		Matrix last_world_rotate_invert;
+		radius_+=mouse_wheel_delta_;	
+		mouse_wheel_delta_=0;
+		Matrix view_arcball;
+		MatrixInverse(&view_arcball,nullptr,view_arcball_.GetRotationMatrix());
+		Vector3 local_ahead(0.0f,0.0f,1.0f);
+		Vector3 local_up(0.0f,1.0f,0.0f);
+		Vector3 world_lookat,world_up;
+		Vec3TransformCoord(&world_up,&local_up,&view_arcball);
+		Vec3TransformCoord(&world_lookat,&local_ahead,&view_arcball);
+		eye_=lookat_-world_lookat*radius_;
+		MatrixLookAtLH(&view_,&eye_,&lookat_,&world_up);
+		Matrix view_inverse;
 		Matrix world_rotate_view=*world_arcball_.GetRotationMatrix();
+		Matrix last_world_rotate_invert;
 		MatrixInverse(&last_world_rotate_invert,nullptr,&last_world_rotate);
-		final_world_rotate*=(last_world_rotate_invert*world_rotate_view);
+		MatrixInverse(&view_inverse,nullptr,&view_);
+		final_world_rotate*=view_*last_world_rotate_invert*world_rotate_view*view_inverse;
+		//这个时候也不知道旋转哪去了，who care,最后把那放到指定位置就行了。
 		world_=final_world_rotate;
 		world_._41=lookat_.x;
 		world_._42=lookat_.y;
 		world_._43=lookat_.z;
 		last_world_rotate=world_rotate_view;
-		static float x_pos=0.0f;
-		if(key_mask_[KEY_MOVE_LEFT]==true)
-		{
-			x_pos-=0.5f;
-			
-		}
-		if(key_mask_[KEY_MOVE_RIGHT]==true)
-		{
-			x_pos+=0.5f;
-		}
-			world_._41+=x_pos;
+		//////////////////////////////////////////////////////////////////////////
 	}
 
 }

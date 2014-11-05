@@ -79,10 +79,10 @@ namespace SoftEngine
 	void Device::DrawLine(const VSShaderOutput &out0,const VSShaderOutput &out1)
 	{
 		int cx0,cy0,cx1,cy1,x0,y0,x1,y1;
-		cx0=x0=out0.m_vScreenPosition.x;
-		cy0= y0=out0.m_vScreenPosition.y;
-		cx1= x1=out1.m_vScreenPosition.x;
-		cy1= y1=out1.m_vScreenPosition.y;
+		x0=out0.m_vScreenPosition.x;
+		y0=out0.m_vScreenPosition.y;
+		x1=out1.m_vScreenPosition.x;
+		y1=out1.m_vScreenPosition.y;
 		//都剪裁掉了
 		/*if(!Draw2DClipe(m_rcClip,cx0,cy0,cx1,cy1))
 			return;*/
@@ -90,43 +90,40 @@ namespace SoftEngine
 		float lerp;
 		VSShaderOutput tmp;
 		//退化为一个点
-		if(cx0==cx1 && cy0==cy1)
+		if(x0==x1 && y0==y1)
 		{
-			lerp=float(cx0-x0)/float(x1-x0);
-			tmp=PrespectLerp(out0,out1,lerp);	
+			tmp=out0;
 			color=m_pPs->PSMain(tmp);
-			DrawPixel(cx0,cy0,color);
+			DrawPixel(x0,y0,color);
 			return;
 		}
 
 		int dx,dy;
-		dx=cx1-cx0;
-		dy=cy1-cy0;
+		dx=x1-x0;
+		dy=y1-y0;
 		int step;
 		float lerpstep;
 		if(abs(dx)>abs(dy))
 		{
 			step=abs(dx);
-			lerp=(float)(cx0-x0)/(float)(x1-x0);
-			//lerpstep=1.0f/(float)(x1-x0);
-			lerpstep=(float)(cx1-cx0)/(float)(x1-x0)/step;
+			lerpstep=1.0f/step;
 		}
 		else
 		{
 			step=abs(dy);
-			lerp=(float)(cy0-y0)/(float)(y1-y0);
-			//lerpstep=1.0f/(float)(y1-y0);
-			lerpstep=(float)(cy1-cy0)/(float)(y1-y0)/step;
+			lerpstep=1.0f/step;
 		}
 		float x_add=static_cast<float>(dx)/static_cast<float>(step);
 		float y_add=static_cast<float>(dy)/static_cast<float>(step);
-		float x=cx0;
-		float y=cy0;
+		float x=x0;
+		float y=y0;
+		lerp=0.0f;
 		for(int i=0;i<step;i++)
 		{
 			tmp=PrespectLerp(out0,out1,lerp);	
 			color=m_pPs->PSMain(tmp);
-			DrawPixel(Round(x),Round(y),color);
+			if(ceil(x)>=0 &&ceil(x)<=m_iWidth &&ceil(y)>=0 &&ceil(y)<=m_iHeight)
+				DrawPixel(ceil(x),ceil(y),color);
 			x+=x_add;
 			y+=y_add;
 			lerp+=lerpstep;
@@ -464,9 +461,7 @@ namespace SoftEngine
 		new0Out.m_bVisible=true;
 		VSShaderOutput new1Out=PrespectLerp(inVertex1,outVertex,lerp1out);	
 		new1Out.m_bVisible=true;
-		//形成inVertx0 inVertx1 new0Out的新顶点
 		outVertex=new1Out;
-		//形成new0Out inVertx1 new1Out的新顶点
 		m_vecVSOutput.push_back(new0Out);
 		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
 		m_vecVSOutput.push_back(new1Out);
@@ -482,8 +477,6 @@ namespace SoftEngine
 		VSShaderOutput &out1Vertex=m_vecVSOutput[outIndex1];
 		float lerpIn0=-cullPlane*inVertex.m_vProjectCutting/(cullPlane*(out0Vertex.m_vProjectCutting-inVertex.m_vProjectCutting));
 		float lerpIn1=-cullPlane*inVertex.m_vProjectCutting/(cullPlane*(out1Vertex.m_vProjectCutting-inVertex.m_vProjectCutting));
-	/*	if(fabs(1-lerpIn0)<0.000001 && fabs(1-lerpIn1)<0.000001)
-			return;*/
 		VSShaderOutput newIn0=PrespectLerp(inVertex,out0Vertex,lerpIn0);
 		VSShaderOutput newIn1=PrespectLerp(inVertex,out1Vertex,lerpIn1);
 		newIn0.m_bVisible=true;
@@ -514,15 +507,25 @@ namespace SoftEngine
 
 	void Device::FillSolid()
 	{
+		VSShaderOutput *triangle[3];
 		for(UINT i=0;i<m_vecIndexBuffer.size();)
 		{
-			VSShaderOutput &v0=m_vecVSOutput[m_vecIndexBuffer[i++]];
-			VSShaderOutput &v1=m_vecVSOutput[m_vecIndexBuffer[i++]];
-			VSShaderOutput &v2=m_vecVSOutput[m_vecIndexBuffer[i++]];
-			if(v0.m_bVisible==false && v1.m_bVisible==false &&v2.m_bVisible==false)
-				return;
-
-
+			for(int j=0;j<3;j++)
+			{
+				triangle[j]=&m_vecVSOutput[m_vecIndexBuffer[i++]];
+				if(triangle[j]->m_bVisible==false)
+					continue;
+			}
+			std::sort(triangle,triangle+3,[&](VSShaderOutput *p0,VSShaderOutput *p1){
+				return p0->m_vScreenPosition.x<p1->m_vScreenPosition.x;
+			});
+			std::stable_sort(triangle,triangle+3,[&](VSShaderOutput*p0,VSShaderOutput *p1){
+				return p0->m_vScreenPosition.y<p1->m_vScreenPosition.y;
+			});
+		//std::for_each(triangle,triangle+3,[&](VSShaderOutput*p){std::cout<<p->m_vScreenPosition<<std::endl;});
+			if(triangle[0]->m_vScreenPosition.y==triangle[1]->m_vScreenPosition.y &&
+				triangle[1]->m_vScreenPosition.y==triangle[2]->m_vScreenPosition.y)
+				DrawLine(*triangle[0],*triangle[2]);
 		}
 	}
 	bool Device::TextDraw(std::string text, int x,int y,DWORD color)
