@@ -98,6 +98,7 @@ namespace SoftEngine
 			DrawPixel(cx0,cy0,color);
 			return;
 		}
+
 		int dx,dy;
 		dx=cx1-cx0;
 		dy=cy1-cy0;
@@ -107,13 +108,15 @@ namespace SoftEngine
 		{
 			step=abs(dx);
 			lerp=(float)(cx0-x0)/(float)(x1-x0);
-			lerpstep=1.0f/(float)(x1-x0);
+			//lerpstep=1.0f/(float)(x1-x0);
+			lerpstep=(float)(cx1-cx0)/(float)(x1-x0)/step;
 		}
 		else
 		{
 			step=abs(dy);
 			lerp=(float)(cy0-y0)/(float)(y1-y0);
-			lerpstep=1.0f/(float)(y1-y0);
+			//lerpstep=1.0f/(float)(y1-y0);
+			lerpstep=(float)(cy1-cy0)/(float)(y1-y0)/step;
 		}
 		float x_add=static_cast<float>(dx)/static_cast<float>(step);
 		float y_add=static_cast<float>(dy)/static_cast<float>(step);
@@ -296,8 +299,9 @@ namespace SoftEngine
 			tmp.m_vScreenPosition.ProjectDivied();
 			m_vecVSOutput.push_back(tmp);
 		});
+
 		//////////////////////////////////////////////////////////////////////////
-		if(m_cullmode!=CULL_NODE)
+		if(m_cullmode!=CULL_NONE)
 		for(UINT i=0;i<m_vecIndexBuffer.size();)
 		{
 			VSShaderOutput &out0=m_vecVSOutput[m_vecIndexBuffer[i++]];
@@ -324,6 +328,7 @@ namespace SoftEngine
 			FillWireFrame();
 			break;
 		case FILL_SOLID:
+			FillSolid();
 			break;
 		default:
 			break;
@@ -336,6 +341,9 @@ namespace SoftEngine
 		m_vecIndexBuffer.clear();
 		m_vecVSOutput.clear();
 		int position_offset=m_pVertexDecl->GetPositionOffset();
+		assert(position_offset==0 && "position offset should be 0");
+		int iColorOffset=m_pVertexDecl->GetColorOffset();
+		assert(iColorOffset==24 && "color offset should be 24");
 		int strip=m_pVertexDecl->GetSize();
 		const byte *vertex_buffer_trans=m_pDesVertexBuffer->GetBuffer()+base_vertex_index*strip;
 		const UINT *index_buffer_=m_pDesIndexBuffer->GetBuffer();
@@ -345,6 +353,7 @@ namespace SoftEngine
 		{
 			tmp_vertex.m_bVisible=true;
 			tmp_vertex.m_vPosition=ToVector3(vertex_buffer_trans,i,strip,position_offset);
+			tmp_vertex.m_vColor=ToVector4(vertex_buffer_trans,i,strip,iColorOffset);
 			m_vecRenderBuffer.push_back(tmp_vertex);
 		}
 		for(UINT i=0;i<primitiveCount*3;i++)
@@ -372,13 +381,20 @@ namespace SoftEngine
 		}
 	}
 
-	Vector3 Device::ToVector3(const byte* base_ptr,UINT pos,UINT data_size,UINT offset)
+	void Device::FillSolid()
 	{
-		const byte* p=base_ptr+(pos*data_size+offset);
-		return Vector3(reinterpret_cast<const float*>(p));
-	}
+		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		{
+			VSShaderOutput &v0=m_vecVSOutput[m_vecIndexBuffer[i++]];
+			VSShaderOutput &v1=m_vecVSOutput[m_vecIndexBuffer[i++]];
+			VSShaderOutput &v2=m_vecVSOutput[m_vecIndexBuffer[i++]];
+			if(v0.m_bVisible==false && v1.m_bVisible==false &&v2.m_bVisible==false)
+				return;
 
-		bool Device::TextDraw(std::string text, int x,int y,DWORD color)
+
+		}
+	}
+	bool Device::TextDraw(std::string text, int x,int y,DWORD color)
 	{
 		m_pDrawImpl->DrawTextGDI(text,x,y,color);
 		return(1);
@@ -414,6 +430,7 @@ namespace SoftEngine
 		if(m_pPs)
 			m_pPs->BeginSetGlobalParam();
 	}
+
 
 
 
@@ -473,7 +490,7 @@ namespace SoftEngine
 						 m_iTexcoordOffsetCached=v->m_wOffset;
 					 break;
 				case DECLUSAGE_COLOR:
-					 if(v->m_byteType==DECLTYPE_FLOAT3&&v->m_byteUsageIndex==0)		
+					 if(v->m_byteType==DECLTYPE_FLOAT4&&v->m_byteUsageIndex==0)		
 						 m_iColorOffsetCached=v->m_wOffset;
 						break;
 				default:

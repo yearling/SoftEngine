@@ -21,6 +21,7 @@ namespace SoftEngine
 		out.m_bVisible=v.m_bVisible;
 		out.m_vColor=v.m_vColor;
 		out.m_vPosition=v.m_vPosition*m_matWorld*m_matView*m_matProject;
+		out.m_vColor=v.m_vColor;
 	}
 
 	void BisicalVertexShader::BeginSetGlobalParam()
@@ -42,9 +43,9 @@ namespace SoftEngine
 
 	}
 
-	int GroundPixelShader::PSMain(VSShaderOutput &in)
+	int GroundPixelShader::PSMain(VSShaderOutput &ps)
 	{
-		return _RGB(255,255,0);
+		return ToColor(ps.m_vColor);
 	}
 
 	void GroundPixelShader::BeginSetGlobalParam()

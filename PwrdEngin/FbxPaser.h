@@ -36,6 +36,7 @@ namespace SoftEngine
 		void ProcessColor();
 		void ProcessUV(FbxMesh* mesh,int index,int tex_uv,int uvlayer,Vector2& v);
 		void ProcessNormal(FbxMesh *mesh,int index,int vertex_counter,Vector3& v);
+		void ProcessColor(FbxMesh*mesh,int index,int vertex_counter,Vector4 &v);
 		bool FindSameRenderData(const FbxRenderData &data,UINT &pos);
 	private:
 		FbxScene *m_pScene;

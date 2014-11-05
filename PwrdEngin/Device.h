@@ -61,6 +61,7 @@ namespace SoftEngine
 		VertexDeclaration();
 		bool SetVertexDeclaration(const VERTEXELEMENT *v);
 		inline int GetPositionOffset() const {return m_iPositionOffsetCached;}
+		inline int GetColorOffset() const {return m_iColorOffsetCached;}
 		inline int GetSize(){ return m_iSize;}
 	private:
 		std::vector<VERTEXELEMENT> m_vecVertex;
@@ -103,7 +104,7 @@ namespace SoftEngine
 	};
 	enum CULLMODE
 	{
-		CULL_NODE=0,
+		CULL_NONE=0,
 		CULL_CW,
 		CULL_CCW
 	};
@@ -177,12 +178,12 @@ namespace SoftEngine
 		bool DrawIndexedPrimitive(PRIMITIVETYPE type,int base_vertex_index,UINT min_index,
 			UINT num_vertics,UINT start_index,UINT primitiveCount);
 	private:
-		inline Vector3 ToVector3(const byte* base_ptr,UINT pos,UINT data_size,UINT offset);
 		bool DrawIndexedTrianglelist(int base_vertex_index,UINT min_index,
 			UINT num_vertics,UINT start_index,UINT primitiveCount);
 		void FillPipline(int base_vertex_index,UINT num_vertics,UINT start_index,UINT primitiveCount);
 		void FillWireFrame();
 		void FillWireFrame(int index0,int index1);
+		void FillSolid();
 	private:
 		DrawImpl *m_pDrawImpl;
 		UINT *m_pBackBuffer;

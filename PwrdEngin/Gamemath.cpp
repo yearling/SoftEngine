@@ -934,10 +934,10 @@ Vector4 Lerp(const Vector4 &v0,const Vector4&v1,float f)
 }
 int ToColor(const Vector4 &v)
 {
-	int a=v.x*255;
-	int r=v.y*255;
-	int g=v.z*255;
-	int b=v.w*255;
+	int a=v.w*255;
+	int r=v.x*255;
+	int g=v.y*255;
+	int b=v.z*255;
 	return _ARGB(a,r,g,b);
 }
 

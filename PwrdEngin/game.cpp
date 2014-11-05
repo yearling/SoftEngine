@@ -32,14 +32,15 @@ namespace SoftEngine
 		m_pFbxPaser=new FbxPaser();
 		m_pFbxPaser->Init(m_pDevice);
 		//parser_->Load("..\\media\\box.fbx");
-		m_pFbxPaser->Load("E:\\scene_fbx\\test\\box_normal.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\box_normal.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\ring.fbx");
+		m_pFbxPaser->Load("E:\\scene_fbx\\test\\pyramid.fbx");
 		//////////////////////////////////////////////////////////////////////////
 		m_pEasyCamera=new EASYCamera();
 		m_pEasyCamera->SetHWND(m_spMainWindow->m_hWnd);
 		m_pEasyCamera->SetWindow(width,height);
 		m_pEasyCamera->SetRaius(40.0f);
-		Vector3 eye(0.0f,0.0f,-40.0f);
+		Vector3 eye(0.0f,0.0f,-80.0f);
 		Vector3 at(0.0f,0.0f,0.0f);
 		Vector3 up(0.0f,1.0f,0.0f);
 		m_pEasyCamera->SetViewParam(&eye,&at);
@@ -80,23 +81,27 @@ namespace SoftEngine
 
 	void Game::Render(float elpase_time)
 	{
-		static bool first=true;
-		m_pDevice->Clear(_RGB(25,25,25));
-		if(m_pDevice->BeginScene())
+		static bool iOnceTime=true;
+		if(iOnceTime)
 		{
-			m_pDevice->SetStreamSource(GetPaser()->GetVertexBuffer());
-			m_pDevice->SetIndices(GetPaser()->GetIndexBuffer());
-			m_pDevice->SetVertexDeclaration(GetPaser()->GetVertexDeclaration());
-			m_pDevice->SetPS(m_pPS);
-			m_pDevice->SetVS(m_pVS);
-			m_pDevice->PSSetData();
-			m_pDevice->VSSetData();
-			m_pDevice->SetCullMode(CULL_CCW);
-			m_pDevice->SetFillMode(FILL_WIREFRAME);
-			m_pDevice->DrawIndexedPrimitive(PT_TRIANGLEIST,0,0,m_pFbxPaser->GetVertexNumber(),0,m_pFbxPaser->GetFaceNumber());
-			m_pDevice->EndScene();
-		}
-			
+
+			m_pDevice->Clear(_RGB(25,25,25));
+			if(m_pDevice->BeginScene())
+			{
+				m_pDevice->SetStreamSource(GetPaser()->GetVertexBuffer());
+				m_pDevice->SetIndices(GetPaser()->GetIndexBuffer());
+				m_pDevice->SetVertexDeclaration(GetPaser()->GetVertexDeclaration());
+				m_pDevice->SetPS(m_pPS);
+				m_pDevice->SetVS(m_pVS);
+				m_pDevice->PSSetData();
+				m_pDevice->VSSetData();
+				m_pDevice->SetCullMode(CULL_NONE);
+				m_pDevice->SetFillMode(FILL_WIREFRAME);
+				m_pDevice->DrawIndexedPrimitive(PT_TRIANGLEIST,0,0,m_pFbxPaser->GetVertexNumber(),0,m_pFbxPaser->GetFaceNumber());
+				m_pDevice->EndScene();
+			}
+			//iOnceTime=false;
+		}			
 		//////////////////////////////////////////////////////////////////////////
 		//to dispaly FPS
 		std::stringstream ss;

@@ -123,6 +123,7 @@ namespace SoftEngine
 				for(int k=0;k<2;k++)
 				ProcessUV(mesh,ctrl_point_index,mesh->GetTextureUVIndex(i,j),k,uv[j][k]);
 				ProcessNormal(mesh,ctrl_point_index,vertex_count,normal[j]);
+				ProcessColor(mesh,ctrl_point_index,vertex_count,color[j]);
 				vertex_count++;
 			}
 			
@@ -220,6 +221,70 @@ namespace SoftEngine
 			break;
 		}
 
+	}
+
+	void FbxPaser::ProcessColor(FbxMesh*mesh,int index,int vertex_counter,Vector4 &v)
+	{
+		if(mesh->GetElementVertexColorCount()<1)
+			return;
+		FbxLayerElementVertexColor *pVertexColor=mesh->GetElementVertexColor(0);
+		switch(pVertexColor->GetMappingMode())
+		{
+		case FbxLayerElement::eByControlPoint:
+			{
+				switch(pVertexColor->GetReferenceMode())
+				{
+				case FbxLayerElement::eDirect:
+					{
+						v.x=pVertexColor->GetDirectArray().GetAt(index).mRed;
+						v.y=pVertexColor->GetDirectArray().GetAt(index).mGreen;
+						v.z=pVertexColor->GetDirectArray().GetAt(index).mBlue;
+						v.w=pVertexColor->GetDirectArray().GetAt(index).mAlpha;
+						break;
+					}
+				case FbxLayerElement::eIndexToDirect:
+					{
+						int pos=pVertexColor->GetIndexArray().GetAt(index);
+						v.x=pVertexColor->GetDirectArray().GetAt(pos).mRed;
+						v.y=pVertexColor->GetDirectArray().GetAt(pos).mGreen;
+						v.z=pVertexColor->GetDirectArray().GetAt(pos).mBlue;
+						v.w=pVertexColor->GetDirectArray().GetAt(pos).mAlpha;
+						break;
+					}
+				default:
+					break;
+				}
+			}
+			break;
+		case FbxLayerElement::eByPolygonVertex:
+			{
+				switch(pVertexColor->GetReferenceMode())
+				{
+				case FbxLayerElement::eDirect:
+					{
+						v.x=pVertexColor->GetDirectArray().GetAt(vertex_counter).mRed;
+						v.y=pVertexColor->GetDirectArray().GetAt(vertex_counter).mGreen;
+						v.z=pVertexColor->GetDirectArray().GetAt(vertex_counter).mBlue;
+						v.w=pVertexColor->GetDirectArray().GetAt(vertex_counter).mAlpha;
+						break;
+					}
+				case FbxLayerElement::eIndexToDirect:
+					{
+						int pos=pVertexColor->GetIndexArray().GetAt(vertex_counter);
+						v.x=pVertexColor->GetDirectArray().GetAt(pos).mRed;
+						v.y=pVertexColor->GetDirectArray().GetAt(pos).mGreen;
+						v.z=pVertexColor->GetDirectArray().GetAt(pos).mBlue;
+						v.w=pVertexColor->GetDirectArray().GetAt(pos).mAlpha;
+						break;
+					}
+				default:
+					break;
+				}
+			}
+			break;
+		default:
+			break;
+		}
 	}
 
 	void FbxPaser::ProcessNormal(FbxMesh *mesh,int index,int vertex_counter,Vector3& v)
