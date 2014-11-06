@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "DrawImpl.h"
 #include "application.h"
+#include "BMPReader.h"
 #include <vector>
 namespace SoftEngine
 {
@@ -64,6 +65,7 @@ namespace SoftEngine
 		bool SetVertexDeclaration(const VERTEXELEMENT *v);
 		inline int GetPositionOffset() const {return m_iPositionOffsetCached;}
 		inline int GetColorOffset() const {return m_iColorOffsetCached;}
+		inline int GetUVOffset() const {return m_iTexcoordOffsetCached;}
 		inline int GetSize(){ return m_iSize;}
 	private:
 		std::vector<VERTEXELEMENT> m_vecVertex;
@@ -116,7 +118,17 @@ namespace SoftEngine
 		FILL_WIREFRAME,
 		FILL_SOLID
 	};
-	
+	class TextureSampler
+	{
+	public:
+		TextureSampler():m_pBmp(nullptr){}
+		void SetBMP(bmp* pBmp);
+		int GetColor(float u,float v);
+	private:
+		bmp* m_pBmp;
+		int m_iBmpWidth;
+		int m_iBmpHeight;
+	};
 	class IVertexShader
 	{
 	public:
@@ -197,6 +209,8 @@ namespace SoftEngine
 		void FillLine(const VSShaderOutput &out0,const VSShaderOutput &out1);
 		inline float GetZBuffer(int x,int y);
 		inline void SetZBuffer(int x,int y,float f);
+		void SetTexture(bmp*pbmp);
+		
 	private:
 		DrawImpl *m_pDrawImpl;
 		UINT *m_pBackBuffer;
@@ -221,6 +235,7 @@ namespace SoftEngine
 		CULLMODE m_cullmode;
 		FILLMODE m_fillmode;
 		int addCount;
+		bmp* m_pTexture;
 	};
 }
 #endif

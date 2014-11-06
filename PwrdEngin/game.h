@@ -39,6 +39,8 @@ namespace SoftEngine
 		SeftData m_sd;
 		IVertexShader *m_pVS;
 		IPixelShader *m_pPS;
+		bmp *m_pBMP;
+		TextureSampler *m_pSamper;
 	private:
 		void AllocConsoleDebug();
 	};

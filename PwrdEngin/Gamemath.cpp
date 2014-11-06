@@ -932,6 +932,8 @@ Vector4 Lerp(const Vector4 &v0,const Vector4&v1,float f)
 				   v0.z*(1-f)+v1.z*f,
 				   v0.w*(1-f)+v1.w*f);
 }
+
+
 int ToColor(const Vector4 &v)
 {
 	int a=v.w*255;

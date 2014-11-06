@@ -8,6 +8,7 @@
 #include <mmsystem.h>
 #include <sstream>
 #include "LightEffect.h"
+#include "BMPReader.h"
 using std::cout;
 using std::endl;
 
@@ -21,7 +22,7 @@ namespace SoftEngine
 		int height=600;
 		m_spMainWindow->Init(width,height,_T("Soft Engine"));
 		m_spMainWindow->ShowWindow();	
-		//AllocConsoleDebug();
+		AllocConsoleDebug();
 		m_pDevice=new Device();
 		if(!m_pDevice->Init(m_spMainWindow.get()))
 			throw std::exception("Initial failed!\n");
@@ -31,22 +32,32 @@ namespace SoftEngine
 		//////////////////////////////////////////////////////////////////////////
 		m_pFbxPaser=new FbxPaser();
 		m_pFbxPaser->Init(m_pDevice);
-		//parser_->Load("..\\media\\box.fbx");
-		m_pFbxPaser->Load("E:\\scene_fbx\\test\\box_normal.fbx");
+		//m_pFbxPaser->Load("..\\media\\box.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\box_normal.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\ring.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\pyramid.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\rectangle.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\box_texture.fbx");
+		m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane_texture.fbx");
 		//////////////////////////////////////////////////////////////////////////
 		m_pEasyCamera=new EASYCamera();
 		m_pEasyCamera->SetHWND(m_spMainWindow->m_hWnd);
 		m_pEasyCamera->SetWindow(width,height);
 		m_pEasyCamera->SetRaius(40.0f);
-		Vector3 eye(0.0f,0.0f,-40.0f);
+		Vector3 eye(0.0f,0.0f,-80.0f);
 		Vector3 at(0.0f,0.0f,0.0f);
 		Vector3 up(0.0f,1.0f,0.0f);
 		m_pEasyCamera->SetViewParam(&eye,&at);
 		m_pEasyCamera->SetProjParam(PI*0.5f,(float)m_spMainWindow->m_iWidth/(float)
 			m_spMainWindow->m_iHeight,1.0f,1000.0f);
+		m_pBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\bb.bmp");
+		/*if(m_pBMP)
+		{
+			std::cout<<m_pBMP>width<<"		"<<m_pBMP>height<<std::endl;
+			std::cout<<m_pBMP->imageSize<<"		"<<m_pBMP>pixelPerBits<<std::endl;
+		}*/
+		m_pSamper=new TextureSampler();
+		m_pSamper->SetBMP(m_pBMP);
 	}
 	void Game::Render(float elpase_time)
 	{
@@ -113,6 +124,7 @@ namespace SoftEngine
 		m_sd.view=*m_pEasyCamera->GetViewMatrix();
 		m_sd.project=*m_pEasyCamera->GetProjMatrix();
 		m_sd.viewPort=*m_pDevice->GetViewPort();
+		m_sd.m_pSamper=m_pSamper;
 		m_pDevice->SetGameSource((void*)&m_sd);
 	}
 	

@@ -24,6 +24,8 @@ namespace SoftEngine
 		virtual ~GroundPixelShader();
 		virtual int PSMain(VSShaderOutput &);
 		virtual void BeginSetGlobalParam();
+	private:
+		TextureSampler *m_pSamper;
 	};
 }
 #endif

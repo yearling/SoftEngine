@@ -17,6 +17,7 @@ class Vector2
 {
 public:
 	Vector2():x(float(0)),y(float(0)) {};
+	Vector2(const float*p):x(p[0]),y(p[1]){};
 	Vector2( float x_, float y_ ){x=x_;y=y_; }
 	Vector2& operator += ( const Vector2& );
 	Vector2& operator -= ( const Vector2& );
@@ -194,6 +195,11 @@ inline Vector4 ToVector4(const unsigned char* base_ptr,UINT pos,UINT data_size,U
 {
 	const unsigned char* p=base_ptr+(pos*data_size+offset);
 	return Vector4(reinterpret_cast<const float*>(p));
+}
+inline Vector2 ToVector2(const unsigned char* base_ptr,UINT pos,UINT data_size,UINT offset)
+{
+	const unsigned char* p=base_ptr+(pos*data_size+offset);
+	return Vector2(reinterpret_cast<const float*>(p));
 }
 Vector2 Lerp(const Vector2 &v0,const Vector2&v1,float f);
 Vector3 Lerp(const Vector3 &v0,const Vector3&v1,float f);

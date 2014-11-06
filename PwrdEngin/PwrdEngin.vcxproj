@@ -79,6 +79,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="application.h" />
+    <ClInclude Include="BMPReader.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DrawImpl.h" />
     <ClInclude Include="FBXManager.h" />
@@ -92,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp" />
+    <ClCompile Include="BMPReader.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DrawImpl.cpp" />
     <ClCompile Include="FBXManager.cpp" />

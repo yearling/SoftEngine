@@ -137,6 +137,7 @@ namespace SoftEngine
 					da.normal=-normal[i];
 					da.color=color[i];
 					da.uv=uv[i][0];
+					da.uv.y=1.0f-da.uv.y;
 					UINT tmp;
 					if(FindSameRenderData(da,tmp))
 					{
@@ -153,6 +154,7 @@ namespace SoftEngine
 				m_vecParseIndexBuffer.push_back(index_change[1]);
 				m_vecParseIndexBuffer.push_back(index_change[0]);
 		}
+		std::cout<<"uv from fbx finished!"<<endl;
 		m_uNumVertex=m_vecParseRenderDataBuffer.size();
 		m_pVertexBuffer=m_pDevice->CreateVertexBuffer(m_vecParseRenderDataBuffer.size()*sizeof(FbxRenderData));
 		m_pIndexBuffer=m_pDevice->CreateIndexBuffer(m_vecParseIndexBuffer.size());

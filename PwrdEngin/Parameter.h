@@ -2,6 +2,7 @@
 #define __PARAMETER_H__
 #include "stdafx.h"
 #include "Gamemath.h"
+#include "Device.h"
 namespace SoftEngine
 {
 
@@ -13,6 +14,7 @@ namespace SoftEngine
 		Matrix viewPort;
 		UINT ambient;
 		UINT direct;
+		TextureSampler *m_pSamper;	
 	};
 }
 #endif

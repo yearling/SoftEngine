@@ -18,7 +18,8 @@ namespace SoftEngine
 					m_cullmode(CULL_CCW),
 					m_fillmode(FILL_SOLID),
 					m_pPs(nullptr),
-					m_pVs(nullptr)
+					m_pVs(nullptr),
+					m_pTexture(nullptr)
 	{
 		memset(&m_rcClip,0,sizeof(m_rcClip));
 		MatrixIdentity(&m_matWorld);
@@ -375,6 +376,9 @@ namespace SoftEngine
 			////far 
 			FaceCull(edges_index,Plane(0,0,-1,1));
 		}
+		/*for(int i=0;i<m_vecIndexBuffer.size();i++)
+			std::cout<<m_vecRenderBuffer[m_vecIndexBuffer[i]].m_vTexcoord.x<<"		"
+			<<m_vecRenderBuffer[m_vecIndexBuffer[i]].m_vTexcoord.x<<std::endl;*/
 		switch(m_fillmode)
 		{
 		case FILL_POINT:
@@ -400,6 +404,8 @@ namespace SoftEngine
 		assert(position_offset==0 && "position offset should be 0");
 		int iColorOffset=m_pVertexDecl->GetColorOffset();
 		assert(iColorOffset==24 && "color offset should be 24");
+		int iUVOffset=m_pVertexDecl->GetUVOffset();
+		assert(iUVOffset==40 && "uv offset should be 40");
 		int strip=m_pVertexDecl->GetSize();
 		const byte *vertex_buffer_trans=m_pDesVertexBuffer->GetBuffer()+base_vertex_index*strip;
 		const UINT *index_buffer_=m_pDesIndexBuffer->GetBuffer();
@@ -412,9 +418,13 @@ namespace SoftEngine
 				tmp_vertex.m_bVisible=true;
 				tmp_vertex.m_vPosition=ToVector3(vertex_buffer_trans,tmp_index,strip,position_offset);
 				tmp_vertex.m_vColor=ToVector4(vertex_buffer_trans,tmp_index,strip,iColorOffset);
+				tmp_vertex.m_vTexcoord=ToVector2(vertex_buffer_trans,tmp_index,strip,iUVOffset);
 				m_vecRenderBuffer.push_back(tmp_vertex);
 				m_vecIndexBuffer.push_back(i);
 		}
+	/*	for(int i=0;i<m_vecIndexBuffer.size();i++)
+			std::cout<<m_vecRenderBuffer[m_vecIndexBuffer[i]].m_vTexcoord.x<<"		"
+					<<m_vecRenderBuffer[m_vecIndexBuffer[i]].m_vTexcoord.x<<std::endl;*/
 	}
 	void Device::FaceCull(UINT index[3],const Plane &CullPlane)
 	{
@@ -513,6 +523,9 @@ namespace SoftEngine
 
 	void Device::FillSolid()
 	{
+	/*	for(int i=0;i<m_vecIndexBuffer.size();i++)
+			std::cout<<m_vecRenderBuffer[m_vecIndexBuffer[i]].m_vTexcoord.x<<"		"
+			<<m_vecRenderBuffer[m_vecIndexBuffer[i]].m_vTexcoord.x<<std::endl;*/
 		VSShaderOutput *triangle[3];
 		for(UINT i=0;i<m_vecIndexBuffer.size();)
 		{
@@ -722,6 +735,12 @@ namespace SoftEngine
 		z_buffer[x+y*m_iWidth]=f;
 	}
 
+	void Device::SetTexture(bmp*pbmp)
+	{
+		m_pTexture=pbmp;
+	}
+
+
 	
 
 	VertexDeclaration::VertexDeclaration():m_iPositionOffsetCached(0),
@@ -776,7 +795,7 @@ namespace SoftEngine
 						m_iNormalOffsetCached=v->m_wOffset;
 					 break;
 				case DECLUSAGE_TEXCOORD:
-					 if(v->m_byteType==DECLTYPE_FLOAT3&&v->m_byteUsageIndex==0)		
+					 if(v->m_byteType==DECLTYPE_FLOAT2&&v->m_byteUsageIndex==0)		
 						 m_iTexcoordOffsetCached=v->m_wOffset;
 					 break;
 				case DECLUSAGE_COLOR:
@@ -957,6 +976,32 @@ namespace SoftEngine
 		tmp.m_vColor=Lerp(out0.m_vColor,out1.m_vColor,f);
 		tmp.m_bVisible=out0.m_bVisible || out1.m_bVisible;
 		return tmp;
+	}
+
+	float Lerpf(float f0,float f1,float lerp)
+	{
+		return (1-lerp)*f0+lerp*f1;
+	}
+	int TextureSampler::GetColor(float u,float v)
+	{
+		int x=Lerpf(0,m_iBmpWidth-1,u);
+		int y=Lerpf(0,m_iBmpHeight-1,v);
+		if(y<0)
+			y=0;
+		if(x<0)
+			x=0;
+		if(y>m_iBmpHeight-1)
+			y=m_iBmpHeight-1;
+		if(x>m_iBmpWidth-1)
+			x=m_iBmpWidth-1;
+		return m_pBmp->GetColor(x,y);
+	}
+
+	void TextureSampler::SetBMP(bmp* pBmp)
+	{
+		m_pBmp=pBmp;
+		m_iBmpWidth=pBmp->width;
+		m_iBmpHeight=pBmp->height;
 	}
 
 }

@@ -22,6 +22,7 @@ namespace SoftEngine
 		out.m_vColor=v.m_vColor;
 		out.m_vPosition=v.m_vPosition*m_matWorld*m_matView*m_matProject;
 		out.m_vColor=v.m_vColor;
+		out.m_vTexcoord=v.m_vTexcoord;
 	}
 
 	void BisicalVertexShader::BeginSetGlobalParam()
@@ -45,12 +46,13 @@ namespace SoftEngine
 
 	int GroundPixelShader::PSMain(VSShaderOutput &ps)
 	{
-		return ToColor(ps.m_vColor);
+		return m_pSamper->GetColor(ps.m_vTexcoord.x,ps.m_vTexcoord.y);
 	}
 
 	void GroundPixelShader::BeginSetGlobalParam()
 	{
-
+		SeftData *pdata=(SeftData*)GetGlobalData();
+		m_pSamper=pdata->m_pSamper;	
 	}
 
 }
