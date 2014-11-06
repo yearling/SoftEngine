@@ -21,7 +21,7 @@ namespace SoftEngine
 		int height=600;
 		m_spMainWindow->Init(width,height,_T("Soft Engine"));
 		m_spMainWindow->ShowWindow();	
-		AllocConsoleDebug();
+		//AllocConsoleDebug();
 		m_pDevice=new Device();
 		if(!m_pDevice->Init(m_spMainWindow.get()))
 			throw std::exception("Initial failed!\n");
@@ -48,7 +48,44 @@ namespace SoftEngine
 		m_pEasyCamera->SetProjParam(PI*0.5f,(float)m_spMainWindow->m_iWidth/(float)
 			m_spMainWindow->m_iHeight,1.0f,1000.0f);
 	}
+	void Game::Render(float elpase_time)
+	{
+		static bool iOnceTime=true;
+		if(iOnceTime)
+		{
 
+			m_pDevice->Clear(_RGB(25,25,25));
+			if(m_pDevice->BeginScene())
+			{
+				m_pDevice->SetStreamSource(GetPaser()->GetVertexBuffer());
+				m_pDevice->SetIndices(GetPaser()->GetIndexBuffer());
+				m_pDevice->SetVertexDeclaration(GetPaser()->GetVertexDeclaration());
+				m_pDevice->SetPS(m_pPS);
+				m_pDevice->SetVS(m_pVS);
+				m_pDevice->PSSetData();
+				m_pDevice->VSSetData();
+				//m_pDevice->SetCullMode(CULL_NONE);
+				m_pDevice->SetFillMode(FILL_SOLID);
+				//m_pDevice->SetFillMode(FILL_WIREFRAME);
+				m_pDevice->DrawIndexedPrimitive(PT_TRIANGLEIST,0,0,m_pFbxPaser->GetVertexNumber(),0,m_pFbxPaser->GetFaceNumber());
+				m_pDevice->EndScene();
+			}
+			//iOnceTime=false;
+		}			
+		//////////////////////////////////////////////////////////////////////////
+		//to dispaly FPS
+		std::stringstream ss;
+		std::string to_dispaly;
+		ss<<"FPS:"<<GetFPS();
+		to_dispaly=ss.str();
+		m_pDevice->TextDraw(to_dispaly,0,0,_RGB(255,0,0));
+		ss.str("");
+		ss<<"Total face number:"<<m_pFbxPaser->GetFaceNumber();
+		to_dispaly=ss.str();
+		m_pDevice->TextDraw(to_dispaly,0,20,_RGB(0,255,0));
+		//////////////////////////////////////////////////////////////////////////
+		m_pDevice->Present();
+	}
 	void Game::PreRender(float elpase_time)
 	{
 		//////////////////////////////////////////////////////////////////////////
@@ -80,44 +117,7 @@ namespace SoftEngine
 	}
 	
 
-	void Game::Render(float elpase_time)
-	{
-		static bool iOnceTime=true;
-		if(iOnceTime)
-		{
-
-			m_pDevice->Clear(_RGB(25,25,25));
-			if(m_pDevice->BeginScene())
-			{
-				m_pDevice->SetStreamSource(GetPaser()->GetVertexBuffer());
-				m_pDevice->SetIndices(GetPaser()->GetIndexBuffer());
-				m_pDevice->SetVertexDeclaration(GetPaser()->GetVertexDeclaration());
-				m_pDevice->SetPS(m_pPS);
-				m_pDevice->SetVS(m_pVS);
-				m_pDevice->PSSetData();
-				m_pDevice->VSSetData();
-				m_pDevice->SetCullMode(CULL_NONE);
-				//m_pDevice->SetFillMode(FILL_SOLID);
-				m_pDevice->SetFillMode(FILL_WIREFRAME);
-				m_pDevice->DrawIndexedPrimitive(PT_TRIANGLEIST,0,0,m_pFbxPaser->GetVertexNumber(),0,m_pFbxPaser->GetFaceNumber());
-				m_pDevice->EndScene();
-			}
-			//iOnceTime=false;
-		}			
-		//////////////////////////////////////////////////////////////////////////
-		//to dispaly FPS
-		std::stringstream ss;
-		std::string to_dispaly;
-		ss<<"FPS:"<<GetFPS();
-		to_dispaly=ss.str();
-		m_pDevice->TextDraw(to_dispaly,0,0,_RGB(255,0,0));
-		ss.str("");
-		ss<<"Total face number:"<<m_pFbxPaser->GetFaceNumber();
-		to_dispaly=ss.str();
-		m_pDevice->TextDraw(to_dispaly,0,20,_RGB(0,255,0));
-		//////////////////////////////////////////////////////////////////////////
-		m_pDevice->Present();
-	}
+	
 
 	
 

@@ -47,6 +47,7 @@ namespace SoftEngine
 			m_iWidth=windows->m_iWidth;
 			m_iHeight=windows->m_iHeight;
 		}
+		z_buffer=new float[m_iHeight*m_iWidth];
 		return true;
 	}
 
@@ -61,7 +62,7 @@ namespace SoftEngine
 			m_rcClip.bottom=m_iHeight;
 			return true;
 		}
-		
+	
 		return false;
 	}
 
@@ -78,7 +79,7 @@ namespace SoftEngine
 
 	void Device::DrawLine(const VSShaderOutput &out0,const VSShaderOutput &out1)
 	{
-		int cx0,cy0,cx1,cy1,x0,y0,x1,y1;
+		int x0,y0,x1,y1;
 		x0=out0.m_vScreenPosition.x;
 		y0=out0.m_vScreenPosition.y;
 		x1=out1.m_vScreenPosition.x;
@@ -122,8 +123,8 @@ namespace SoftEngine
 		{
 			tmp=PrespectLerp(out0,out1,lerp);	
 			color=m_pPs->PSMain(tmp);
-			if(ceil(x)>=0 &&ceil(x)<=m_iWidth &&ceil(y)>=0 &&ceil(y)<=m_iHeight)
-				DrawPixel(ceil(x),ceil(y),color);
+			DrawPixel(m_iWidth,m_iHeight,_RGB(255,255,255));
+			DrawPixel(ceil(x),ceil(y),color);
 			x+=x_add;
 			y+=y_add;
 			lerp+=lerpstep;
@@ -193,6 +194,7 @@ namespace SoftEngine
 	bool Device::Clear(UINT color)
 	{
 		m_pDrawImpl->ClearBackBuffer(color);
+		
 		return true;
 	}
 
@@ -286,6 +288,9 @@ namespace SoftEngine
 
 	bool Device::DrawIndexedTrianglelist(int base_vertex_index,UINT min_index, UINT num_vertics,UINT start_index,UINT primitiveCount)
 	{
+		for(int i=0;i<m_iWidth;i++)
+			for(int j=0;j<m_iHeight;j++)
+				SetZBuffer(i,j,FLT_MAX);
 		assert(m_pDesVertexBuffer && m_pDesIndexBuffer &&m_pVertexDecl);
 		FillPipline(base_vertex_index,num_vertics,start_index,primitiveCount);
 		VSShaderOutput tmp;
@@ -296,7 +301,6 @@ namespace SoftEngine
 			tmp.m_vScreenPosition.ProjectDivied();
 			tmp.m_vProjectCutting=tmp.m_vPosition;
 			tmp.m_vProjectCutting.ProjectDivied();
-			//tmp.m_vProjectCutting=tmp.m_vPosition.ProjectDivied();
 			m_vecVSOutput.push_back(tmp);
 		});
 
@@ -461,13 +465,14 @@ namespace SoftEngine
 		new0Out.m_bVisible=true;
 		VSShaderOutput new1Out=PrespectLerp(inVertex1,outVertex,lerp1out);	
 		new1Out.m_bVisible=true;
+		CullInScreen(new0Out.m_vScreenPosition.x,new0Out.m_vScreenPosition.y);
+		CullInScreen(new1Out.m_vScreenPosition.x,new1Out.m_vScreenPosition.y);
 		outVertex=new1Out;
 		m_vecVSOutput.push_back(new0Out);
 		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
 		m_vecVSOutput.push_back(new1Out);
 		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
 		m_vecIndexBuffer.push_back(inIndex0);
-		std::cout<<"two"<<addCount++<<std::endl;
 	}
 	void Device::OneVertexInView(UINT inIndex,UINT outIndex0,UINT outIndex1,const Plane &cullPlane)
 	{
@@ -479,11 +484,12 @@ namespace SoftEngine
 		float lerpIn1=-cullPlane*inVertex.m_vProjectCutting/(cullPlane*(out1Vertex.m_vProjectCutting-inVertex.m_vProjectCutting));
 		VSShaderOutput newIn0=PrespectLerp(inVertex,out0Vertex,lerpIn0);
 		VSShaderOutput newIn1=PrespectLerp(inVertex,out1Vertex,lerpIn1);
+		CullInScreen(newIn0.m_vScreenPosition.x,newIn0.m_vScreenPosition.y);
+		CullInScreen(newIn1.m_vScreenPosition.x,newIn1.m_vScreenPosition.y);
 		newIn0.m_bVisible=true;
 		newIn1.m_bVisible=true;
 		m_vecVSOutput[outIndex0]=newIn0;
 		m_vecVSOutput[outIndex1]=newIn1;
-		std::cout<<"one:"<<addCount++<<std::endl;
 	}
 
 	//»­Ïß¿ò
@@ -510,12 +516,18 @@ namespace SoftEngine
 		VSShaderOutput *triangle[3];
 		for(UINT i=0;i<m_vecIndexBuffer.size();)
 		{
+			bool Invisiable=false;
 			for(int j=0;j<3;j++)
 			{
 				triangle[j]=&m_vecVSOutput[m_vecIndexBuffer[i++]];
 				if(triangle[j]->m_bVisible==false)
-					continue;
+				{
+					Invisiable=true;
+					break;
+				}
 			}
+			if(Invisiable)
+				continue;
 			std::sort(triangle,triangle+3,[&](VSShaderOutput *p0,VSShaderOutput *p1){
 				return p0->m_vScreenPosition.x<p1->m_vScreenPosition.x;
 			});
@@ -525,7 +537,22 @@ namespace SoftEngine
 		//std::for_each(triangle,triangle+3,[&](VSShaderOutput*p){std::cout<<p->m_vScreenPosition<<std::endl;});
 			if(triangle[0]->m_vScreenPosition.y==triangle[1]->m_vScreenPosition.y &&
 				triangle[1]->m_vScreenPosition.y==triangle[2]->m_vScreenPosition.y)
+			{
 				DrawLine(*triangle[0],*triangle[2]);
+				continue;
+			}
+			if(triangle[0]->m_vScreenPosition.y==triangle[1]->m_vScreenPosition.y)
+			{
+				//FillFlatFootTriangle
+				FillFlatHeadTriangle(*triangle[0],*triangle[1],*triangle[2]);
+				continue;
+			}
+			if(triangle[1]->m_vScreenPosition.y==triangle[2]->m_vScreenPosition.y)
+			{
+				FillFlatFootTriangle(*triangle[0],*triangle[1],*triangle[2]);
+				continue;
+			}
+			FillCommonTriangle(*triangle[0],*triangle[1],*triangle[2]);
 		}
 	}
 	bool Device::TextDraw(std::string text, int x,int y,DWORD color)
@@ -580,6 +607,119 @@ namespace SoftEngine
 			for(int i=0;i<3;i++)
 				m_vecVSOutput[index[i]].m_bVisible=true;
 		}
+	}
+
+	void Device::CullInScreen( float &x, float &y)
+	{
+		if(x<0)
+			x=0;
+		if(x>m_iWidth)
+			x=m_iWidth;
+		if(y<0)
+			y=0;
+		if(y>m_iHeight-1)
+			y=m_iHeight-1;
+	}
+
+	void Device::FillFlatHeadTriangle(VSShaderOutput &v0,VSShaderOutput &v1,VSShaderOutput &v2)
+	{
+		float x0=v0.m_vScreenPosition.x;
+		float y0=v0.m_vScreenPosition.y;
+		float x1=v1.m_vScreenPosition.x;
+		float y1=v1.m_vScreenPosition.y;
+		float x2=v2.m_vScreenPosition.x;
+		float y2=v2.m_vScreenPosition.y;
+		float lerp_step=1/(y2-y0);
+		float lerp=0.0f;
+		VSShaderOutput tmp_left;
+		VSShaderOutput tmp_right;
+		for(int y=y2;y>=y0;y--)
+		{
+			tmp_left=PrespectLerp(v2,v0,lerp);
+			tmp_right=PrespectLerp(v2,v1,lerp);
+			FillLine(tmp_left,tmp_right);
+			lerp+=lerp_step;
+		}
+	}
+
+	void Device::FillFlatFootTriangle(VSShaderOutput &v0,VSShaderOutput &v1,VSShaderOutput &v2)
+	{
+		float x0=v0.m_vScreenPosition.x;
+		float y0=v0.m_vScreenPosition.y;
+		float x1=v1.m_vScreenPosition.x;
+		float y1=v1.m_vScreenPosition.y;
+		float x2=v2.m_vScreenPosition.x;
+		float y2=v2.m_vScreenPosition.y;
+		float lerp_step=1/(y1-y0);
+		float lerp=0.0f;
+		VSShaderOutput tmp_left;
+		VSShaderOutput tmp_right;
+		for(int y=y0;y<=y1;y++)
+		{
+			tmp_left=PrespectLerp(v0,v1,lerp);	
+			tmp_right=PrespectLerp(v0,v2,lerp);	
+			FillLine(tmp_left,tmp_right);
+			lerp+=lerp_step;
+		}
+	}
+
+	void Device::FillCommonTriangle(VSShaderOutput &v0,VSShaderOutput &v1,VSShaderOutput &v2)
+	{
+		float x0=v0.m_vScreenPosition.x;
+		float y0=v0.m_vScreenPosition.y;
+		float x1=v1.m_vScreenPosition.x;
+		float y1=v1.m_vScreenPosition.y;
+		float x2=v2.m_vScreenPosition.x;
+		float y2=v2.m_vScreenPosition.y;	
+		float change_lerp=(y1-y0)/(y2-y0);
+		VSShaderOutput tmp_change=PrespectLerp(v0,v2,change_lerp);
+		if(tmp_change.m_vScreenPosition.x<=v1.m_vScreenPosition.x)
+		{
+			FillFlatFootTriangle(v0,tmp_change,v1);
+			FillFlatHeadTriangle(tmp_change,v1,v2);
+		}
+		else
+		{
+			FillFlatFootTriangle(v0,v1,tmp_change);
+			FillFlatHeadTriangle(v1,tmp_change,v2);
+		}
+
+	}
+
+	void Device::FillLine(const VSShaderOutput &out0,const VSShaderOutput &out1)
+	{
+		int x0,y0,x1,y1;
+		x0=out0.m_vScreenPosition.x;
+		y0=ceil(out0.m_vScreenPosition.y)-1;
+		x1=out1.m_vScreenPosition.x;
+		y1=out1.m_vScreenPosition.y;
+		int color;
+		float lerp;
+		VSShaderOutput tmp;
+		float lerpstep;
+		lerpstep=1.0f/float(x1-x0);
+		lerp=0.0f;
+		for(int i=x0;i<x1;i++)
+		{
+			tmp=PrespectLerp(out0,out1,lerp);	
+			if(tmp.m_vPosition.w<=GetZBuffer(i,y0))
+			{
+				color=m_pPs->PSMain(tmp);
+				DrawPixel(i,y0,color);
+				SetZBuffer(i,y0,tmp.m_vPosition.w+1);
+			}
+			lerp+=lerpstep;
+		}
+	}
+
+	float Device::GetZBuffer(int x,int y)
+	{
+		return z_buffer[x+y*m_iWidth];
+	}
+
+	void Device::SetZBuffer(int x,int y,float f)
+	{
+		z_buffer[x+y*m_iWidth]=f;
 	}
 
 	

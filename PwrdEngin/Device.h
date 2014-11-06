@@ -190,6 +190,13 @@ namespace SoftEngine
 		void NearCull(UINT index[3],const Plane &CullPlane);
 		void OneVertexInView(UINT inIndex,UINT outIndex0,UINT outIndex1,const Plane &cullPlane);
 		void TwoVertexInView(UINT inIndex0,UINT inIndex1,UINT outIndex,const Plane &cullPlane);
+		void CullInScreen( float &x, float &y);
+		void FillFlatHeadTriangle(VSShaderOutput &v0,VSShaderOutput &v1,VSShaderOutput &v2);
+		void FillFlatFootTriangle(VSShaderOutput &v0,VSShaderOutput &v1,VSShaderOutput &v2);
+		void FillCommonTriangle(VSShaderOutput &v0,VSShaderOutput &v1,VSShaderOutput &v2);
+		void FillLine(const VSShaderOutput &out0,const VSShaderOutput &out1);
+		inline float GetZBuffer(int x,int y);
+		inline void SetZBuffer(int x,int y,float f);
 	private:
 		DrawImpl *m_pDrawImpl;
 		UINT *m_pBackBuffer;
@@ -207,6 +214,7 @@ namespace SoftEngine
 		std::vector<RenderVertex> m_vecRenderBuffer;
 		std::vector<VSShaderOutput> m_vecVSOutput;
 		std::vector<UINT> m_vecIndexBuffer;
+		float *z_buffer;
 		void *m_pGameSource;
 		IVertexShader *m_pVs;
 		IPixelShader *m_pPs;

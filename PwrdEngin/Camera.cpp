@@ -103,7 +103,7 @@ namespace SoftEngine
 				break;
 			}
 		case WM_MOUSEWHEEL:
-			mouse_wheel_delta_+=(short)HIWORD(wParam);
+			mouse_wheel_delta_+=(short)HIWORD(wParam)*0.2;
 			break;
 		}
 		return false;
@@ -291,7 +291,7 @@ namespace SoftEngine
 
 	void EASYCamera::FrameMove(float elapse_time)
 	{
-		radius_+=mouse_wheel_delta_;	
+		radius_+=mouse_wheel_delta_*elapse_time;	
 		mouse_wheel_delta_=0;
 		Matrix view_arcball;
 		MatrixInverse(&view_arcball,nullptr,view_arcball_.GetRotationMatrix());
@@ -315,6 +315,16 @@ namespace SoftEngine
 		world_._43=lookat_.z;
 		last_world_rotate=world_rotate_view;
 		//////////////////////////////////////////////////////////////////////////
+		static float y=0;
+		if(key_mask_[KEY_MOVE_DOWN]==true)
+		{
+			y+=10.0f;
+		}
+		if(key_mask_[KEY_MOVE_UP]==true)
+		{
+			y-=10.0f;
+		}
+		world_._42+=y;
 	}
 
 }

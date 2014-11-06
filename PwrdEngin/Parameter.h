@@ -11,6 +11,8 @@ namespace SoftEngine
 		Matrix view;
 		Matrix project;
 		Matrix viewPort;
+		UINT ambient;
+		UINT direct;
 	};
 }
 #endif
