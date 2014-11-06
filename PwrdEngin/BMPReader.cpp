@@ -11,13 +11,13 @@ BMPReader::BMPReader(void)
 BMPReader::~BMPReader(void)
 {
 }
-
+//一定要是2次幂的图
 bmp* BMPReader::LoadBMP(std::string strPath)
 {
 	bmp* pBmp=new bmp;
 	memset(pBmp,0,sizeof(pBmp));
 	FILE *fp;
-	if((fp=fopen(strPath.c_str(),"rb"))==NULL)
+	if((fp=fopen(strPath.c_str(),"r"))==NULL)
 	{
 		delete pBmp;
 		return nullptr;
@@ -40,8 +40,8 @@ BMPReader BMPReader::m_instance;
 int bmp::GetColor(int x,int y)
 {
 	int offset=((height-1-y)*width+x)*3;
-	unsigned char r=buffer[offset];
+	unsigned char r=buffer[offset+2];
 	unsigned char g=buffer[offset+1];
-	unsigned char b=buffer[offset+2];
+	unsigned char b=buffer[offset];
 	return _RGB(r,g,b);
 }

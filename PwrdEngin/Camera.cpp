@@ -316,15 +316,26 @@ namespace SoftEngine
 		last_world_rotate=world_rotate_view;
 		//////////////////////////////////////////////////////////////////////////
 		static float y=0;
-		if(key_mask_[KEY_MOVE_DOWN]==true)
+		static float x=0;
+		float scalar=0.2f;
+		if(key_mask_[KEY_MOVE_FORWARD]==true)
 		{
-			y+=10.0f;
+			y+=elapse_time*radius_*scalar;
 		}
-		if(key_mask_[KEY_MOVE_UP]==true)
+		if(key_mask_[KEY_MOVE_BACKWARD]==true)
 		{
-			y-=10.0f;
+			y-=elapse_time*radius_*scalar;
+		}
+		if(key_mask_[KEY_MOVE_LEFT]==true)
+		{
+			x-=elapse_time*radius_*scalar;	
+		}
+		if(key_mask_[KEY_MOVE_RIGHT]==true)
+		{
+			x+=elapse_time*radius_*scalar;
 		}
 		world_._42+=y;
+		world_._41+=x;
 	}
 
 }

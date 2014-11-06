@@ -85,9 +85,6 @@ namespace SoftEngine
 		y0=out0.m_vScreenPosition.y;
 		x1=out1.m_vScreenPosition.x;
 		y1=out1.m_vScreenPosition.y;
-		//∂ººÙ≤√µÙ¡À
-		/*if(!Draw2DClipe(m_rcClip,cx0,cy0,cx1,cy1))
-			return;*/
 		int color;
 		float lerp;
 		VSShaderOutput tmp;
