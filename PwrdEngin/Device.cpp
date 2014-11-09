@@ -377,7 +377,12 @@ namespace SoftEngine
 			////top
 			FaceCull(edges_index,Plane(0,-1,0,1));
 		}
-		
+		/*{
+			std::cout<<"after left"<<std::endl;
+			std::cout<<"index size is "<<m_vecIndexBuffer.size()<<std::endl;
+			for(int i=0;i<m_vecIndexBuffer.size();i++)
+				std::cout<<"i:"<<i<<"  index"<<m_vecIndexBuffer[i]<<":"<<m_vecVSOutput[m_vecIndexBuffer[i]].m_vScreenPosition<<std::endl;
+		}	*/
 		uPreventCullAgain=m_vecIndexBuffer.size();	
 		for(UINT i=0;i<uPreventCullAgain;)
 		{
@@ -496,8 +501,8 @@ namespace SoftEngine
 		new0Out.m_bVisible=true;
 		VSShaderOutput new1Out=PrespectLerp(inVertex1,outVertex,lerp1out);	
 		new1Out.m_bVisible=true;
-		CullInScreen(new0Out.m_vScreenPosition.x,new0Out.m_vScreenPosition.y);
-		CullInScreen(new1Out.m_vScreenPosition.x,new1Out.m_vScreenPosition.y);
+	//	CullInScreen(new0Out.m_vScreenPosition.x,new0Out.m_vScreenPosition.y);
+	//	CullInScreen(new1Out.m_vScreenPosition.x,new1Out.m_vScreenPosition.y);
 		outVertex=new1Out;
 		m_vecVSOutput.push_back(new0Out);
 		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
@@ -517,8 +522,8 @@ namespace SoftEngine
 		float lerpIn1=-cullPlane*inVertex.m_vProjectCutting/(cullPlane*(out1Vertex.m_vProjectCutting-inVertex.m_vProjectCutting));
 		VSShaderOutput newIn0=PrespectLerp(inVertex,out0Vertex,lerpIn0);
 		VSShaderOutput newIn1=PrespectLerp(inVertex,out1Vertex,lerpIn1);
-		CullInScreen(newIn0.m_vScreenPosition.x,newIn0.m_vScreenPosition.y);
-		CullInScreen(newIn1.m_vScreenPosition.x,newIn1.m_vScreenPosition.y);
+	//	CullInScreen(newIn0.m_vScreenPosition.x,newIn0.m_vScreenPosition.y);
+	//	CullInScreen(newIn1.m_vScreenPosition.x,newIn1.m_vScreenPosition.y);
 		newIn0.m_bVisible=true;
 		newIn1.m_bVisible=true;
 		m_vecVSOutput[outIndex0]=newIn0;
@@ -653,12 +658,12 @@ namespace SoftEngine
 	{
 		if(x<0)
 			x=0;
-		if(x>m_iWidth-1)
-			x=m_iWidth-1;
+		if(x>m_iWidth)
+			x=m_iWidth;
 		if(y<0)
 			y=0;
-		if(y>m_iHeight-1)
-			y=m_iHeight-1;
+		if(y>m_iHeight)
+			y=m_iHeight;
 	}
 
 	void Device::FillFlatHeadTriangle(VSShaderOutput &v0,VSShaderOutput &v1,VSShaderOutput &v2)
