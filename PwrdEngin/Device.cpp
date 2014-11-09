@@ -63,7 +63,6 @@ namespace SoftEngine
 			m_rcClip.bottom=m_iHeight;
 			return true;
 		}
-	
 		return false;
 	}
 
@@ -206,9 +205,9 @@ namespace SoftEngine
 	void Device::SetViewPort(int x/*=0*/,int y/*=0*/,int width/*=0*/,int height/*=0*/,float minZ/*=0.0f*/,float maxZ/*=1.0f*/)
 	{
 		if(width==0)
-			width=m_iWidth;
+			width=m_iWidth-1;
 		if(height==0)
-			height=m_iHeight;
+			height=m_iHeight-1;
 			m_matViewPort.m[0][0]=width/2;m_matViewPort.m[0][1]=0.0f;m_matViewPort.m[0][2]=0.0f;m_matViewPort.m[0][3]=0.0f;
 			m_matViewPort.m[1][0]=0.0f;m_matViewPort.m[1][1]=-height/2;m_matViewPort.m[1][2]=0.0f;m_matViewPort.m[1][3]=0.0f;
 			m_matViewPort.m[2][0]=0.0f;m_matViewPort.m[2][1]=0.0f;m_matViewPort.m[2][2]=maxZ-minZ;m_matViewPort.m[2][3]=0.0f;
@@ -298,7 +297,7 @@ namespace SoftEngine
 			tmp.m_vScreenPosition=tmp.m_vPosition*m_matViewPort;
 			tmp.m_vScreenPosition.ProjectDivied();
 			tmp.m_vProjectCutting=tmp.m_vPosition;
-			tmp.m_vProjectCutting.ProjectDivied();
+			//tmp.m_vProjectCutting.ProjectDivied();
 			m_vecVSOutput.push_back(tmp);
 		});
 
@@ -324,6 +323,7 @@ namespace SoftEngine
 		}
 		//////////////////////////////////////////////////////////////////////////
 		UINT           edges_index[3]; 
+		UINT           uPreventCullAgain;
 		for(UINT i=0;i<m_vecIndexBuffer.size();)
 		{
 			for(int j=0;j<3;j++,i++)
@@ -331,42 +331,63 @@ namespace SoftEngine
 			////near plane
 			NearCull(edges_index,Plane(0,0,1,1));
 		}
-		for(UINT i=0;i<m_vecIndexBuffer.size();)
-		{
-			for(int j=0;j<3;j++,i++)
-				edges_index[j]=m_vecIndexBuffer[i];
-			////near plane
-			FaceCull(edges_index,Plane(0,0,1,0));
-		}
-		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		for(auto iter=m_vecVSOutput.begin();iter!=m_vecVSOutput.end();++iter)
+			iter->m_vProjectCutting.ProjectDivied();
+		//uPreventCullAgain=m_vecIndexBuffer.size();	
+		//for(UINT i=0;i<uPreventCullAgain;)
+		//{
+		//	for(int j=0;j<3;j++,i++)
+		//		edges_index[j]=m_vecIndexBuffer[i];
+		//	////near plane
+		//	FaceCull(edges_index,Plane(0,0,1,0));
+		//}
+		/*{
+
+			std::cout<<"index size is "<<m_vecIndexBuffer.size()<<std::endl;
+			for(int i=0;i<m_vecIndexBuffer.size();i++)
+				std::cout<<"i:"<<i<<"  index"<<m_vecIndexBuffer[i]<<":"<<m_vecVSOutput[m_vecIndexBuffer[i]].m_vScreenPosition<<std::endl;
+		}*/
+		uPreventCullAgain=m_vecIndexBuffer.size();	
+		for(UINT i=0;i<uPreventCullAgain;)
 		{
 			for(int j=0;j<3;j++,i++)
 				edges_index[j]=m_vecIndexBuffer[i];
 			//left
 			FaceCull(edges_index,Plane(1,0,0,1));
 		}
-		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		/*{
+			std::cout<<"after left"<<std::endl;
+			std::cout<<"index size is "<<m_vecIndexBuffer.size()<<std::endl;
+			for(int i=0;i<m_vecIndexBuffer.size();i++)
+				std::cout<<"i:"<<i<<"  index"<<m_vecIndexBuffer[i]<<":"<<m_vecVSOutput[m_vecIndexBuffer[i]].m_vScreenPosition<<std::endl;
+		}*/
+		uPreventCullAgain=m_vecIndexBuffer.size();	
+		for(UINT i=0;i<uPreventCullAgain;)
 		{
 			for(int j=0;j<3;j++,i++)
 				edges_index[j]=m_vecIndexBuffer[i];
 			////right
 			FaceCull(edges_index,Plane(-1,0,0,1));
 		}
-		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		uPreventCullAgain=m_vecIndexBuffer.size();	
+		for(UINT i=0;i<uPreventCullAgain;)
 		{
 			for(int j=0;j<3;j++,i++)
 				edges_index[j]=m_vecIndexBuffer[i];
 			////top
 			FaceCull(edges_index,Plane(0,-1,0,1));
 		}
-		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		
+		uPreventCullAgain=m_vecIndexBuffer.size();	
+		for(UINT i=0;i<uPreventCullAgain;)
 		{
 			for(int j=0;j<3;j++,i++)
 				edges_index[j]=m_vecIndexBuffer[i];
 			////bottom
 			FaceCull(edges_index,Plane(0,1,0,1));
 		}
-		for(UINT i=0;i<m_vecIndexBuffer.size();)
+		uPreventCullAgain=m_vecIndexBuffer.size();	
+		for(UINT i=0;i<uPreventCullAgain;)
 		{
 			for(int j=0;j<3;j++,i++)
 				edges_index[j]=m_vecIndexBuffer[i];
@@ -430,11 +451,14 @@ namespace SoftEngine
 		UINT outside_index[3];
 		int inside_count=0;
 		int outside_count=0;
-		bool allInvisibal=true;
+		bool allInvisibal=false;
 		for(int i=0;i<3;i++)
 		{
-			if(m_vecVSOutput[index[i]].m_bVisible==true)
-				 allInvisibal=false;
+			if(m_vecVSOutput[index[i]].m_bVisible==false)
+			{
+				allInvisibal=true;
+				break;
+			}
 			cull[i]=CullPlane*m_vecVSOutput[index[i]].m_vProjectCutting;
 			if(cull[i]>0)
 			{
@@ -479,7 +503,9 @@ namespace SoftEngine
 		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
 		m_vecVSOutput.push_back(new1Out);
 		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
-		m_vecIndexBuffer.push_back(inIndex0);
+		//m_vecIndexBuffer.push_back(inIndex0);
+		m_vecVSOutput.push_back(m_vecVSOutput[inIndex0]);
+		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
 	}
 	void Device::OneVertexInView(UINT inIndex,UINT outIndex0,UINT outIndex1,const Plane &cullPlane)
 	{
@@ -504,16 +530,16 @@ namespace SoftEngine
 	{
 		for(UINT i=0;i<m_vecIndexBuffer.size();)
 		{
-			int index0=m_vecIndexBuffer[i++];
-			int index1=m_vecIndexBuffer[i++];
-			int index2=m_vecIndexBuffer[i++];
-			if(m_vecVSOutput[index0].m_bVisible==true ||
-				m_vecVSOutput[index1].m_bVisible==true||
-				m_vecVSOutput[index2].m_bVisible==true)
+			auto vertex0=m_vecVSOutput[m_vecIndexBuffer[i++]];
+			auto vertex1=m_vecVSOutput[m_vecIndexBuffer[i++]];
+			auto vertex2=m_vecVSOutput[m_vecIndexBuffer[i++]];
+			if(vertex0.m_bVisible==true &&
+				vertex1.m_bVisible==true &&
+				vertex2.m_bVisible==true)
 			{
-				DrawLine(m_vecVSOutput[index0],m_vecVSOutput[index1]);
-				DrawLine(m_vecVSOutput[index1],m_vecVSOutput[index2]);
-				DrawLine(m_vecVSOutput[index2],m_vecVSOutput[index0]);
+				DrawLine(vertex0,vertex1);
+				DrawLine(vertex1,vertex2);
+				DrawLine(vertex2,vertex0);
 			}
 		}
 	}
@@ -608,14 +634,18 @@ namespace SoftEngine
 		bool allInvisibal=false;
 		for(int i=0;i<3;i++)
 		{
-			cull=CullPlane*m_vecVSOutput[index[i]].m_vProjectCutting;
-			if(cull<0)
+			//cull=CullPlane*m_vecVSOutput[index[i]].m_vProjectCutting;
+			if(m_vecVSOutput[index[i]].m_vProjectCutting.w<1.0f)
+			{
 				allInvisibal=true;
+				break;
+			}
+
 		}
 		if(allInvisibal)
 		{
 			for(int i=0;i<3;i++)
-				m_vecVSOutput[index[i]].m_bVisible=true;
+				m_vecVSOutput[index[i]].m_bVisible=false;
 		}
 	}
 
@@ -623,8 +653,8 @@ namespace SoftEngine
 	{
 		if(x<0)
 			x=0;
-		if(x>m_iWidth)
-			x=m_iWidth;
+		if(x>m_iWidth-1)
+			x=m_iWidth-1;
 		if(y<0)
 			y=0;
 		if(y>m_iHeight-1)
@@ -643,7 +673,7 @@ namespace SoftEngine
 		float lerp=0.0f;
 		VSShaderOutput tmp_left;
 		VSShaderOutput tmp_right;
-		for(int y=y2;y>=y0;y--)
+		for(int y=y2;y>=ceil(y0)-1;y--)
 		{
 			tmp_left=PrespectLerp(v2,v0,lerp);
 			tmp_right=PrespectLerp(v2,v1,lerp);
@@ -664,12 +694,13 @@ namespace SoftEngine
 		float lerp=0.0f;
 		VSShaderOutput tmp_left;
 		VSShaderOutput tmp_right;
-		for(int y=y0;y<=y1;y++)
+		FillLine(v0,v0);	
+		for(float y=y0+1;y<ceil(y1)-1;y++)
 		{
+			lerp=(y-y0)/(y2-y0);
 			tmp_left=PrespectLerp(v0,v1,lerp);	
 			tmp_right=PrespectLerp(v0,v2,lerp);	
 			FillLine(tmp_left,tmp_right);
-			lerp+=lerp_step;
 		}
 	}
 

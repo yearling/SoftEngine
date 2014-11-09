@@ -291,7 +291,7 @@ namespace SoftEngine
 
 	void EASYCamera::FrameMove(float elapse_time)
 	{
-		radius_+=mouse_wheel_delta_*elapse_time;	
+		radius_-=mouse_wheel_delta_*elapse_time;	
 		mouse_wheel_delta_=0;
 		Matrix view_arcball;
 		MatrixInverse(&view_arcball,nullptr,view_arcball_.GetRotationMatrix());
@@ -317,7 +317,7 @@ namespace SoftEngine
 		//////////////////////////////////////////////////////////////////////////
 		static float y=0;
 		static float x=0;
-		float scalar=0.2f;
+		float scalar=0.5f;
 		if(key_mask_[KEY_MOVE_FORWARD]==true)
 		{
 			y+=elapse_time*radius_*scalar;
@@ -336,6 +336,16 @@ namespace SoftEngine
 		}
 		world_._42+=y;
 		world_._41+=x;
+		world_._43+=0;
+		//world_._11=0.821162 ;      world_._12=0.557197;      world_._13=-0.123625; world_._14=0;
+		//world_._21=-0.356241;      world_._22=0.331159;       world_._23=-0.87373;      world_._24=0;
+		//world_._31=	-0.445861 ;   world_._32=   0.761493;    world_._33=   0.470406; world_._34 = 0;
+		//world_._41=-37.44 ;     world_._42=    26.48;     world_._43=  0;   world_._44= 1.00008;
+
+		float aa[]={0.968481   ,    0.110598 ,      -0.22319 ,             0,
+		-0.210931  ,    0.840739  ,    -0.498647      ,        0 ,
+		0.132482    ,   0.530022  ,     0.837571     ,         0 ,
+		29.34   ,        32.2    ,          0   ,    0.999966 };
 	}
 
 }

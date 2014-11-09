@@ -3,11 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PwrdEngin", "PwrdEngin\PwrdEngin.vcxproj", "{A8B03928-5FF2-4A31-A0AE-5A6D8902571C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MathTest", "MathTest\MathTest.vcxproj", "{43EB0C76-7D7C-42D0-B5B3-9FD4F78B3022}"
-	ProjectSection(ProjectDependencies) = postProject
-		{A8B03928-5FF2-4A31-A0AE-5A6D8902571C} = {A8B03928-5FF2-4A31-A0AE-5A6D8902571C}
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -18,10 +13,6 @@ Global
 		{A8B03928-5FF2-4A31-A0AE-5A6D8902571C}.Debug|Win32.Build.0 = Debug|Win32
 		{A8B03928-5FF2-4A31-A0AE-5A6D8902571C}.Release|Win32.ActiveCfg = Release|Win32
 		{A8B03928-5FF2-4A31-A0AE-5A6D8902571C}.Release|Win32.Build.0 = Release|Win32
-		{43EB0C76-7D7C-42D0-B5B3-9FD4F78B3022}.Debug|Win32.ActiveCfg = Debug|Win32
-		{43EB0C76-7D7C-42D0-B5B3-9FD4F78B3022}.Debug|Win32.Build.0 = Debug|Win32
-		{43EB0C76-7D7C-42D0-B5B3-9FD4F78B3022}.Release|Win32.ActiveCfg = Release|Win32
-		{43EB0C76-7D7C-42D0-B5B3-9FD4F78B3022}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

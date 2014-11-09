@@ -600,7 +600,7 @@ std::ostream & operator<<(std::ostream & out,Matrix &m)
 	{
 		for(int j=0;j<4;j++)
 		{
-			out<<std::setw(15)<<m.m[i][j];
+			out<<std::setw(10)<<m.m[i][j]<<",";
 		}
 		out<<std::endl;
 	}
