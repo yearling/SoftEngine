@@ -686,7 +686,6 @@ namespace SoftEngine
 			lerp=(float(yStart)-y0)/(y1-y0);
 			tmp_left=PrespectLerp(v0,v1,lerp);	
 			tmp_right=PrespectLerp(v0,v2,lerp);	
-			std::cout<<yStart;
 			FillLine(tmp_left,tmp_right);
 			
 		}
@@ -749,19 +748,11 @@ namespace SoftEngine
 			if(tmp.m_vPosition.w<=GetZBuffer(xstart,y0))
 			{
 				color=m_pPs->PSMain(tmp);
-				if(y0==149)
-					DrawPixel(xstart,y0,_RGB(255,255,0));
-				else if(y0==150)
-					DrawPixel(xstart,y0,_RGB(255,255,255));
-				else if(y0==151)
-					DrawPixel(xstart,y0,_RGB(0,255,0));
-				else 
-					DrawPixel(xstart,y0,_RGB(255,0,0));
+				DrawPixel(xstart,y0,color);
 				SetZBuffer(xstart,y0,tmp.m_vPosition.w+1);
 				count++;
 			}
 		}
-		std::cout<< "      "<<count<<std::endl;
 	}
 
 	float Device::GetZBuffer(int x,int y)
