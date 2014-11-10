@@ -48,7 +48,7 @@ namespace SoftEngine
 			m_iWidth=windows->m_iWidth;
 			m_iHeight=windows->m_iHeight;
 		}
-		z_buffer=new float[m_iHeight*m_iWidth];
+		z_buffer=new float[(m_iHeight+1)*(m_iWidth+1)];
 		return true;
 	}
 
@@ -120,7 +120,6 @@ namespace SoftEngine
 		{
 			tmp=PrespectLerp(out0,out1,lerp);	
 			color=m_pPs->PSMain(tmp);
-			DrawPixel(m_iWidth,m_iHeight,_RGB(255,255,255));
 			DrawPixel(ceil(x),ceil(y),color);
 			x+=x_add;
 			y+=y_add;
@@ -333,20 +332,7 @@ namespace SoftEngine
 		}
 		for(auto iter=m_vecVSOutput.begin();iter!=m_vecVSOutput.end();++iter)
 			iter->m_vProjectCutting.ProjectDivied();
-		//uPreventCullAgain=m_vecIndexBuffer.size();	
-		//for(UINT i=0;i<uPreventCullAgain;)
-		//{
-		//	for(int j=0;j<3;j++,i++)
-		//		edges_index[j]=m_vecIndexBuffer[i];
-		//	////near plane
-		//	FaceCull(edges_index,Plane(0,0,1,0));
-		//}
-		/*{
-
-			std::cout<<"index size is "<<m_vecIndexBuffer.size()<<std::endl;
-			for(int i=0;i<m_vecIndexBuffer.size();i++)
-				std::cout<<"i:"<<i<<"  index"<<m_vecIndexBuffer[i]<<":"<<m_vecVSOutput[m_vecIndexBuffer[i]].m_vScreenPosition<<std::endl;
-		}*/
+	
 		uPreventCullAgain=m_vecIndexBuffer.size();	
 		for(UINT i=0;i<uPreventCullAgain;)
 		{
@@ -355,12 +341,7 @@ namespace SoftEngine
 			//left
 			FaceCull(edges_index,Plane(1,0,0,1));
 		}
-		/*{
-			std::cout<<"after left"<<std::endl;
-			std::cout<<"index size is "<<m_vecIndexBuffer.size()<<std::endl;
-			for(int i=0;i<m_vecIndexBuffer.size();i++)
-				std::cout<<"i:"<<i<<"  index"<<m_vecIndexBuffer[i]<<":"<<m_vecVSOutput[m_vecIndexBuffer[i]].m_vScreenPosition<<std::endl;
-		}*/
+		
 		uPreventCullAgain=m_vecIndexBuffer.size();	
 		for(UINT i=0;i<uPreventCullAgain;)
 		{
@@ -377,12 +358,7 @@ namespace SoftEngine
 			////top
 			FaceCull(edges_index,Plane(0,-1,0,1));
 		}
-		/*{
-			std::cout<<"after left"<<std::endl;
-			std::cout<<"index size is "<<m_vecIndexBuffer.size()<<std::endl;
-			for(int i=0;i<m_vecIndexBuffer.size();i++)
-				std::cout<<"i:"<<i<<"  index"<<m_vecIndexBuffer[i]<<":"<<m_vecVSOutput[m_vecIndexBuffer[i]].m_vScreenPosition<<std::endl;
-		}	*/
+	
 		uPreventCullAgain=m_vecIndexBuffer.size();	
 		for(UINT i=0;i<uPreventCullAgain;)
 		{
@@ -399,9 +375,13 @@ namespace SoftEngine
 			////far 
 			FaceCull(edges_index,Plane(0,0,-1,1));
 		}
-		/*for(int i=0;i<m_vecIndexBuffer.size();i++)
-			std::cout<<m_vecRenderBuffer[m_vecIndexBuffer[i]].m_vTexcoord.x<<"		"
-			<<m_vecRenderBuffer[m_vecIndexBuffer[i]].m_vTexcoord.x<<std::endl;*/
+		for(UINT i=0;i<m_vecIndexBuffer[i];++i)
+		{
+			if(m_vecVSOutput[m_vecIndexBuffer[i]].m_vScreenPosition.x>m_iWidth)	
+				m_vecVSOutput[m_vecIndexBuffer[i]].m_vScreenPosition.x=m_iWidth;
+			if(m_vecVSOutput[m_vecIndexBuffer[i]].m_vScreenPosition.y>m_iHeight)	
+				m_vecVSOutput[m_vecIndexBuffer[i]].m_vScreenPosition.y=m_iHeight;
+		}
 		switch(m_fillmode)
 		{
 		case FILL_POINT:
@@ -551,9 +531,7 @@ namespace SoftEngine
 
 	void Device::FillSolid()
 	{
-	/*	for(int i=0;i<m_vecIndexBuffer.size();i++)
-			std::cout<<m_vecRenderBuffer[m_vecIndexBuffer[i]].m_vTexcoord.x<<"		"
-			<<m_vecRenderBuffer[m_vecIndexBuffer[i]].m_vTexcoord.x<<std::endl;*/
+
 		VSShaderOutput *triangle[3];
 		for(UINT i=0;i<m_vecIndexBuffer.size();)
 		{
@@ -575,7 +553,7 @@ namespace SoftEngine
 			std::stable_sort(triangle,triangle+3,[&](VSShaderOutput*p0,VSShaderOutput *p1){
 				return p0->m_vScreenPosition.y<p1->m_vScreenPosition.y;
 			});
-		//std::for_each(triangle,triangle+3,[&](VSShaderOutput*p){std::cout<<p->m_vScreenPosition<<std::endl;});
+
 			if(triangle[0]->m_vScreenPosition.y==triangle[1]->m_vScreenPosition.y &&
 				triangle[1]->m_vScreenPosition.y==triangle[2]->m_vScreenPosition.y)
 			{
@@ -674,16 +652,17 @@ namespace SoftEngine
 		float y1=v1.m_vScreenPosition.y;
 		float x2=v2.m_vScreenPosition.x;
 		float y2=v2.m_vScreenPosition.y;
-		float lerp_step=1/(y2-y0);
 		float lerp=0.0f;
 		VSShaderOutput tmp_left;
 		VSShaderOutput tmp_right;
-		for(int y=y2;y>=ceil(y0)-1;y--)
+		int yStart=ceil(y0);
+		int yEnd=ceil(y2)-1;
+		for(;yStart<=yEnd;yStart++)
 		{
+			lerp=((float)(yStart-y0)/(y2-y0));
 			tmp_left=PrespectLerp(v2,v0,lerp);
 			tmp_right=PrespectLerp(v2,v1,lerp);
 			FillLine(tmp_left,tmp_right);
-			lerp+=lerp_step;
 		}
 	}
 
@@ -695,17 +674,21 @@ namespace SoftEngine
 		float y1=v1.m_vScreenPosition.y;
 		float x2=v2.m_vScreenPosition.x;
 		float y2=v2.m_vScreenPosition.y;
-		float lerp_step=1/(y1-y0);
 		float lerp=0.0f;
 		VSShaderOutput tmp_left;
 		VSShaderOutput tmp_right;
-		FillLine(v0,v0);	
-		for(float y=y0+1;y<ceil(y1)-1;y++)
+		int yStart=ceil(y0);
+		int yEnd=ceil(y1)-1;
+		//FillLine(v0,v0);
+		//yStart++;
+		for(;yStart<=yEnd;yStart++)
 		{
-			lerp=(y-y0)/(y2-y0);
+			lerp=(float(yStart)-y0)/(y1-y0);
 			tmp_left=PrespectLerp(v0,v1,lerp);	
 			tmp_right=PrespectLerp(v0,v2,lerp);	
+			std::cout<<yStart;
 			FillLine(tmp_left,tmp_right);
+			
 		}
 	}
 
@@ -717,7 +700,8 @@ namespace SoftEngine
 		float y1=v1.m_vScreenPosition.y;
 		float x2=v2.m_vScreenPosition.x;
 		float y2=v2.m_vScreenPosition.y;	
-		float change_lerp=(y1-y0)/(y2-y0);
+		int ichangey=y1;
+		float change_lerp=(float(ichangey)-y0)/(y2-y0);
 		VSShaderOutput tmp_change=PrespectLerp(v0,v2,change_lerp);
 		if(tmp_change.m_vScreenPosition.x<=v1.m_vScreenPosition.x)
 		{
@@ -736,26 +720,48 @@ namespace SoftEngine
 	{
 		int x0,y0,x1,y1;
 		x0=out0.m_vScreenPosition.x;
-		y0=ceil(out0.m_vScreenPosition.y)-1;
+		y0=out0.m_vScreenPosition.y;
 		x1=out1.m_vScreenPosition.x;
 		y1=out1.m_vScreenPosition.y;
 		int color;
 		float lerp;
 		VSShaderOutput tmp;
-		float lerpstep;
-		lerpstep=1.0f/float(x1-x0);
 		lerp=0.0f;
-		for(int i=x0;i<x1;i++)
+		int count=0;
+		if(x1==x0)
 		{
 			tmp=PrespectLerp(out0,out1,lerp);	
-			if(tmp.m_vPosition.w<=GetZBuffer(i,y0))
+			if(tmp.m_vPosition.w<=GetZBuffer(ceil(x1),y0))
 			{
 				color=m_pPs->PSMain(tmp);
-				DrawPixel(i,y0,color);
-				SetZBuffer(i,y0,tmp.m_vPosition.w+1);
-			}
-			lerp+=lerpstep;
+				DrawPixel(ceil(x1),y0,_RGB(0,255,255));
+				SetZBuffer(ceil(x1),y0,tmp.m_vPosition.w+1);
+				count++;
+			}	
 		}
+		int xstart=ceil(x0);
+		int xend=ceil(x1)-1;
+		
+		for(;xstart<=xend;xstart++)
+		{
+			lerp=(float(xstart)-x0)/(x1-x0);
+			tmp=PrespectLerp(out0,out1,lerp);	
+			if(tmp.m_vPosition.w<=GetZBuffer(xstart,y0))
+			{
+				color=m_pPs->PSMain(tmp);
+				if(y0==149)
+					DrawPixel(xstart,y0,_RGB(255,255,0));
+				else if(y0==150)
+					DrawPixel(xstart,y0,_RGB(255,255,255));
+				else if(y0==151)
+					DrawPixel(xstart,y0,_RGB(0,255,0));
+				else 
+					DrawPixel(xstart,y0,_RGB(255,0,0));
+				SetZBuffer(xstart,y0,tmp.m_vPosition.w+1);
+				count++;
+			}
+		}
+		std::cout<< "      "<<count<<std::endl;
 	}
 
 	float Device::GetZBuffer(int x,int y)
