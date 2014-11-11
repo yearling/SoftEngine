@@ -691,7 +691,6 @@ namespace SoftEngine
 			lerp=(float(yStart)-y0)/(y1-y0);
 			tmp_left=PrespectLerp(v0,v1,lerp);	
 			tmp_right=PrespectLerp(v0,v2,lerp);	
-			//std::cout<<yStart;
 			FillLine(tmp_left,tmp_right,yStart);
 			
 		}
@@ -783,7 +782,7 @@ namespace SoftEngine
 			}	
 		}
 		int xstart=ceil(x0);
-		int xend=ceil(x1)+1;
+		int xend=ceil(x1)-1;
 
 		for(;xstart<=xend;xstart++)
 		{
