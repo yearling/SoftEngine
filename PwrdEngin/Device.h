@@ -158,7 +158,7 @@ namespace SoftEngine
 	public:
 		Device();
 		~Device();
-		bool Init(DrawImpl* draw_imp);
+		bool Init(DrawImpGDI* draw_imp);
 		bool Init(const Window *windows);
 		bool BeginScene();
 		bool EndScene();
@@ -180,7 +180,7 @@ namespace SoftEngine
 		bool TextDraw(std::string text, int x,int y,DWORD color);
 		inline void DrawPixel(int x,int y,DWORD color=_RGB(255,255,255))
 		{
-			m_pBackBuffer[x+y*m_iPitch]=color;
+			m_pBackBuffer[x+(m_iHeight-y-1)*m_iPitch]=color;
 		}
 		
 		void DrawLine(int x0,int y0,int x1,int y1,int color=_RGB(255,255,255));
@@ -207,13 +207,14 @@ namespace SoftEngine
 		void FillFlatFootTriangle(VSShaderOutput &v0,VSShaderOutput &v1,VSShaderOutput &v2);
 		void FillCommonTriangle(VSShaderOutput &v0,VSShaderOutput &v1,VSShaderOutput &v2);
 		void FillLine(const VSShaderOutput &out0,const VSShaderOutput &out1);
+		void FillLine(const VSShaderOutput &out0,const VSShaderOutput &out1,int nline);
 		inline float GetZBuffer(int x,int y);
 		inline void SetZBuffer(int x,int y,float f);
 		void SetTexture(bmp*pbmp);
 		
 	private:
-		DrawImpl *m_pDrawImpl;
-		UINT *m_pBackBuffer;
+		DrawImpGDI *m_pDrawImpl;
+		unsigned int *m_pBackBuffer;
 		int m_iPitch;
 		int m_iWidth;
 		int m_iHeight;

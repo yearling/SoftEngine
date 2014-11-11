@@ -5,7 +5,7 @@
 namespace SoftEngine
 {
 
-	DrawImpl::DrawImpl(void):m_pPrimaryBuffer(nullptr),
+	DrawImplDXD7::DrawImplDXD7(void):m_pPrimaryBuffer(nullptr),
 		m_pBackBuffer(nullptr),
 		m_iPrimaryPitch(0),
 		m_iBackPitch(0),
@@ -19,11 +19,11 @@ namespace SoftEngine
 	}
 
 
-	DrawImpl::~DrawImpl(void)
+	DrawImplDXD7::~DrawImplDXD7(void)
 	{
 	}
 
-	bool DrawImpl::Init(HWND hwnd,int width,int height,int x_offset,int y_offset,bool window/*=true*/)
+	bool DrawImplDXD7::Init(HWND hwnd,int width,int height,int x_offset,int y_offset,bool window/*=true*/)
 	{
 		HRESULT hr;
 		if(FAILED(hr=DirectDrawCreateEx(NULL,(void**)&m_comDDraw,IID_IDirectDraw7,NULL)))
@@ -80,7 +80,7 @@ namespace SoftEngine
 		return true;
 	}
 
-	void DrawImpl::ClearSurface(CComPtr<IDirectDrawSurface7> surface,DWORD color)
+	void DrawImplDXD7::ClearSurface(CComPtr<IDirectDrawSurface7> surface,DWORD color)
 	{
 		DDBLTFX ddbltfx; 
 		memset(&ddbltfx,0,sizeof(ddbltfx));
@@ -88,7 +88,7 @@ namespace SoftEngine
 		surface->Blt(0, NULL,  NULL,  DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx); 
 	}
 
-	unsigned int * DrawImpl::LockSurface(CComPtr<IDirectDrawSurface7> surface,int *pitch, int *width, int *height)
+	unsigned int * DrawImplDXD7::LockSurface(CComPtr<IDirectDrawSurface7> surface,int *pitch, int *width, int *height)
 	{
 		if (!surface)
 			return(NULL);
@@ -104,13 +104,13 @@ namespace SoftEngine
 		return (unsigned int *)ddsd.lpSurface;
 	}
 
-	void DrawImpl::UnlockSurface(CComPtr<IDirectDrawSurface7> surface)
+	void DrawImplDXD7::UnlockSurface(CComPtr<IDirectDrawSurface7> surface)
 	{
 		if(surface)
 			surface->Unlock(nullptr);
 	}
 
-	void DrawImpl::Flip()
+	void DrawImplDXD7::Flip()
 	{
 		if (m_pPrimaryBuffer || m_pBackBuffer)
 			return ;
@@ -124,7 +124,7 @@ namespace SoftEngine
 			return ;    
 	}
 
-	void DrawImpl::SetBackBufferCliper(RECT *rc)
+	void DrawImplDXD7::SetBackBufferCliper(RECT *rc)
 	{
 		if(rc==nullptr)
 			return;
@@ -152,7 +152,7 @@ namespace SoftEngine
 		free(region_data);
 	}
 
-	unsigned int * DrawImpl::LockBackSurface(int *pitch,int *width,int *height)
+	unsigned char * DrawImplDXD7::LockBackSurface(int *pitch,int *width,int *height)
 	{
 		HRESULT hr;
 		if (m_comDDSBack==nullptr)
@@ -162,20 +162,20 @@ namespace SoftEngine
 		ddsd.dwSize=sizeof(ddsd);
 		hr=m_comDDSBack->Lock(NULL,&ddsd,DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR,NULL); 
 		if (pitch)
-			*pitch = ddsd.lPitch>>2;
+			*pitch = ddsd.lPitch;
 		if(width)
 			*width=ddsd.dwWidth;
 		if(height)
 			*height=ddsd.dwHeight;
-		return (unsigned int *)ddsd.lpSurface;
+		return (unsigned char *)ddsd.lpSurface;
 	}
 
-	void DrawImpl::UnlockBackSurface()
+	void DrawImplDXD7::UnlockBackSurface()
 	{
 		UnlockSurface(m_comDDSBack);
 	}
 
-	void DrawImpl::ClearBackBuffer(DWORD color/*=_RGB(0,0,0)*/)
+	void DrawImplDXD7::ClearBackBuffer(DWORD color/*=_RGB(0,0,0)*/)
 	{
 		if(m_comDDSBack)
 		{
@@ -187,7 +187,7 @@ namespace SoftEngine
 		}
 	}
 
-	void DrawImpl::DrawTextGDI(const std::string &text, int x,int y,DWORD color)
+	void DrawImplDXD7::DrawTextGDI(const std::string &text, int x,int y,DWORD color)
 	{
 		HDC xdc; 
 		if (FAILED(m_comDDSBack->GetDC(&xdc)))
@@ -201,5 +201,68 @@ namespace SoftEngine
 
 
 
+
+
+	bool DrawImpGDI::Init(HWND hwnd,int width,int height,int offsetx,int offsety,bool window/*=true*/)
+	{
+		m_hWnd=hwnd;
+
+		m_iClientOffsetX=offsetx;
+		m_iClientOffsetY=offsety;
+		if( (m_iWidth!=width) || (m_iHeight!=height) )
+		{
+			if(m_pBackBuffer)
+			delete[] m_pBackBuffer;
+			m_iWidth=width;
+			m_iHeight=height;
+			m_pBackBuffer=new unsigned int[m_iWidth*m_iHeight];
+			memset(&m_BMI,0,sizeof(m_BMI));
+			m_BMI.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
+			m_BMI.bmiHeader.biWidth=m_iWidth;
+			m_BMI.bmiHeader.biHeight=m_iHeight;
+			m_BMI.bmiHeader.biPlanes=1;
+			m_BMI.bmiHeader.biBitCount=32;
+		}
+		return true;
+
+	}
+
+	DrawImpGDI::DrawImpGDI():m_pBackBuffer(nullptr)
+	{
+		
+	}
+
+	void DrawImpGDI::ClearBackBuffer(DWORD color/*=_RGB(0,0,0)*/)
+	{
+		memset(m_pBackBuffer,color,m_iHeight*m_iWidth*4);
+	}
+
+	unsigned int * DrawImpGDI::LockBackSurface(int *pitch,int *width,int *height)
+	{
+		*pitch=m_iWidth;
+		*width=m_iWidth;
+		*height=m_iHeight;
+		return m_pBackBuffer;
+	}
+
+	void DrawImpGDI::UnlockBackSurface()
+	{
+
+	}
+
+	void DrawImpGDI::Flip()
+	{
+		HDC hdc;
+		hdc = GetWindowDC(m_hWnd);
+		SetDIBitsToDevice(hdc,0,0,m_iWidth,m_iHeight,0,0,0,m_iHeight,(void*)m_pBackBuffer,&m_BMI,DIB_RGB_COLORS);
+		ReleaseDC(m_hWnd,hdc);
+	}
+
+	void DrawImpGDI::DrawTextGDI(const std::string &text, int x,int y,DWORD color)
+	{
+		HDC hdc;
+		hdc = GetWindowDC(m_hWnd);
+		::TextOutA(hdc,x,y,text.c_str(),text.size());
+	}
 
 }

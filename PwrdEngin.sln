@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PwrdEngin", "PwrdEngin\PwrdEngin.vcxproj", "{A8B03928-5FF2-4A31-A0AE-5A6D8902571C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "drawpixel", "drawpixel\drawpixel.vcxproj", "{0EC70944-3D28-43B2-853F-77D60C3C7E91}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -13,6 +15,10 @@ Global
 		{A8B03928-5FF2-4A31-A0AE-5A6D8902571C}.Debug|Win32.Build.0 = Debug|Win32
 		{A8B03928-5FF2-4A31-A0AE-5A6D8902571C}.Release|Win32.ActiveCfg = Release|Win32
 		{A8B03928-5FF2-4A31-A0AE-5A6D8902571C}.Release|Win32.Build.0 = Release|Win32
+		{0EC70944-3D28-43B2-853F-77D60C3C7E91}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0EC70944-3D28-43B2-853F-77D60C3C7E91}.Debug|Win32.Build.0 = Debug|Win32
+		{0EC70944-3D28-43B2-853F-77D60C3C7E91}.Release|Win32.ActiveCfg = Release|Win32
+		{0EC70944-3D28-43B2-853F-77D60C3C7E91}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

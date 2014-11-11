@@ -30,11 +30,11 @@ namespace SoftEngine
 
 	
 
-	bool Device::Init(DrawImpl* draw_imp)
+	/*bool Device::Init(DrawImplDXD7* draw_imp)
 	{
 		m_pDrawImpl=draw_imp;
 		return true;
-	}
+	}*/
 
 	bool Device::Init(const Window *windows)
 	{
@@ -42,13 +42,18 @@ namespace SoftEngine
 			return false;
 		else
 		{
-			m_pDrawImpl=new DrawImpl();
+			m_pDrawImpl=new DrawImpGDI();
 			if(!m_pDrawImpl->Init(windows->m_hWnd,windows->m_iWidth,windows->m_iHeight,windows->m_iClientOffsetX,windows->m_iClientOffsetY,windows->m_bWindow))
 				return false;
 			m_iWidth=windows->m_iWidth;
 			m_iHeight=windows->m_iHeight;
 		}
 		z_buffer=new float[(m_iHeight+1)*(m_iWidth+1)];
+		return true;
+	}
+
+	bool Device::Init(DrawImpGDI* draw_imp)
+	{
 		return true;
 	}
 
@@ -660,9 +665,9 @@ namespace SoftEngine
 		for(;yStart<=yEnd;yStart++)
 		{
 			lerp=((float)(yStart-y0)/(y2-y0));
-			tmp_left=PrespectLerp(v2,v0,lerp);
-			tmp_right=PrespectLerp(v2,v1,lerp);
-			FillLine(tmp_left,tmp_right);
+			tmp_left=PrespectLerp(v0,v2,lerp);
+			tmp_right=PrespectLerp(v1,v2,lerp);
+			FillLine(tmp_left,tmp_right,yStart);
 		}
 	}
 
@@ -686,8 +691,8 @@ namespace SoftEngine
 			lerp=(float(yStart)-y0)/(y1-y0);
 			tmp_left=PrespectLerp(v0,v1,lerp);	
 			tmp_right=PrespectLerp(v0,v2,lerp);	
-			std::cout<<yStart;
-			FillLine(tmp_left,tmp_right);
+			//std::cout<<yStart;
+			FillLine(tmp_left,tmp_right,yStart);
 			
 		}
 	}
@@ -700,8 +705,7 @@ namespace SoftEngine
 		float y1=v1.m_vScreenPosition.y;
 		float x2=v2.m_vScreenPosition.x;
 		float y2=v2.m_vScreenPosition.y;	
-		int ichangey=y1;
-		float change_lerp=(float(ichangey)-y0)/(y2-y0);
+		float change_lerp=(y1-y0)/(y2-y0);
 		VSShaderOutput tmp_change=PrespectLerp(v0,v2,change_lerp);
 		if(tmp_change.m_vScreenPosition.x<=v1.m_vScreenPosition.x)
 		{
@@ -723,20 +727,21 @@ namespace SoftEngine
 		y0=out0.m_vScreenPosition.y;
 		x1=out1.m_vScreenPosition.x;
 		y1=out1.m_vScreenPosition.y;
+		if(y0!=y1)
+			for(int i=0;i<100;i++)
+				DrawPixel(i,y0,_RGB(255,0,0));
 		int color;
 		float lerp;
 		VSShaderOutput tmp;
 		lerp=0.0f;
-		int count=0;
 		if(x1==x0)
 		{
 			tmp=PrespectLerp(out0,out1,lerp);	
 			if(tmp.m_vPosition.w<=GetZBuffer(ceil(x1),y0))
 			{
 				color=m_pPs->PSMain(tmp);
-				DrawPixel(ceil(x1),y0,_RGB(0,255,255));
+				DrawPixel(ceil(x1),y0,color);
 				SetZBuffer(ceil(x1),y0,tmp.m_vPosition.w+1);
-				count++;
 			}	
 		}
 		int xstart=ceil(x0);
@@ -749,19 +754,49 @@ namespace SoftEngine
 			if(tmp.m_vPosition.w<=GetZBuffer(xstart,y0))
 			{
 				color=m_pPs->PSMain(tmp);
-				if(y0==149)
-					DrawPixel(xstart,y0,_RGB(255,255,0));
-				else if(y0==150)
-					DrawPixel(xstart,y0,_RGB(255,255,255));
-				else if(y0==151)
-					DrawPixel(xstart,y0,_RGB(0,255,0));
-				else 
-					DrawPixel(xstart,y0,_RGB(255,0,0));
+				DrawPixel(xstart,y0,color);
 				SetZBuffer(xstart,y0,tmp.m_vPosition.w+1);
-				count++;
 			}
 		}
-		std::cout<< "      "<<count<<std::endl;
+		//std::cout<< "      "<<count<<std::endl;
+	}
+
+	void Device::FillLine(const VSShaderOutput &out0,const VSShaderOutput &out1,int nline)
+	{
+		int x0,y0,x1,y1;
+		x0=out0.m_vScreenPosition.x;
+		x1=out1.m_vScreenPosition.x;
+		y1=y0=nline;
+		
+		int color;
+		float lerp;
+		VSShaderOutput tmp;
+		lerp=0.0f;
+		if(x1==x0)
+		{
+			tmp=PrespectLerp(out0,out1,lerp);	
+			if(tmp.m_vPosition.w<=GetZBuffer(ceil(x1),y0))
+			{
+				color=m_pPs->PSMain(tmp);
+				DrawPixel(ceil(x1),y0,color);
+				SetZBuffer(ceil(x1),y0,tmp.m_vPosition.w+1);
+			}	
+		}
+		int xstart=ceil(x0);
+		int xend=ceil(x1)+1;
+
+		for(;xstart<=xend;xstart++)
+		{
+			lerp=(float(xstart)-x0)/(x1-x0);
+			tmp=PrespectLerp(out0,out1,lerp);	
+			if(tmp.m_vPosition.w<=GetZBuffer(xstart,y0))
+			{
+				color=m_pPs->PSMain(tmp);
+				DrawPixel(xstart,y0,color);
+				SetZBuffer(xstart,y0,tmp.m_vPosition.w);
+			}
+		}
+		//std::cout<< "      "<<count<<std::endl;
 	}
 
 	float Device::GetZBuffer(int x,int y)

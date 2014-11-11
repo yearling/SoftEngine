@@ -39,8 +39,8 @@ namespace SoftEngine
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\rectangle.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\box_texture.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane_texture.fbx");
-		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\tea.fbx");
-		m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane2X2.fbx");
+		m_pFbxPaser->Load("E:\\scene_fbx\\test\\tea.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane2X2.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\triangle_mesh.fbx");
 		//////////////////////////////////////////////////////////////////////////
 		m_pEasyCamera=new EASYCamera();
@@ -82,10 +82,12 @@ namespace SoftEngine
 				m_pDevice->SetFillMode(FILL_SOLID);
 				//m_pDevice->SetFillMode(FILL_WIREFRAME);
 				m_pDevice->DrawIndexedPrimitive(PT_TRIANGLEIST,0,0,m_pFbxPaser->GetVertexNumber(),0,m_pFbxPaser->GetFaceNumber());
+				/*for(int i=0;i<200;i++)
+					m_pDevice->DrawPixel(i,i,_RGB(255,0,0));*/
 				m_pDevice->EndScene();
 
 			}
-			iOnceTime=false;
+			//iOnceTime=false;
 		}			
 		//////////////////////////////////////////////////////////////////////////
 		//to dispaly FPS
