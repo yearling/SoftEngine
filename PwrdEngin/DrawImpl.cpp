@@ -152,7 +152,7 @@ namespace SoftEngine
 		free(region_data);
 	}
 
-	unsigned char * DrawImplDXD7::LockBackSurface(int *pitch,int *width,int *height)
+	unsigned int * DrawImplDXD7::LockBackSurface(int *pitch,int *width,int *height)
 	{
 		HRESULT hr;
 		if (m_comDDSBack==nullptr)
@@ -162,12 +162,12 @@ namespace SoftEngine
 		ddsd.dwSize=sizeof(ddsd);
 		hr=m_comDDSBack->Lock(NULL,&ddsd,DDLOCK_WAIT | DDLOCK_SURFACEMEMORYPTR,NULL); 
 		if (pitch)
-			*pitch = ddsd.lPitch;
+			*pitch = ddsd.lPitch>>2;
 		if(width)
 			*width=ddsd.dwWidth;
 		if(height)
 			*height=ddsd.dwHeight;
-		return (unsigned char *)ddsd.lpSurface;
+		return (unsigned int*)ddsd.lpSurface;
 	}
 
 	void DrawImplDXD7::UnlockBackSurface()
@@ -262,7 +262,24 @@ namespace SoftEngine
 	{
 		HDC hdc;
 		hdc = GetWindowDC(m_hWnd);
-		::TextOutA(hdc,x,y,text.c_str(),text.size());
+		::SetTextColor(hdc,RGB(255,0,0));
+		::TextOutA(hdc,x,y+600,text.c_str(),text.size());
+	}
+
+	DrawImpGDI::~DrawImpGDI(void)
+	{
+
+	}
+
+
+	DrawBase::DrawBase()
+	{
+
+	}
+
+	DrawBase::~DrawBase()
+	{
+
 	}
 
 }

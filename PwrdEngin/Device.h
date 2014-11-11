@@ -181,6 +181,7 @@ namespace SoftEngine
 		inline void DrawPixel(int x,int y,DWORD color=_RGB(255,255,255))
 		{
 			m_pBackBuffer[x+(m_iHeight-y-1)*m_iPitch]=color;
+		//	m_pBackBuffer[x+y*m_iPitch]=color;
 		}
 		
 		void DrawLine(int x0,int y0,int x1,int y1,int color=_RGB(255,255,255));
@@ -213,7 +214,7 @@ namespace SoftEngine
 		void SetTexture(bmp*pbmp);
 		
 	private:
-		DrawImpGDI *m_pDrawImpl;
+		DrawBase *m_pDrawImpl;
 		unsigned int *m_pBackBuffer;
 		int m_iPitch;
 		int m_iWidth;

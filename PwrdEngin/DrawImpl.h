@@ -11,17 +11,29 @@ namespace SoftEngine
 #define  _ARGB(a,r,g,b)   ((DWORD)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
 #define  _RGBA(r,g,b,a) _ARGB(a,r,g,b)
 #define  _RGB(r,g,b) _ARGB(0xff,r,g,b)
-	class DrawImplDXD7
+	class DrawBase
+	{
+	public:
+		DrawBase();
+		virtual ~DrawBase()=0;
+		virtual bool Init(HWND hwnd,int width,int height,int offsetx,int offsety,bool window=true)=0;	
+		virtual unsigned int *LockBackSurface(int *pitch,int *width,int *height)=0;
+		virtual void UnlockBackSurface()=0;
+		virtual void Flip()=0;
+		virtual void DrawTextGDI(const std::string &text, int x,int y,DWORD color)=0;
+		virtual void ClearBackBuffer(DWORD color=_RGB(0,0,0))=0;
+	};
+	class DrawImplDXD7:public DrawBase
 	{
 	public:
 		DrawImplDXD7(void);
 		~DrawImplDXD7(void);
 		bool Init(HWND hwnd,int width,int height,int offsetx,int offsety,bool window=true);	
 		void ClearSurface(CComPtr<IDirectDrawSurface7> surface,DWORD color);
-		void ClearBackBuffer(DWORD color=_RGB(0,0,0));
+		void ClearBackBuffer(DWORD color);
 		unsigned int *LockSurface(CComPtr<IDirectDrawSurface7> surface,int *pitch, int *width, int *height);
 		void UnlockSurface(CComPtr<IDirectDrawSurface7> surface);
-		unsigned char *LockBackSurface(int *pitch,int *width,int *height);
+		unsigned int *LockBackSurface(int *pitch,int *width,int *height);
 		void UnlockBackSurface();
 		void Flip();
 		void SetBackBufferCliper(RECT *rc=nullptr);
@@ -44,13 +56,13 @@ namespace SoftEngine
 		bool bWindow;
 		HWND m_hWnd;
 	};
-	class DrawImpGDI
+	class DrawImpGDI:public DrawBase
 	{
 	public:
 		DrawImpGDI();
 		~DrawImpGDI(void);
 		bool Init(HWND hwnd,int width,int height,int offsetx,int offsety,bool window=true);	
-		void ClearBackBuffer(DWORD color=_RGB(0,0,0));
+		void ClearBackBuffer(DWORD color);
 		unsigned int *LockBackSurface(int *pitch,int *width,int *height);
 		void UnlockBackSurface();
 		void Flip();

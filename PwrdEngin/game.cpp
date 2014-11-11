@@ -95,7 +95,6 @@ namespace SoftEngine
 		std::string to_dispaly;
 		ss<<"FPS:"<<GetFPS();
 		to_dispaly=ss.str();
-		cout<<to_dispaly<<endl;
 		m_pDevice->TextDraw(to_dispaly,0,0,_RGB(255,0,0));
 		ss.str("");
 		ss<<"Total face number:"<<m_pFbxPaser->GetFaceNumber();
