@@ -40,8 +40,8 @@ namespace SoftEngine
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\box_texture.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane_texture.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\tea.fbx");
-		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane2X2.fbx");
-		m_pFbxPaser->Load("E:\\scene_fbx\\test\\triangle_mesh.fbx");
+		m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane2X2.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\triangle_mesh.fbx");
 		//////////////////////////////////////////////////////////////////////////
 		m_pEasyCamera=new EASYCamera();
 		m_pEasyCamera->SetHWND(m_spMainWindow->m_hWnd);
