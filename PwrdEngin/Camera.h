@@ -123,8 +123,8 @@ namespace SoftEngine
 		const Matrix * GetWorldMatrix() const { return & world_;}
 		void SetWindow(int width,int height,float arcball_radius=0.9f)
 		{
-			world_arcball_.SetWindow(width,height,arcball_radius);
-			view_arcball_.SetWindow(width,height,arcball_radius);
+			world_arcball_.SetWindow(width-1,height-1,arcball_radius);
+			view_arcball_.SetWindow(width-1,height-1,arcball_radius);
 		}
 		void SetRaius(float radius){ radius_=radius;}
 	protected:

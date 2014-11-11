@@ -948,9 +948,9 @@ Quaternion Quaternion::operator*(const Quaternion & q)
 {
 	Quaternion p;
 	p.w=w*q.w-x*q.x-y*q.y-z*q.z;
-	p.x=w*q.x+x*q.w+y*q.z-z*q.y;
-	p.y=w*q.y-x*q.z+y*q.w+z*q.x;
-	p.z=w*q.z+x*q.y-y*q.x+z*q.w;
+	p.x=w*q.x+x*q.w+z*q.y-y*q.z;
+	p.y=w*q.y+y*q.w+x*q.z-z*q.x;
+	p.z=w*q.z+z*q.w+y*q.x-x*q.y;
 	return p;
 }
 

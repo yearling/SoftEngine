@@ -37,12 +37,13 @@ namespace SoftEngine
 		//m_pFbxPaser->Load("E:\\scene_fbx\\ring.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\pyramid.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\rectangle.fbx");
-		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\box_texture.fbx");
+		m_pFbxPaser->Load("E:\\scene_fbx\\test\\box_texture.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane_texture.fbx");
-		m_pFbxPaser->Load("E:\\scene_fbx\\test\\tea.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\tea.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane2X2.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\triangle_mesh.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\ball_ground.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\ball_ground_sm.fbx");
 		//////////////////////////////////////////////////////////////////////////
 		m_pEasyCamera=new EASYCamera();
 		m_pEasyCamera->SetHWND(m_spMainWindow->m_hWnd);
@@ -55,11 +56,6 @@ namespace SoftEngine
 		m_pEasyCamera->SetProjParam(PI*0.5f,(float)m_spMainWindow->m_iWidth/(float)
 			m_spMainWindow->m_iHeight,1.0f,1000.0f);
 		m_pBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\bb.bmp");
-		/*if(m_pBMP)
-		{
-			std::cout<<m_pBMP>width<<"		"<<m_pBMP>height<<std::endl;
-			std::cout<<m_pBMP->imageSize<<"		"<<m_pBMP>pixelPerBits<<std::endl;
-		}*/
 		m_pSamper=new TextureSampler();
 		m_pSamper->SetBMP(m_pBMP);
 	}
@@ -89,6 +85,21 @@ namespace SoftEngine
 
 			}
 			//iOnceTime=false;
+			/*ArcBall arc;
+			arc.SetWindow(799,599);
+			arc.OnBegin(23,45);
+			arc.OnMove(67,89);
+			std::cout<<arc.m_qNow<<std::endl;
+			arc.OnMove(478,234);
+			std::cout<<arc.m_qNow<<std::endl;
+			arc.OnEnd();
+			arc.OnBegin(200,300);
+			std::cout<<arc.m_qNow<<std::endl;
+			arc.OnMove(678,312);
+			std::cout<<arc.m_qNow<<std::endl;
+			arc.OnMove(554,143);
+			arc.OnEnd();
+			std::cout<<arc.m_qNow<<std::endl;*/
 		}			
 		//////////////////////////////////////////////////////////////////////////
 		//to dispaly FPS

@@ -23,6 +23,7 @@ namespace SoftEngine
 		out.m_vPosition=v.m_vPosition*m_matWorld*m_matView*m_matProject;
 		out.m_vColor=v.m_vColor;
 		out.m_vTexcoord=v.m_vTexcoord;
+		out.m_vNormal=v.m_vNormal;
 		Vector4 transNormal=Vector4(v.m_vNormal.x,v.m_vNormal.y,v.m_vNormal.z,0.0f);
 		transNormal*=m_matWorld;
 		out.m_vNormal=Vector3(transNormal.x,transNormal.y,transNormal.z).Normalize();

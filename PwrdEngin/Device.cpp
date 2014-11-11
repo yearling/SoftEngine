@@ -42,8 +42,8 @@ namespace SoftEngine
 			return false;
 		else
 		{
-			//m_pDrawImpl=new DrawImplDXD7();
-			m_pDrawImpl=new DrawImpGDI();
+			m_pDrawImpl=new DrawImplDXD7();
+			//m_pDrawImpl=new DrawImpGDI();
 			if(!m_pDrawImpl->Init(windows->m_hWnd,windows->m_iWidth,windows->m_iHeight,windows->m_iClientOffsetX,windows->m_iClientOffsetY,windows->m_bWindow))
 				return false;
 			m_iWidth=windows->m_iWidth;
