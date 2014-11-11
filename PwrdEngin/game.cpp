@@ -42,6 +42,7 @@ namespace SoftEngine
 		m_pFbxPaser->Load("E:\\scene_fbx\\test\\tea.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane2X2.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\triangle_mesh.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\ball_ground.fbx");
 		//////////////////////////////////////////////////////////////////////////
 		m_pEasyCamera=new EASYCamera();
 		m_pEasyCamera->SetHWND(m_spMainWindow->m_hWnd);
@@ -53,7 +54,7 @@ namespace SoftEngine
 		m_pEasyCamera->SetViewParam(&eye,&at);
 		m_pEasyCamera->SetProjParam(PI*0.5f,(float)m_spMainWindow->m_iWidth/(float)
 			m_spMainWindow->m_iHeight,1.0f,1000.0f);
-		m_pBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\aa.bmp");
+		m_pBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\bb.bmp");
 		/*if(m_pBMP)
 		{
 			std::cout<<m_pBMP>width<<"		"<<m_pBMP>height<<std::endl;
@@ -131,6 +132,11 @@ namespace SoftEngine
 		m_sd.project=*m_pEasyCamera->GetProjMatrix();
 		m_sd.viewPort=*m_pDevice->GetViewPort();
 		m_sd.m_pSamper=m_pSamper;
+		m_sd.direct=_RGB(255,0,0);
+		m_sd.ambient=_RGB(255,255,255);
+		m_sd.fAmbientScalar=0.2f;
+		m_sd.fDirectScalar=0.8f;
+		m_sd.vDirect=Vector3(-1,-1,-1).Normalize();
 		m_pDevice->SetGameSource((void*)&m_sd);
 	}
 

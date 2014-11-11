@@ -415,6 +415,7 @@ namespace SoftEngine
 		assert(iColorOffset==24 && "color offset should be 24");
 		int iUVOffset=m_pVertexDecl->GetUVOffset();
 		assert(iUVOffset==40 && "uv offset should be 40");
+		int iNormalOffset=m_pVertexDecl->GetNormalOffset();
 		int strip=m_pVertexDecl->GetSize();
 		const byte *vertex_buffer_trans=m_pDesVertexBuffer->GetBuffer()+base_vertex_index*strip;
 		const UINT *index_buffer_=m_pDesIndexBuffer->GetBuffer();
@@ -428,6 +429,7 @@ namespace SoftEngine
 				tmp_vertex.m_vPosition=ToVector3(vertex_buffer_trans,tmp_index,strip,position_offset);
 				tmp_vertex.m_vColor=ToVector4(vertex_buffer_trans,tmp_index,strip,iColorOffset);
 				tmp_vertex.m_vTexcoord=ToVector2(vertex_buffer_trans,tmp_index,strip,iUVOffset);
+				tmp_vertex.m_vNormal=ToVector3(vertex_buffer_trans,tmp_index,strip,iNormalOffset);
 				m_vecRenderBuffer.push_back(tmp_vertex);
 				m_vecIndexBuffer.push_back(i);
 		}

@@ -26,6 +26,12 @@ namespace SoftEngine
 		virtual void BeginSetGlobalParam();
 	private:
 		TextureSampler *m_pSamper;
+		Vector3 m_vLightDirection;
+		Color m_cDirectColor;
+		Color m_cAmbient;
+		Matrix m_matRotation;
+		float m_fDirectScalar;
+		float m_fAbmientScalar;
 	};
 }
 #endif

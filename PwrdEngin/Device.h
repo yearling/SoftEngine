@@ -66,6 +66,7 @@ namespace SoftEngine
 		inline int GetPositionOffset() const {return m_iPositionOffsetCached;}
 		inline int GetColorOffset() const {return m_iColorOffsetCached;}
 		inline int GetUVOffset() const {return m_iTexcoordOffsetCached;}
+		inline int GetNormalOffset() const {return m_iNormalOffsetCached;}
 		inline int GetSize(){ return m_iSize;}
 	private:
 		std::vector<VERTEXELEMENT> m_vecVertex;

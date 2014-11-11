@@ -13,6 +13,7 @@ class Vector3;
 class Vector4;
 class Matrix;
 class Quaternion;
+class Color;
 class Vector2
 {
 public:
@@ -76,6 +77,7 @@ public:
 	Vector4():x(0),y(0),z(0),w(1) {};
 	Vector4( const float* );
 	Vector4( float x, float y, float z, float w );
+	operator Color();
 	Vector4& operator=(const Vector3&);
 	Vector4& operator += ( const Vector4& );
 	Vector4& operator -= ( const Vector4& );
@@ -101,6 +103,19 @@ public:
 public:
 	float x, y, z, w;
 }; 
+class Color:public Vector4
+{
+public:
+	Color(){};
+	Color(float r,float g,float b,float a);
+	explicit Color(const Vector4 &);
+	explicit Color(int );
+	Color operator *(float ) const;
+	Color operator *(const Color &) const;
+	Color operator +(const Color &) const;
+	Color &Sature();
+	operator int();
+};
 class Matrix 
 {
 public:

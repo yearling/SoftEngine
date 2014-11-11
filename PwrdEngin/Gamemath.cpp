@@ -963,3 +963,72 @@ float Plane::operator*(const Vector4& v) const
 {
 	return x*v.x+y*v.y+z*v.z+w*v.w;
 }
+
+Color Color::operator*(float f) const
+{
+	return Color(x*f,y*f,z*f,w*f);
+}
+
+Color Color::operator*(const Color &c) const
+{
+	return Color(x*c.x,y*c.y,z*c.z,w*c.w);
+}
+Vector4::operator Color()
+{
+	return Color(*this);
+}
+Color::Color(int i)
+{
+	unsigned char a= (i>>24) & 0xff;
+	unsigned char r=(i>> 16) & 0xff;
+	unsigned char g=(i>> 8) & 0xff;
+	unsigned char b=i & 0xff;
+	x=float(r)/255;
+	y=float(g)/255;
+	z=float(b)/255;
+	w=float(a)/255;
+}
+
+Color::Color(const Vector4 &v)
+{
+	x=v.x;
+	y=v.y;
+	z=v.z;
+	w=v.w;
+}
+
+Color::Color(float r,float g,float b,float a):Vector4(r,g,b,a)
+{
+
+}
+
+Color::operator int()
+{
+	unsigned char r=x*255;
+	unsigned char g=y*255;
+	unsigned char b=z*255;
+	unsigned char a=w*255;
+	return _ARGB(a,r,g,b);
+}
+
+Color Color::operator+(const Color &c) const
+{
+	return Color(x+c.x,y+c.y,z+c.z,w+c.w); 
+}
+
+Color & Color::Sature()
+{
+	if(x>1.0f)
+		x=1.0f;
+	if(x<0.0f)
+		x=0.0f;
+	if(y>1.0f)
+		y=1.0f;
+	if(y<0.0f)
+		y=0.0f;
+	if(z>1.0f)
+		z=1.0f;
+	if(z<0.0f)
+		z=0.0f;
+	return *this;
+}
