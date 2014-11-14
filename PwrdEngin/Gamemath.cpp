@@ -943,6 +943,18 @@ int ToColor(const Vector4 &v)
 	return _ARGB(a,r,g,b);
 }
 
+Matrix * MatrixTranspose(Matrix*out,const Matrix *in)
+{
+	if(out==nullptr || in==nullptr)
+		return nullptr;
+	Matrix tmp=*in;
+	out->_11=tmp._11;out->_12=tmp._21;out->_13=tmp._31;out->_14=tmp._41;
+	out->_21=tmp._12;out->_22=tmp._22;out->_23=tmp._32;out->_24=tmp._42;
+	out->_31=tmp._13;out->_32=tmp._23;out->_33=tmp._33;out->_34=tmp._43;
+	out->_41=tmp._14;out->_42=tmp._24;out->_43=tmp._34;out->_44=tmp._44;
+	return out;
+}
+
 
 Quaternion Quaternion::operator*(const Quaternion & q)
 {

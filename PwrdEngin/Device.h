@@ -15,6 +15,7 @@ namespace SoftEngine
 		Vector3 m_vNormal;
 		Vector2 m_vTexcoord;
 		Vector4 m_vColor;
+		Vector3 m_vTangant;
 		bool m_bVisible;
 	};
 	struct VSShaderOutput
@@ -26,6 +27,7 @@ namespace SoftEngine
 		Vector3 m_vWordPOsition;
 		Vector2 m_vTexcoord;
 		Vector4 m_vColor;
+		Vector3 m_vTangant;
 		bool m_bVisible;
 	};
 	VSShaderOutput PrespectLerp(const VSShaderOutput &out0,const VSShaderOutput &out1,float f);
@@ -67,6 +69,7 @@ namespace SoftEngine
 		inline int GetColorOffset() const {return m_iColorOffsetCached;}
 		inline int GetUVOffset() const {return m_iTexcoordOffsetCached;}
 		inline int GetNormalOffset() const {return m_iNormalOffsetCached;}
+		inline int GetTangantOffset() const {return m_iTangantCached;}
 		inline int GetSize(){ return m_iSize;}
 	private:
 		std::vector<VERTEXELEMENT> m_vecVertex;
@@ -74,6 +77,7 @@ namespace SoftEngine
 		int m_iColorOffsetCached;
 		int m_iNormalOffsetCached;
 		int m_iTexcoordOffsetCached;
+		int m_iTangantCached;
 		int m_iSize;
 	};
 	

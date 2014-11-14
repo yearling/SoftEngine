@@ -23,6 +23,9 @@
 #include "Gamemath.h"
 #include "DrawImpl.h"
 #include "Device.h"
+#include "Camera.h"
+#include "FBXManager.h"
+
 using std::cout;
 using std::endl;
 using std::string;

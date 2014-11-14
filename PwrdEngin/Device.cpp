@@ -416,6 +416,7 @@ namespace SoftEngine
 		int iUVOffset=m_pVertexDecl->GetUVOffset();
 		assert(iUVOffset==40 && "uv offset should be 40");
 		int iNormalOffset=m_pVertexDecl->GetNormalOffset();
+		int iTangantOffset=m_pVertexDecl->GetTangantOffset();
 		int strip=m_pVertexDecl->GetSize();
 		const byte *vertex_buffer_trans=m_pDesVertexBuffer->GetBuffer()+base_vertex_index*strip;
 		const UINT *index_buffer_=m_pDesIndexBuffer->GetBuffer();
@@ -430,6 +431,7 @@ namespace SoftEngine
 				tmp_vertex.m_vColor=ToVector4(vertex_buffer_trans,tmp_index,strip,iColorOffset);
 				tmp_vertex.m_vTexcoord=ToVector2(vertex_buffer_trans,tmp_index,strip,iUVOffset);
 				tmp_vertex.m_vNormal=ToVector3(vertex_buffer_trans,tmp_index,strip,iNormalOffset);
+				tmp_vertex.m_vTangant=ToVector3(vertex_buffer_trans,tmp_index,strip,iTangantOffset);
 				m_vecRenderBuffer.push_back(tmp_vertex);
 				m_vecIndexBuffer.push_back(i);
 		}
@@ -834,6 +836,7 @@ namespace SoftEngine
 		m_iColorOffsetCached=0;
 		m_iNormalOffsetCached=0;
 		m_iTexcoordOffsetCached=0;
+		m_iTangantCached=0;
 		m_iSize=0;
 		if(v)
 		{
@@ -869,6 +872,8 @@ namespace SoftEngine
 				case DECLUSAGE_NORMAL:
 					 if(v->m_byteType==DECLTYPE_FLOAT3&&v->m_byteUsageIndex==0)		
 						m_iNormalOffsetCached=v->m_wOffset;
+					 if(v->m_byteType==DECLTYPE_FLOAT3&&v->m_byteUsageIndex==1)
+						 m_iTangantCached=v->m_wOffset;
 					 break;
 				case DECLUSAGE_TEXCOORD:
 					 if(v->m_byteType==DECLTYPE_FLOAT2&&v->m_byteUsageIndex==0)		

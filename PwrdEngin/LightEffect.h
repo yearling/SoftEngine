@@ -16,6 +16,7 @@ namespace SoftEngine
 		Matrix m_matWorld;
 		Matrix m_matView;
 		Matrix m_matProject;
+		Matrix m_matWorldInverseTranspose;
 	};
 	class GroundPixelShader:public IPixelShader
 	{
@@ -26,6 +27,7 @@ namespace SoftEngine
 		virtual void BeginSetGlobalParam();
 	private:
 		TextureSampler *m_pSamper;
+		TextureSampler *m_pNormalMapSamper;
 		Vector3 m_vLightDirection;
 		Color m_cDirectColor;
 		Color m_cAmbient;

@@ -51,6 +51,7 @@ namespace SoftEngine
 			{12,DECLTYPE_FLOAT3,DECLUSAGE_NORMAL,0},
 			{24,DECLTYPE_FLOAT4,DECLUSAGE_COLOR,0},
 			{40,DECLTYPE_FLOAT2,DECLUSAGE_TEXCOORD,0},
+			{48,DECLTYPE_FLOAT3,DECLUSAGE_NORMAL,1},
 			DECL_END()
 		};
 		m_pVertexDecl=m_pDevice->CreateVertexDeclaration(v_list);
@@ -109,9 +110,9 @@ namespace SoftEngine
 		Vector3 position[3];
 		Vector4 color[3];
 		Vector3 normal[3];
-		Vector2 uv[3][2];
+		Vector2 uv[3];
 		UINT   index_change[3];
-		
+		Vector3 tangant[3];
 		
 		UINT index_cur=0;//用来计算index
 		for(int i=0;i<triangle_count;i++)
@@ -121,34 +122,41 @@ namespace SoftEngine
 				int ctrl_point_index=mesh->GetPolygonVertex(i,j);
 				ProcessVertex(mesh,ctrl_point_index,position[j]);
 				for(int k=0;k<2;k++)
-				ProcessUV(mesh,ctrl_point_index,mesh->GetTextureUVIndex(i,j),k,uv[j][k]);
+				ProcessUV(mesh,ctrl_point_index,mesh->GetTextureUVIndex(i,j),0,uv[j]);
 				ProcessNormal(mesh,ctrl_point_index,vertex_count,normal[j]);
 				ProcessColor(mesh,ctrl_point_index,vertex_count,color[j]);
 				vertex_count++;
 			}
 			
 			//法向取反,z轴取反
-				for(int i=0;i<3;i++)
+			for(int i=0;i<3;i++)
+			{
+				position[i].z=-position[i].z;
+				normal[i]=normal[i];
+				normal[i].z=-normal[i].z;
+				uv[i].y=1.0f-uv[i].y;
+			}
+			CaculateTangant(position,uv,tangant);
+			for(int i=0;i<3;i++)
+			{
+				FbxRenderData da;
+				memset(&da,0,sizeof(da));
+				da.position=position[i];
+				da.normal=normal[i];
+				da.color=color[i];
+				da.uv=uv[i];
+				da.tangant=tangant[i];
+				UINT tmp;
+				if(FindSameRenderData(da,tmp))
 				{
-					FbxRenderData da;
-					memset(&da,0,sizeof(da));
-					da.position=position[i];
-					da.position.z=-da.position.z;
-					da.normal=-normal[i];
-					da.color=color[i];
-					da.uv=uv[i][0];
-					da.uv.y=1.0f-da.uv.y;
-					UINT tmp;
-					if(FindSameRenderData(da,tmp))
-					{
-						index_change[i]=tmp;
-					}
-					else
-					{
-						m_vecParseRenderDataBuffer.push_back(da);
-						index_change[i]=index_cur++;
-					}
+					index_change[i]=tmp;
 				}
+				else
+				{
+					m_vecParseRenderDataBuffer.push_back(da);
+					index_change[i]=index_cur++;
+				}
+			}
 				//反绕序
 				m_vecParseIndexBuffer.push_back(index_change[2]);
 				m_vecParseIndexBuffer.push_back(index_change[1]);
@@ -363,10 +371,32 @@ namespace SoftEngine
 
 	bool FbxRenderData::operator==(const FbxRenderData &data)
 	{
-		if(position==data.position && normal==data.normal && color==data.color && uv==data.uv)
+		if(position==data.position && normal==data.normal && color==data.color && uv==data.uv&&tangant==data.tangant)
 			return true;
 		else
 		return false;
 	}
+	void FbxPaser::CaculateTangant(const Vector3 position[3],const Vector2 uv[3],Vector3 tangant[3])
+	{
+		CaculateTangant(position[0],position[1],position[2],uv[0],uv[1],uv[2],tangant[0]);
+		CaculateTangant(position[1],position[2],position[0],uv[1],uv[2],uv[0],tangant[1]);
+		CaculateTangant(position[2],position[0],position[1],uv[2],uv[0],uv[1],tangant[2]);
+	}
+
+	void FbxPaser::CaculateTangant(const Vector3& position0,const Vector3 position1,const Vector3 position2, const Vector2& uv0,const Vector2& uv1,const Vector2 &uv2,Vector3 &tangant)
+	{
+		Vector3 e1=position1-position0;
+		Vector3 e2=position2-position0;
+		float t1=uv1.x-uv0.x;
+		float b1=uv1.y-uv0.y;
+		float t2=uv2.x-uv0.x;
+		float b2=uv2.y-uv0.y;
+		float dertamin=1/(t1*b2-b1*t2);
+		float tangX=b2*e1.x-b1*e2.x;
+		float tangY=b2*e1.y-b1*e2.y;
+		float tangZ=b2*e1.z-b1*e2.z;
+		tangant=Vector3(dertamin*tangX,dertamin*tangY,dertamin*tangZ).Normalize();
+	}
+
 
 }

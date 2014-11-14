@@ -13,6 +13,7 @@ namespace SoftEngine
 		Vector3 normal;
 		Vector4 color;
 		Vector2 uv;
+		Vector3 tangant;
 		bool operator==(const FbxRenderData &data);
 	};
 	class FbxPaser
@@ -39,6 +40,9 @@ namespace SoftEngine
 		void ProcessColor(FbxMesh*mesh,int index,int vertex_counter,Vector4 &v);
 		bool FindSameRenderData(const FbxRenderData &data,UINT &pos);
 	private:
+		void CaculateTangant(const Vector3 position[3],const Vector2 uv[3],Vector3 tangant[3]);
+		void CaculateTangant(const Vector3& position0,const Vector3 position1,const Vector3 position2,
+			const Vector2& uv0,const Vector2& uv1,const Vector2 &uv2,Vector3 &tangant);
 		FbxScene *m_pScene;
 		Device *m_pDevice;
 		string m_strFileName;
@@ -49,6 +53,7 @@ namespace SoftEngine
 		std::vector<UINT> m_vecParseIndexBuffer;//用vector保存，然后放入index_buffer，可以不用，但是为了与上面保持一致
 		UINT m_uNumFaces;
 		UINT m_uNumVertex;
+		string m_strLightDirect;
 	};
 }
 #endif

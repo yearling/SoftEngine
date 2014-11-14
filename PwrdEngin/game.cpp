@@ -37,13 +37,17 @@ namespace SoftEngine
 		//m_pFbxPaser->Load("E:\\scene_fbx\\ring.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\pyramid.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\rectangle.fbx");
-		m_pFbxPaser->Load("E:\\scene_fbx\\test\\box_texture.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\box_texture.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane_texture.fbx");
-		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\tea.fbx");
+		m_pFbxPaser->Load("E:\\scene_fbx\\test\\tea.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane2X2.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\triangle_mesh.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\ball_ground.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\ball_ground_sm.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane20bump.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane2x2bump.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\teaNormal.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\ballNormal.fbx");
 		//////////////////////////////////////////////////////////////////////////
 		m_pEasyCamera=new EASYCamera();
 		m_pEasyCamera->SetHWND(m_spMainWindow->m_hWnd);
@@ -55,9 +59,12 @@ namespace SoftEngine
 		m_pEasyCamera->SetViewParam(&eye,&at);
 		m_pEasyCamera->SetProjParam(PI*0.5f,(float)m_spMainWindow->m_iWidth/(float)
 			m_spMainWindow->m_iHeight,1.0f,1000.0f);
-		m_pBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\bb.bmp");
+		m_pBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\wall.bmp");
+		m_pNormalBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\wall_N.bmp");
 		m_pSamper=new TextureSampler();
+		m_pNormalMapSamper=new TextureSampler();
 		m_pSamper->SetBMP(m_pBMP);
+		m_pNormalMapSamper->SetBMP(m_pNormalBMP);
 	}
 	void Game::Render(float elpase_time)
 	{
@@ -85,21 +92,6 @@ namespace SoftEngine
 
 			}
 			//iOnceTime=false;
-			/*ArcBall arc;
-			arc.SetWindow(799,599);
-			arc.OnBegin(23,45);
-			arc.OnMove(67,89);
-			std::cout<<arc.m_qNow<<std::endl;
-			arc.OnMove(478,234);
-			std::cout<<arc.m_qNow<<std::endl;
-			arc.OnEnd();
-			arc.OnBegin(200,300);
-			std::cout<<arc.m_qNow<<std::endl;
-			arc.OnMove(678,312);
-			std::cout<<arc.m_qNow<<std::endl;
-			arc.OnMove(554,143);
-			arc.OnEnd();
-			std::cout<<arc.m_qNow<<std::endl;*/
 		}			
 		//////////////////////////////////////////////////////////////////////////
 		//to dispaly FPS
@@ -131,7 +123,7 @@ namespace SoftEngine
 		m_pEasyCamera->FrameMove(elpase_time);
 		//////////////////////////////////////////////////////////////////////////
 		static float angle=0.0f;
-		angle+=elpase_time*PI;
+		angle+=elpase_time*PI*0.2;
 		if(angle>PI*2)
 			angle=0.0f;
 		Matrix rote;
@@ -143,12 +135,32 @@ namespace SoftEngine
 		m_sd.project=*m_pEasyCamera->GetProjMatrix();
 		m_sd.viewPort=*m_pDevice->GetViewPort();
 		m_sd.m_pSamper=m_pSamper;
-		m_sd.direct=_RGB(255,0,0);
+		m_sd.m_pNormalSamper=m_pNormalMapSamper;
+		Matrix matIT;
+		MatrixInverse(&matIT,nullptr,&m_sd.world);
+		MatrixTranspose(&matIT,&matIT);
+		m_sd.matWorldInverseTranspose=matIT;
+		m_sd.direct=_RGB(255,255,255);
 		m_sd.ambient=_RGB(255,255,255);
-		m_sd.fAmbientScalar=0.2f;
-		m_sd.fDirectScalar=0.8f;
-		m_sd.vDirect=Vector3(-1,-1,-1).Normalize();
+		m_sd.fAmbientScalar=0.0f;
+		m_sd.fDirectScalar=2.0f;
+		static Vector3 lightdirect(0,0,-1);
+		if(m_bKeys[0])
+			lightdirect.x+=0.1f;
+		if(m_bKeys[1])
+			lightdirect.y+=0.1f;
+		if(m_bKeys[2])
+			lightdirect.z+=0.1f;
+		if(m_bKeys[3])
+			lightdirect.x-=0.1f;
+		if(m_bKeys[4])
+			lightdirect.y-=0.1f;
+		if(m_bKeys[5])
+			lightdirect.z-=0.1f;
+		m_sd.vDirect=lightdirect.Normalize();
 		m_pDevice->SetGameSource((void*)&m_sd);
+		std::stringstream ss;
+		ss<<"Light position:"<<m_sd.vDirect.x<<"	"<<m_sd.vDirect.y<<"	"<<m_sd.vDirect.z;
 	}
 
 	Game::Game()
@@ -165,6 +177,13 @@ namespace SoftEngine
 		m_pFbxPaser=nullptr;
 		m_pPS=nullptr;
 		m_pVS=nullptr;
+		m_pSamper=nullptr;
+		m_pNormalMapSamper=nullptr;
+		m_pNormalBMP=nullptr;
+		m_pBMP=nullptr;
+		m_pNormalBMP=nullptr;
+		for(int i=0;i<10;i++)
+			m_bKeys[i]=false;
 	}
 	int Game::Run()
 	{
@@ -209,6 +228,75 @@ namespace SoftEngine
 						SendMessage( hwnd, WM_CLOSE, 0, 0 );
 						break;
 					}
+				case 'J':
+					{
+						m_bKeys[0]=true;
+						break;
+					}
+				case 'K':
+					{
+						m_bKeys[1]=true;
+						break;
+					}
+				case 'L':
+					{
+						m_bKeys[2]=true;
+						break;
+					}
+				case 'U':
+					{
+						m_bKeys[3]=true;
+						break;
+					}
+				case 'I':
+					{
+						m_bKeys[4]=true;
+						break;
+					}
+				case 'O':
+					{
+						m_bKeys[5]=true;
+						break;
+					}
+				}
+				break;
+			}
+		case WM_KEYUP:
+			{
+				switch (wParam)
+				{
+				case 'J':
+					{
+						m_bKeys[0]=false;
+						break;
+					}
+				case 'K':
+					{
+						m_bKeys[1]=false;
+						break;
+					}
+				case 'L':
+					{
+						m_bKeys[2]=false;
+						break;
+					}
+				case 'U':
+					{
+						m_bKeys[3]=false;
+						break;
+					}
+				case 'I':
+					{
+						m_bKeys[4]=false;
+						break;
+					}
+				case 'O':
+					{
+						m_bKeys[5]=false;
+						break;
+					}
+				default:
+					break;
 				}
 				break;
 			}
