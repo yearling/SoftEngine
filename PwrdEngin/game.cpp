@@ -48,8 +48,7 @@ namespace SoftEngine
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane2x2bump.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\teaNormal.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\ballNormal.fbx");
-		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\ball_test.fbx");
-		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\rectangle_normal.fbx");
+
 		//////////////////////////////////////////////////////////////////////////
 		m_pEasyCamera=new EASYCamera();
 		m_pEasyCamera->SetHWND(m_spMainWindow->m_hWnd);
@@ -62,9 +61,7 @@ namespace SoftEngine
 		m_pEasyCamera->SetProjParam(PI*0.5f,(float)m_spMainWindow->m_iWidth/(float)
 			m_spMainWindow->m_iHeight,1.0f,1000.0f);
 		m_pBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\wall.bmp");
-		//m_pBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\wall_N_flat.bmp");
 		m_pNormalBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\wall_N.bmp");
-		//m_pNormalBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\wall_N_flat.bmp");
 		m_pSamper=new TextureSampler();
 		m_pNormalMapSamper=new TextureSampler();
 		m_pSamper->SetBMP(m_pBMP);

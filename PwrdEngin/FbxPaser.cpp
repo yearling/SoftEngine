@@ -584,5 +584,4 @@ namespace SoftEngine
 		return dwBaseUVIndex;
 	}
 
-
 }
