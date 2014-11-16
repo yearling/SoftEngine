@@ -28,20 +28,13 @@ namespace SoftEngine
 		MatrixIdentity(&m_matViewPort);
 	}
 
-	
-
-	/*bool Device::Init(DrawImplDXD7* draw_imp)
-	{
-		m_pDrawImpl=draw_imp;
-		return true;
-	}*/
-
 	bool Device::Init(const Window *windows)
 	{
 		if(windows==nullptr)
 			return false;
 		else
 		{
+			//切换用DirectSurface还是用GDI
 			m_pDrawImpl=new DrawImplDXD7();
 			//m_pDrawImpl=new DrawImpGDI();
 			if(!m_pDrawImpl->Init(windows->m_hWnd,windows->m_iWidth,windows->m_iHeight,windows->m_iClientOffsetX,windows->m_iClientOffsetY,windows->m_bWindow))
@@ -49,6 +42,7 @@ namespace SoftEngine
 			m_iWidth=windows->m_iWidth;
 			m_iHeight=windows->m_iHeight;
 		}
+		//分配Z-Buffer空间
 		z_buffer=new float[(m_iHeight+1)*(m_iWidth+1)];
 		return true;
 	}
@@ -57,7 +51,7 @@ namespace SoftEngine
 	{
 		return true;
 	}
-
+	//开始场景，获取显存
 	bool Device::BeginScene()
 	{
 		assert(m_pDrawImpl&&"render should init");
@@ -71,7 +65,7 @@ namespace SoftEngine
 		}
 		return false;
 	}
-
+	//结束场景
 	bool Device::EndScene()
 	{
 		m_pDrawImpl->UnlockBackSurface();
@@ -192,21 +186,20 @@ namespace SoftEngine
 		}
 		return true;
 	}
-
+	//Clear backcolor
 	bool Device::Clear(UINT color)
 	{
 		m_pDrawImpl->ClearBackBuffer(color);
-		
 		return true;
 	}
-
+	//呈现场景
 	bool Device::Present()
 	{
 		m_vecRenderBuffer.clear();
 		m_pDrawImpl->Flip();
 		return true;
 	}
-
+	//设置viewport
 	void Device::SetViewPort(int x/*=0*/,int y/*=0*/,int width/*=0*/,int height/*=0*/,float minZ/*=0.0f*/,float maxZ/*=1.0f*/)
 	{
 		if(width==0)
@@ -228,7 +221,7 @@ namespace SoftEngine
 			{
 				delete p;
 				return nullptr;
-		}
+			}
 	}
 
 	bool Device::SetVertexDeclaration(VertexDeclaration *p)
@@ -294,19 +287,21 @@ namespace SoftEngine
 			for(int j=0;j<m_iHeight;j++)
 				SetZBuffer(i,j,FLT_MAX);
 		assert(m_pDesVertexBuffer && m_pDesIndexBuffer &&m_pVertexDecl);
+		//把数据从FBX里按顶点声明读入
 		FillPipline(base_vertex_index,num_vertics,start_index,primitiveCount);
 		VSShaderOutput tmp;
+		//vs
 		std::for_each(m_vecRenderBuffer.begin(),m_vecRenderBuffer.end(),[&](RenderVertex & v)
 		{
 			m_pVs->VSMain(v,tmp);
 			tmp.m_vScreenPosition=tmp.m_vPosition*m_matViewPort;
 			tmp.m_vScreenPosition.ProjectDivied();
 			tmp.m_vProjectCutting=tmp.m_vPosition;
-			//tmp.m_vProjectCutting.ProjectDivied();
 			m_vecVSOutput.push_back(tmp);
 		});
 
 		//////////////////////////////////////////////////////////////////////////
+		//背面消隐
 		if(m_cullmode!=CULL_NONE)
 		for(UINT i=0;i<m_vecIndexBuffer.size();)
 		{
@@ -329,6 +324,7 @@ namespace SoftEngine
 		//////////////////////////////////////////////////////////////////////////
 		UINT           edges_index[3]; 
 		UINT           uPreventCullAgain;
+		//前剪裁面裁剪
 		for(UINT i=0;i<m_vecIndexBuffer.size();)
 		{
 			for(int j=0;j<3;j++,i++)
@@ -338,7 +334,7 @@ namespace SoftEngine
 		}
 		for(auto iter=m_vecVSOutput.begin();iter!=m_vecVSOutput.end();++iter)
 			iter->m_vProjectCutting.ProjectDivied();
-	
+		//左面剪裁
 		uPreventCullAgain=m_vecIndexBuffer.size();	
 		for(UINT i=0;i<uPreventCullAgain;)
 		{
@@ -347,7 +343,7 @@ namespace SoftEngine
 			//left
 			FaceCull(edges_index,Plane(1,0,0,1));
 		}
-		
+		//右面剪裁
 		uPreventCullAgain=m_vecIndexBuffer.size();	
 		for(UINT i=0;i<uPreventCullAgain;)
 		{
@@ -356,6 +352,7 @@ namespace SoftEngine
 			////right
 			FaceCull(edges_index,Plane(-1,0,0,1));
 		}
+		//上面剪裁
 		uPreventCullAgain=m_vecIndexBuffer.size();	
 		for(UINT i=0;i<uPreventCullAgain;)
 		{
@@ -364,7 +361,7 @@ namespace SoftEngine
 			////top
 			FaceCull(edges_index,Plane(0,-1,0,1));
 		}
-	
+		//下面剪裁
 		uPreventCullAgain=m_vecIndexBuffer.size();	
 		for(UINT i=0;i<uPreventCullAgain;)
 		{
@@ -373,6 +370,7 @@ namespace SoftEngine
 			////bottom
 			FaceCull(edges_index,Plane(0,1,0,1));
 		}
+		//远裁面剪裁
 		uPreventCullAgain=m_vecIndexBuffer.size();	
 		for(UINT i=0;i<uPreventCullAgain;)
 		{
@@ -435,9 +433,6 @@ namespace SoftEngine
 				m_vecRenderBuffer.push_back(tmp_vertex);
 				m_vecIndexBuffer.push_back(i);
 		}
-	/*	for(int i=0;i<m_vecIndexBuffer.size();i++)
-			std::cout<<m_vecRenderBuffer[m_vecIndexBuffer[i]].m_vTexcoord.x<<"		"
-					<<m_vecRenderBuffer[m_vecIndexBuffer[i]].m_vTexcoord.x<<std::endl;*/
 	}
 	void Device::FaceCull(UINT index[3],const Plane &CullPlane)
 	{
@@ -464,15 +459,18 @@ namespace SoftEngine
 		}
 		if(allInvisibal)
 			return;
+		//三个顶点都在面外，直接裁掉
 		if(outside_count==3)
 		{
 			for(int i=0;i<3;i++)
 				m_vecVSOutput[index[i]].m_bVisible=false;
 		}
+		//一个顶点在面内
 		if(inside_count==1)
 		{
 			OneVertexInView(inside_index[0],outside_index[0],outside_index[1],CullPlane);
 		}
+		//二个顶点在面内
 		if(inside_count==2)
 		{
 			TwoVertexInView(inside_index[0],inside_index[1],outside_index[0],CullPlane);
@@ -491,14 +489,12 @@ namespace SoftEngine
 		new0Out.m_bVisible=true;
 		VSShaderOutput new1Out=PrespectLerp(inVertex1,outVertex,lerp1out);	
 		new1Out.m_bVisible=true;
-	//	CullInScreen(new0Out.m_vScreenPosition.x,new0Out.m_vScreenPosition.y);
-	//	CullInScreen(new1Out.m_vScreenPosition.x,new1Out.m_vScreenPosition.y);
 		outVertex=new1Out;
+		//分裂成二个三角形
 		m_vecVSOutput.push_back(new0Out);
 		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
 		m_vecVSOutput.push_back(new1Out);
 		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
-		//m_vecIndexBuffer.push_back(inIndex0);
 		m_vecVSOutput.push_back(m_vecVSOutput[inIndex0]);
 		m_vecIndexBuffer.push_back(m_vecVSOutput.size()-1);
 	}
@@ -512,8 +508,7 @@ namespace SoftEngine
 		float lerpIn1=-cullPlane*inVertex.m_vProjectCutting/(cullPlane*(out1Vertex.m_vProjectCutting-inVertex.m_vProjectCutting));
 		VSShaderOutput newIn0=PrespectLerp(inVertex,out0Vertex,lerpIn0);
 		VSShaderOutput newIn1=PrespectLerp(inVertex,out1Vertex,lerpIn1);
-	//	CullInScreen(newIn0.m_vScreenPosition.x,newIn0.m_vScreenPosition.y);
-	//	CullInScreen(newIn1.m_vScreenPosition.x,newIn1.m_vScreenPosition.y);
+		//把外面的两个顶点换成新的顶点
 		newIn0.m_bVisible=true;
 		newIn1.m_bVisible=true;
 		m_vecVSOutput[outIndex0]=newIn0;
@@ -623,11 +618,9 @@ namespace SoftEngine
 
 	void Device::NearCull(UINT index[3],const Plane &CullPlane)
 	{
-		float cull;
 		bool allInvisibal=false;
 		for(int i=0;i<3;i++)
 		{
-			//cull=CullPlane*m_vecVSOutput[index[i]].m_vProjectCutting;
 			if(m_vecVSOutput[index[i]].m_vProjectCutting.w<1.0f)
 			{
 				allInvisibal=true;
@@ -689,8 +682,6 @@ namespace SoftEngine
 		VSShaderOutput tmp_right;
 		int yStart=ceil(y0);
 		int yEnd=ceil(y1)-1;
-		//FillLine(v0,v0);
-		//yStart++;
 		for(;yStart<=yEnd;yStart++)
 		{
 			lerp=(float(yStart)-y0)/(y1-y0);
@@ -710,6 +701,7 @@ namespace SoftEngine
 		float x2=v2.m_vScreenPosition.x;
 		float y2=v2.m_vScreenPosition.y;	
 		float change_lerp=(y1-y0)/(y2-y0);
+		//把普通三角形拆成一个平角一个平底三角形
 		VSShaderOutput tmp_change=PrespectLerp(v0,v2,change_lerp);
 		if(tmp_change.m_vScreenPosition.x<=v1.m_vScreenPosition.x)
 		{
@@ -745,7 +737,7 @@ namespace SoftEngine
 			{
 				color=m_pPs->PSMain(tmp);
 				DrawPixel(ceil(x1),y0,color);
-				SetZBuffer(ceil(x1),y0,tmp.m_vPosition.w+1);
+				SetZBuffer(ceil(x1),y0,tmp.m_vPosition.w);
 			}	
 		}
 		int xstart=ceil(x0);
@@ -755,14 +747,16 @@ namespace SoftEngine
 		{
 			lerp=(float(xstart)-x0)/(x1-x0);
 			tmp=PrespectLerp(out0,out1,lerp);	
+			//z-buffer判断
 			if(tmp.m_vPosition.w<=GetZBuffer(xstart,y0))
 			{
+				//ps
 				color=m_pPs->PSMain(tmp);
 				DrawPixel(xstart,y0,color);
-				SetZBuffer(xstart,y0,tmp.m_vPosition.w+1);
+				//设z-buffer值
+				SetZBuffer(xstart,y0,tmp.m_vPosition.w);
 			}
 		}
-		//std::cout<< "      "<<count<<std::endl;
 	}
 
 	void Device::FillLine(const VSShaderOutput &out0,const VSShaderOutput &out1,int nline)
@@ -771,7 +765,6 @@ namespace SoftEngine
 		x0=out0.m_vScreenPosition.x;
 		x1=out1.m_vScreenPosition.x;
 		y1=y0=nline;
-		
 		int color;
 		float lerp;
 		VSShaderOutput tmp;
@@ -788,7 +781,6 @@ namespace SoftEngine
 		}
 		int xstart=ceil(x0);
 		int xend=ceil(x1)-1;
-
 		for(;xstart<=xend;xstart++)
 		{
 			lerp=(float(xstart)-x0)/(x1-x0);
@@ -800,7 +792,6 @@ namespace SoftEngine
 				SetZBuffer(xstart,y0,tmp.m_vPosition.w);
 			}
 		}
-		//std::cout<< "      "<<count<<std::endl;
 	}
 
 	float Device::GetZBuffer(int x,int y)
@@ -1034,6 +1025,7 @@ namespace SoftEngine
 		float repo_z1=1/out1.m_vPosition.w;
 		float repo_z3=(1-f)*repo_z0+f*repo_z1;
 		float z3=1/repo_z3;
+		//屏幕座标线性插值
 		tmp.m_vScreenPosition=Lerp(out0.m_vScreenPosition,out1.m_vScreenPosition,f);
 		tmp.m_vProjectCutting=Lerp(out0.m_vProjectCutting*repo_z0,out1.m_vProjectCutting*repo_z1,f)*z3;
 		tmp.m_vPosition=Lerp(out0.m_vPosition*repo_z0,out1.m_vPosition*repo_z1,f)*z3;

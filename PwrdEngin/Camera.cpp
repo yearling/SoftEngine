@@ -5,26 +5,25 @@ namespace SoftEngine
 {
 	CameraBase::CameraBase(void)
 	{
-		keys_down_=0;
-		memset(key_mask_,0,sizeof(byte)*KEY_MOVE_MAX);
+		m_iKeysDown=0;
+		memset(m_bKeyMasks,0,sizeof(byte)*KEY_MOVE_MAX);
 		Vector3 eye=Vector3(0.0f,0.0f,0.0f);
 		Vector3 lookat=Vector3(0.0f,0.0f,0.0f);
 		SetViewParam(&eye,&lookat);
 		SetProjParam(PI/4,1.0f,1.0f,1000.f);
-		GetCursorPos(&last_mouse_position_);
-		mouse_wheel_delta_=0;
-		camera_yaw_angle_=0.0f;
-		camera_pitch_angle_=0.0f;
-		SetRect(&drag_rc_,LONG_MIN,LONG_MIN,LONG_MAX,LONG_MAX);
-		velocity_=Vector3(0.0f,0.0f,0.0f);
-		rotation_scaler_=0.01f;
-		move_scaler_=5.0f;
-		mouse_delta_=Vector2(0,0);
-		clip_to_boundary_=false;
-		min_boundary_=Vector3(-1,-1,-1);
-		max_boundary_=Vector3(1,1,1);
-		reset_cursor_after_move_=false;
-		hwnd_=NULL;
+		GetCursorPos(&m_ptLastMousePosition);
+		m_iMouseWhellDelta=0;
+		m_fCamerYawAngle=0.0f;
+		m_fCameraPitchAngle=0.0f;
+		SetRect(&m_rcDragRect,LONG_MIN,LONG_MIN,LONG_MAX,LONG_MAX);
+		m_fRotationScalar=0.01f;
+		m_fMoveScalar=5.0f;
+		m_vMouseDelta=Vector2(0,0);
+		m_bClipToBoundary=false;
+		m_vMinBoundary=Vector3(-1,-1,-1);
+		m_vMaxBoundary=Vector3(1,1,1);
+		m_bResetCursorAfterMove=false;
+		m_hwnd=NULL;
 	}
 
 
@@ -36,10 +35,10 @@ namespace SoftEngine
 	{
 		if(NULL==eye || NULL==lookat)
 			return;
-		default_eye_=eye_=*eye;
-		default_lookat_=lookat_= *lookat;
+		m_vDefaultEye=m_vEye=*eye;
+		m_vDefaultLookAt=m_vLookAt= *lookat;
 		Vector3 up(0,1,0);
-		MatrixLookAtLH(&view_,&eye_,&lookat_,&up);
+		MatrixLookAtLH(&m_matView,&m_vEye,&m_vLookAt,&up);
 		//先pitch 再yaw
 		//得到的view其实是视坐标基的逆，所以要先进行一次逆得到视坐标的基
 		//然后得到Z轴坐标，进行计算。
@@ -52,11 +51,11 @@ namespace SoftEngine
 		//然后因为刚才绕Y轴旋转，投影到XZ平面上的sqrt(x^2+z^2)长度不变，就是现在Y轴投到Z轴上的长度，
 		//所以绕X轴的旋角为arctan(y,sqrt(x^2+z^2)),角度从Z到Y，反方向，取负
 		Matrix inverse_view;
-		MatrixInverse(&inverse_view,NULL,&view_);
+		MatrixInverse(&inverse_view,NULL,&m_matView);
 		Vector3 * z_basis=(Vector3*)&inverse_view._31;
-		camera_yaw_angle_=atan2f(z_basis->x,z_basis->z);
+		m_fCamerYawAngle=atan2f(z_basis->x,z_basis->z);
 		float len=sqrtf(z_basis->z*z_basis->z+z_basis->x*z_basis->x);
-		camera_pitch_angle_=-atan2f(z_basis->y,len);
+		m_fCameraPitchAngle=-atan2f(z_basis->y,len);
 	}
 
 	bool CameraBase::HandleMessage(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
@@ -68,16 +67,16 @@ namespace SoftEngine
 				switch(wParam)
 				{
 				case 'W':
-					key_mask_[KEY_MOVE_FORWARD]=true;
+					m_bKeyMasks[KEY_MOVE_FORWARD]=true;
 					break;
 				case 'S':
-					key_mask_[KEY_MOVE_BACKWARD]=true;
+					m_bKeyMasks[KEY_MOVE_BACKWARD]=true;
 					break;
 				case 'A':
-					key_mask_[KEY_MOVE_LEFT]=true;
+					m_bKeyMasks[KEY_MOVE_LEFT]=true;
 					break;
 				case 'D':
-					key_mask_[KEY_MOVE_RIGHT]=true;
+					m_bKeyMasks[KEY_MOVE_RIGHT]=true;
 					break;
 				}
 
@@ -88,22 +87,22 @@ namespace SoftEngine
 				switch(wParam)
 				{
 				case 'W':
-					key_mask_[KEY_MOVE_FORWARD]=false;
+					m_bKeyMasks[KEY_MOVE_FORWARD]=false;
 					break;
 				case 'S':
-					key_mask_[KEY_MOVE_BACKWARD]=false;
+					m_bKeyMasks[KEY_MOVE_BACKWARD]=false;
 					break;
 				case 'A':
-					key_mask_[KEY_MOVE_LEFT]=false;
+					m_bKeyMasks[KEY_MOVE_LEFT]=false;
 					break;
 				case 'D':
-					key_mask_[KEY_MOVE_RIGHT]=false;
+					m_bKeyMasks[KEY_MOVE_RIGHT]=false;
 					break;
 				}
 				break;
 			}
 		case WM_MOUSEWHEEL:
-			mouse_wheel_delta_+=(short)HIWORD(wParam)*0.2;
+			m_iMouseWhellDelta+=(short)HIWORD(wParam)*0.2;
 			break;
 		}
 		return false;
@@ -111,29 +110,29 @@ namespace SoftEngine
 
 	void CameraBase::SetProjParam(float FOV,float aspect,float near_plane,float far_plane)
 	{
-		FOV_=FOV;
-		aspect_=aspect;
-		near_plane_=near_plane;
-		far_plane_=far_plane;
-		MatrixPerspectiveFOVLH(&pro_,FOV_,aspect_,near_plane_,far_plane_);
+		m_fFOV=FOV;
+		m_fAspect=aspect;
+		m_fNearPlane=near_plane;
+		m_fFarPlane=far_plane;
+		MatrixPerspectiveFOVLH(&m_matProject,m_fFOV,m_fAspect,m_fNearPlane,m_fFarPlane);
 	}
 
 	void CameraBase::GetInput(bool reset_cursor_after_move)
 	{
-		reset_cursor_after_move_=reset_cursor_after_move;
-		keyboard_direction_=Vector3(0,0,0);
-		if(key_mask_[KEY_MOVE_FORWARD])
-			keyboard_direction_.z+=1.0f;
-		if(key_mask_[KEY_MOVE_BACKWARD])
-			keyboard_direction_.z-=1.0f;
-		if(key_mask_[KEY_MOVE_UP])
-			keyboard_direction_.y+=1.0f;
-		if(key_mask_[KEY_MOVE_DOWN])
-			keyboard_direction_.y-=1.0f;
-		if(key_mask_[KEY_MOVE_RIGHT])
-			keyboard_direction_.x+=1.0f;
-		if(key_mask_[KEY_MOVE_LEFT])
-			keyboard_direction_.z-=1.0f;
+		m_bResetCursorAfterMove=reset_cursor_after_move;
+		m_vKeyboradDirection=Vector3(0,0,0);
+		if(m_bKeyMasks[KEY_MOVE_FORWARD])
+			m_vKeyboradDirection.z+=1.0f;
+		if(m_bKeyMasks[KEY_MOVE_BACKWARD])
+			m_vKeyboradDirection.z-=1.0f;
+		if(m_bKeyMasks[KEY_MOVE_UP])
+			m_vKeyboradDirection.y+=1.0f;
+		if(m_bKeyMasks[KEY_MOVE_DOWN])
+			m_vKeyboradDirection.y-=1.0f;
+		if(m_bKeyMasks[KEY_MOVE_RIGHT])
+			m_vKeyboradDirection.x+=1.0f;
+		if(m_bKeyMasks[KEY_MOVE_LEFT])
+			m_vKeyboradDirection.z-=1.0f;
 	}
 
 
@@ -233,11 +232,11 @@ namespace SoftEngine
 
 	EASYCamera::EASYCamera()
 	{
-		radius_=10.0f;
-		MatrixIdentity(&world_);
-		MatrixIdentity(&view_);
-		MatrixIdentity(&last_world_rotate);
-		MatrixIdentity(&final_world_rotate);
+		m_fRadius=10.0f;
+		MatrixIdentity(&m_matWorld);
+		MatrixIdentity(&m_matView);
+		MatrixIdentity(&m_matLastWorldRotate);
+		MatrixIdentity(&m_matFinalWorldRotate);
 	}
 
 	EASYCamera::~EASYCamera()
@@ -252,38 +251,38 @@ namespace SoftEngine
 		{
 			int x=(short)LOWORD(lParam);
 			int y=(short)HIWORD(lParam);
-			world_arcball_.OnBegin(x,y);
+			m_WorldArcBall.OnBegin(x,y);
 		}
 		if(uMsg==WM_RBUTTONDOWN )
 		{
 			int x=(short)LOWORD(lParam);
 			int y=(short)HIWORD(lParam);
-			view_arcball_.OnBegin(x,y);
+			m_ViewArcBall.OnBegin(x,y);
 		} 
 		if(uMsg==WM_MOUSEMOVE)
 		{
 			int x=(short)LOWORD(lParam);
 			int y=(short)HIWORD(lParam);
-			world_arcball_.OnMove(x,y);
-			view_arcball_.OnMove(x,y);
+			m_WorldArcBall.OnMove(x,y);
+			m_ViewArcBall.OnMove(x,y);
 		}
 		if(uMsg==WM_LBUTTONUP)
 		{
 			int x=(short)LOWORD(lParam);
 			int y=(short)HIWORD(lParam);
-			world_arcball_.OnEnd();
+			m_WorldArcBall.OnEnd();
 		}
 		if(uMsg==WM_RBUTTONUP)
 		{
 			int x=(short)LOWORD(lParam);
 			int y=(short)HIWORD(lParam);
-			view_arcball_.OnEnd();
+			m_ViewArcBall.OnEnd();
 		}
 		if(uMsg==WM_CAPTURECHANGED)
 		{
 			if(hwnd!=(HWND)lParam)
 			{
-				world_arcball_.OnEnd();
+				m_WorldArcBall.OnEnd();
 			}
 		}
 		return false;
@@ -291,52 +290,52 @@ namespace SoftEngine
 
 	void EASYCamera::FrameMove(float elapse_time)
 	{
-		radius_-=mouse_wheel_delta_*elapse_time;	
-		mouse_wheel_delta_=0;
+		m_fRadius-=m_iMouseWhellDelta*elapse_time;	
+		m_iMouseWhellDelta=0;
 		Matrix view_arcball;
-		MatrixInverse(&view_arcball,nullptr,view_arcball_.GetRotationMatrix());
+		MatrixInverse(&view_arcball,nullptr,m_ViewArcBall.GetRotationMatrix());
 		Vector3 local_ahead(0.0f,0.0f,1.0f);
 		Vector3 local_up(0.0f,1.0f,0.0f);
 		Vector3 world_lookat,world_up;
 		Vec3TransformCoord(&world_up,&local_up,&view_arcball);
 		Vec3TransformCoord(&world_lookat,&local_ahead,&view_arcball);
-		eye_=lookat_-world_lookat*radius_;
-		MatrixLookAtLH(&view_,&eye_,&lookat_,&world_up);
+		m_vEye=m_vLookAt-world_lookat*m_fRadius;
+		MatrixLookAtLH(&m_matView,&m_vEye,&m_vLookAt,&world_up);
 		Matrix view_inverse;
-		Matrix world_rotate_view=*world_arcball_.GetRotationMatrix();
+		Matrix world_rotate_view=*m_WorldArcBall.GetRotationMatrix();
 		Matrix last_world_rotate_invert;
-		MatrixInverse(&last_world_rotate_invert,nullptr,&last_world_rotate);
-		MatrixInverse(&view_inverse,nullptr,&view_);
-		final_world_rotate*=view_*last_world_rotate_invert*world_rotate_view*view_inverse;
+		MatrixInverse(&last_world_rotate_invert,nullptr,&m_matLastWorldRotate);
+		MatrixInverse(&view_inverse,nullptr,&m_matView);
+		m_matFinalWorldRotate*=m_matView*last_world_rotate_invert*world_rotate_view*view_inverse;
 		//这个时候也不知道旋转哪去了，who care,最后把那放到指定位置就行了。
-		world_=final_world_rotate;
-		world_._41=lookat_.x;
-		world_._42=lookat_.y;
-		world_._43=lookat_.z;
-		last_world_rotate=world_rotate_view;
+		m_matWorld=m_matFinalWorldRotate;
+		m_matWorld._41=m_vLookAt.x;
+		m_matWorld._42=m_vLookAt.y;
+		m_matWorld._43=m_vLookAt.z;
+		m_matLastWorldRotate=world_rotate_view;
 		//////////////////////////////////////////////////////////////////////////
 		static float y=0;
 		static float x=0;
 		float scalar=0.5f;
-		if(key_mask_[KEY_MOVE_FORWARD]==true)
+		if(m_bKeyMasks[KEY_MOVE_FORWARD]==true)
 		{
-			y+=elapse_time*radius_*scalar;
+			y+=elapse_time*m_fRadius*scalar;
 		}
-		if(key_mask_[KEY_MOVE_BACKWARD]==true)
+		if(m_bKeyMasks[KEY_MOVE_BACKWARD]==true)
 		{
-			y-=elapse_time*radius_*scalar;
+			y-=elapse_time*m_fRadius*scalar;
 		}
-		if(key_mask_[KEY_MOVE_LEFT]==true)
+		if(m_bKeyMasks[KEY_MOVE_LEFT]==true)
 		{
-			x-=elapse_time*radius_*scalar;	
+			x-=elapse_time*m_fRadius*scalar;	
 		}
-		if(key_mask_[KEY_MOVE_RIGHT]==true)
+		if(m_bKeyMasks[KEY_MOVE_RIGHT]==true)
 		{
-			x+=elapse_time*radius_*scalar;
+			x+=elapse_time*m_fRadius*scalar;
 		}
-		world_._42+=y;
-		world_._41+=x;
-		world_._43+=0;
+		m_matWorld._42+=y;
+		m_matWorld._41+=x;
+		m_matWorld._43+=0;
 	}
 
 }

@@ -67,51 +67,50 @@ namespace SoftEngine
 		//virtual void Reset();
 		virtual void SetViewParam(Vector3* eye,Vector3 *lookat);
 		virtual void SetProjParam(float FOV,float aspect,float near_plane,float far_plane);
-		virtual void SetDragRect(RECT &rc) {drag_rc_=rc;}
-		void SetHWND(HWND hwnd){ hwnd_=hwnd;}
-		void SetWindow(int width,int height){width_=width;height_=height;}
-		void SetScalers(float rotation_scaler=0.01f,float move_scaler=5.0f){ rotation_scaler_=rotation_scaler;move_scaler_=move_scaler;}
-		const Matrix * GetViewMatrix() const { return & view_;}
-		const Matrix * GetProjMatrix() const { return & pro_;}
-		const Vector3 * GetEyePt() const { return & eye_;}
-		const Vector3 * GetLookatPt() const { return & lookat_;}
-		float GetNearClip() const { return near_plane_;}
-		float GetFarClip() const { return far_plane_;}
+		virtual void SetDragRect(RECT &rc) {m_rcDragRect=rc;}
+		void SetHWND(HWND hwnd){ m_hwnd=hwnd;}
+		void SetWindow(int width,int height){m_iWidth=width;m_iHeight=height;}
+		void SetScalers(float rotation_scaler=0.01f,float move_scaler=5.0f){ m_fRotationScalar=rotation_scaler;m_fMoveScalar=move_scaler;}
+		const Matrix * GetViewMatrix() const { return & m_matView;}
+		const Matrix * GetProjMatrix() const { return & m_matProject;}
+		const Vector3 * GetEyePt() const { return & m_vEye;}
+		const Vector3 * GetLookatPt() const { return & m_vLookAt;}
+		float GetNearClip() const { return m_fNearPlane;}
+		float GetFarClip() const { return m_fFarPlane;}
 	protected:
 		bool IsKeyDown(BYTE key) const 
 		{
-			return key_mask_[key];
+			return m_bKeyMasks[key];
 		}
 		void GetInput(bool reset_cursor_after_move);
-		Matrix view_;
-		Matrix pro_;
-		int keys_down_;
-		bool key_mask_[KEY_MOVE_MAX];//存放各CAM的状态，主要是key控制的状态
-		Vector3 keyboard_direction_;
-		POINT last_mouse_position_;
-		int mouse_wheel_delta_;
-		Vector2 mouse_delta_;
-		Vector3 default_eye_;
-		Vector3 default_lookat_;
-		Vector3 eye_;
-		Vector3 lookat_;
-		float camera_yaw_angle_;
-		float camera_pitch_angle_;
-		RECT drag_rc_;
-		Vector3 velocity_;
-		float FOV_;
-		float aspect_;
-		float near_plane_;
-		float far_plane_;
-		float rotation_scaler_;
-		float move_scaler_;
-		bool clip_to_boundary_;
-		Vector3 min_boundary_;
-		Vector3 max_boundary_;
-		bool reset_cursor_after_move_;
-		HWND hwnd_;
-		int width_;
-		int height_;
+		Matrix m_matView;
+		Matrix m_matProject;
+		int m_iKeysDown;
+		bool m_bKeyMasks[KEY_MOVE_MAX];//存放各CAM的状态，主要是key控制的状态
+		Vector3 m_vKeyboradDirection;
+		POINT m_ptLastMousePosition;
+		int m_iMouseWhellDelta;
+		Vector2 m_vMouseDelta;
+		Vector3 m_vDefaultEye;
+		Vector3 m_vDefaultLookAt;
+		Vector3 m_vEye;
+		Vector3 m_vLookAt;
+		float m_fCamerYawAngle;
+		float m_fCameraPitchAngle;
+		RECT m_rcDragRect;
+		float m_fFOV;
+		float m_fAspect;
+		float m_fNearPlane;
+		float m_fFarPlane;
+		float m_fRotationScalar;
+		float m_fMoveScalar;
+		bool m_bClipToBoundary;
+		Vector3 m_vMinBoundary;
+		Vector3 m_vMaxBoundary;
+		bool m_bResetCursorAfterMove;
+		HWND m_hwnd;
+		int m_iWidth;
+		int m_iHeight;
 	};
 	class EASYCamera:public CameraBase
 	{
@@ -120,20 +119,20 @@ namespace SoftEngine
 		~EASYCamera();
 		virtual bool HandleMessage(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam);
 		virtual void FrameMove(float elapse_time);
-		const Matrix * GetWorldMatrix() const { return & world_;}
+		const Matrix * GetWorldMatrix() const { return & m_matWorld;}
 		void SetWindow(int width,int height,float arcball_radius=0.9f)
 		{
-			world_arcball_.SetWindow(width-1,height-1,arcball_radius);
-			view_arcball_.SetWindow(width-1,height-1,arcball_radius);
+			m_WorldArcBall.SetWindow(width-1,height-1,arcball_radius);
+			m_ViewArcBall.SetWindow(width-1,height-1,arcball_radius);
 		}
-		void SetRaius(float radius){ radius_=radius;}
+		void SetRaius(float radius){ m_fRadius=radius;}
 	protected:
-		Matrix world_;
-		ArcBall view_arcball_;
-		ArcBall world_arcball_;
-		float radius_;
-		Matrix last_world_rotate;
-		Matrix final_world_rotate;
+		Matrix m_matWorld;
+		ArcBall m_ViewArcBall;
+		ArcBall m_WorldArcBall;
+		float m_fRadius;
+		Matrix m_matLastWorldRotate;
+		Matrix m_matFinalWorldRotate;
 	};
 }
 #endif
