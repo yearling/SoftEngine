@@ -40,7 +40,11 @@ namespace SoftEngine
 		IVertexShader *m_pVS;
 		IPixelShader *m_pPS;
 		bmp *m_pBMP;
+		bmp *m_pNormalBMP;
 		TextureSampler *m_pSamper;
+		TextureSampler *m_pNormalMapSamper;
+		bool m_bKeys[10];
+		string m_strLight;
 	private:
 		void AllocConsoleDebug();
 	};

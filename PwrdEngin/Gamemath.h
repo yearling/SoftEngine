@@ -12,6 +12,7 @@ class Vector2;
 class Vector3;
 class Vector4;
 class Matrix;
+class Matrix3x3;
 class Quaternion;
 class Color;
 class Vector2
@@ -57,6 +58,7 @@ public:
 	Vector3 operator + ( const Vector3& ) const;
 	Vector3 operator - ( const Vector3& ) const;
 	Vector3 operator * ( float ) const;
+	Vector3 operator *(const  Matrix3x3 &) const;
 	Vector3 operator / ( float ) const;
 	bool operator == ( const Vector3& ) const;
 	bool operator != ( const Vector3& ) const;
@@ -68,6 +70,7 @@ public:
 	float Dot(const Vector3 &) const;
 	float Dot(const Vector3 *) const;
 	float operator*(const Vector3 &)const;
+	float GetLength() const;
 public:
 	float x,y,z;
 };
@@ -115,6 +118,28 @@ public:
 	Color operator +(const Color &) const;
 	Color &Sature();
 	operator int();
+};
+class Matrix3x3
+{
+public:
+	Matrix3x3() {};
+	Matrix3x3(const float *);
+	explicit Matrix3x3(const Matrix &);
+	Matrix3x3(const Vector3 &,const Vector3 &,const Vector3 &);
+	union {
+		struct {
+			float        _11, _12, _13;
+			float        _21, _22, _23;
+			float        _31, _32, _33;
+		};
+		float m[3][3];
+		struct  
+		{
+			Vector3 u;
+			Vector3 v;
+			Vector3 n;
+		};
+	};
 };
 class Matrix 
 {
@@ -191,11 +216,13 @@ Matrix *MatrixRotationY(Matrix *out,float angle);
 Matrix *MatrixRotationZ(Matrix *out,float angle);
 Matrix *MatrixTranslation(Matrix *out,float x,float y,float z);
 Matrix *MatrixInverse(Matrix*out,float *determin,const Matrix *in);
+Matrix *MatrixTranspose(Matrix*out,const Matrix *in);
 Matrix *MatrixRotationQuaternion(Matrix *out,const Quaternion *q);
 Quaternion * QuaternionIdentity(Quaternion *q);
 void Normalize(Vector4 *v);
 void Normalize(Vector3 *v);
 void Normalize(Vector2 *v);
+Vector3* Normalize(Vector3 *vout,const Vector3 *vin);
 float Dot(const Vector2*v1,const Vector2*v2);
 float Dot(const Vector3*v1,const Vector3*v2);
 float Dot(const Vector4*v1,const Vector4*v2);
@@ -221,4 +248,5 @@ Vector3 Lerp(const Vector3 &v0,const Vector3&v1,float f);
 Vector4 Lerp(const Vector4 &v0,const Vector4&v1,float f);
 
 int ToColor(const Vector4 &v);
+float GetAngle(const Vector3 &,const Vector3 &);
 #endif

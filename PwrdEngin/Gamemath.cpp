@@ -182,6 +182,15 @@ float Vector3::operator*(const Vector3 &v) const
 	return x*v.x+y*v.y+z*v.z;
 }
 
+Vector3 Vector3::operator*(const Matrix3x3 &mat) const
+{
+	Vector3 tmp;
+	tmp.x=x*mat._11+y*mat._21+z*mat._31;
+	tmp.y=x*mat._12+y*mat._22+z*mat._32;
+	tmp.z=x*mat._13+y*mat._23+z*mat._33;
+	return tmp;
+}
+
 Vector3 Vector3::operator/(float scalar) const
 {
 	return Vector3(x/scalar,y/scalar,z/scalar);
@@ -246,12 +255,15 @@ float Vector3::Dot(const Vector3 *p) const
 
 Vector3& Vector3::operator=(const Vector4&v)
 {
-	if(v.w==0.0f)
-		return *this;
-	x=v.x/v.w;
-	y=v.y/v.w;
-	z=v.z/v.w;
+	x=v.x;
+	y=v.y;
+	z=v.z;
 	return *this;
+}
+
+float Vector3::GetLength() const
+{
+	return sqrtf(x*x+y*y+z*z);
 }
 
 std::ostream& operator<<(std::ostream & out,Vector3&v)
@@ -709,6 +721,13 @@ void Normalize(Vector2 *v)
 	v->y=v->y/sqr;
 }
 
+Vector3* Normalize(Vector3 *vout,const Vector3 *vin)
+{
+	Vector3 tmp=*vin;
+	*vout=tmp.Normalize();
+	return vout;
+}
+
 float Dot(const Vector2*v1,const Vector2*v2)
 {
 	return v1->x*v2->x+v1->y*v2->y;
@@ -943,6 +962,29 @@ int ToColor(const Vector4 &v)
 	return _ARGB(a,r,g,b);
 }
 
+Matrix * MatrixTranspose(Matrix*out,const Matrix *in)
+{
+	if(out==nullptr || in==nullptr)
+		return nullptr;
+	Matrix tmp=*in;
+	out->_11=tmp._11;out->_12=tmp._21;out->_13=tmp._31;out->_14=tmp._41;
+	out->_21=tmp._12;out->_22=tmp._22;out->_23=tmp._32;out->_24=tmp._42;
+	out->_31=tmp._13;out->_32=tmp._23;out->_33=tmp._33;out->_34=tmp._43;
+	out->_41=tmp._14;out->_42=tmp._24;out->_43=tmp._34;out->_44=tmp._44;
+	return out;
+}
+
+float GetAngle(const Vector3 & v1,const Vector3 &v2)
+{
+	float lenght=v1.GetLength()*v2.GetLength();
+	if(lenght<0.000001f)
+		lenght=0.00001f;
+	float f=(v1*v2)/lenght;
+	if(f>1.0f) f=1.0f;
+	else if(f<-1.0f) f=-1.0f;
+	return (float)acos(f);
+}
+
 
 Quaternion Quaternion::operator*(const Quaternion & q)
 {
@@ -1031,4 +1073,25 @@ Color & Color::Sature()
 	if(z<0.0f)
 		z=0.0f;
 	return *this;
+}
+
+Matrix3x3::Matrix3x3(const Matrix & mat)
+{
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			m[i][j]=mat.m[i][j];
+}
+
+Matrix3x3::Matrix3x3(const Vector3 &u,const Vector3 &v,const Vector3 &n)
+{
+	m[0][0]=u.x;m[0][1]=u.y;m[0][2]=u.z;
+	m[1][0]=v.x;m[1][1]=v.y;m[1][2]=v.z;
+	m[2][0]=n.x;m[2][1]=n.y;m[2][2]=n.z;
+}
+
+Matrix3x3::Matrix3x3(const float *f)
+{
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			m[i][j]=f[i*3+j];
 }
