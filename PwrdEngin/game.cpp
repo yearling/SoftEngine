@@ -134,6 +134,7 @@ namespace SoftEngine
 		memset(&m_sd,0,sizeof(SeftData));
 		m_sd.world=*m_pEasyCamera->GetWorldMatrix();
 		m_sd.view=*m_pEasyCamera->GetViewMatrix();
+		m_sd.eye=*m_pEasyCamera->GetEyePt();
 		m_sd.project=*m_pEasyCamera->GetProjMatrix();
 		m_sd.viewPort=*m_pDevice->GetViewPort();
 		m_sd.m_pSamper=m_pSamper;

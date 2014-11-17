@@ -19,6 +19,7 @@ namespace SoftEngine
 		Vector3 vLightPosition;
 		Vector3 vDirect;
 		Matrix matWorldInverseTranspose;
+		Vector3 eye;
 		float fAmbientScalar;
 		float fDirectScalar; 
 	};

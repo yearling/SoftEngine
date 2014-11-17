@@ -32,6 +32,7 @@ namespace SoftEngine
 		Color m_cDirectColor;
 		Color m_cAmbient;
 		Matrix m_matRotation;
+		Vector3 m_vEye;
 		float m_fDirectScalar;
 		float m_fAbmientScalar;
 	};

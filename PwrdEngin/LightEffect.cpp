@@ -24,6 +24,7 @@ namespace SoftEngine
 		out.m_vColor=v.m_vColor;
 		out.m_vTexcoord=v.m_vTexcoord;
 		out.m_vNormal=v.m_vNormal;
+		out.m_vWordPOsition=v.m_vPosition*m_matWorld;
 		bool hand;
 		if(v.m_vTangant.w>0.0f)
 			hand=true;
@@ -95,7 +96,18 @@ namespace SoftEngine
 		//////////////////////////////////////////////////////////////////////////
 		Color texColor=(Color) m_pSamper->GetColor(ps.m_vTexcoord.x,ps.m_vTexcoord.y);
 		float fDirect=normal.Dot(-m_vLightDirection);
+		Vector3 reflect=normal*(normal*(-m_vLightDirection))*2-(-m_vLightDirection);
+		reflect.Normalize();
+		Vector3 eyetoPoint=(m_vEye-ps.m_vWordPOsition).Normalize();
+		float spec=eyetoPoint*reflect;
+		if(spec<0.0f)
+			spec=0.0f;
+		spec=spec*spec*spec*spec;
+		Color spec_color(_RGB(255,255,255));
+		
+		//////////////////////////////////////////////////////////////////////////
 		texColor=texColor*(fDirect*m_fDirectScalar+m_cAmbient*m_fAbmientScalar);
+		texColor=texColor+spec_color*spec;
 		return texColor.Sature();
 	}
 
@@ -110,6 +122,7 @@ namespace SoftEngine
 		m_cAmbient=(Color)pdata->ambient;
 		m_fAbmientScalar=pdata->fAmbientScalar;
 		m_matRotation=pdata->world;
+		m_vEye=pdata->eye;
 	}
 
 }
