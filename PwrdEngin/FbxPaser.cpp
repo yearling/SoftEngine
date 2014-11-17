@@ -51,7 +51,7 @@ namespace SoftEngine
 			{12,DECLTYPE_FLOAT3,DECLUSAGE_NORMAL,0},
 			{24,DECLTYPE_FLOAT4,DECLUSAGE_COLOR,0},
 			{40,DECLTYPE_FLOAT2,DECLUSAGE_TEXCOORD,0},
-			{48,DECLTYPE_FLOAT3,DECLUSAGE_NORMAL,1},
+			{48,DECLTYPE_FLOAT4,DECLUSAGE_NORMAL,1},
 			DECL_END()
 		};
 		m_pVertexDecl=m_pDevice->CreateVertexDeclaration(v_list);
@@ -162,6 +162,34 @@ namespace SoftEngine
 				m_vecParseIndexBuffer.push_back(index_change[1]);
 				m_vecParseIndexBuffer.push_back(index_change[0]);
 		}
+		/*{
+			m_vecParseIndexBuffer.clear();
+			m_vecParseRenderDataBuffer.clear();
+			m_uNumFaces=2;
+			FbxRenderData da;
+			memset(&da,0,sizeof(da));
+			da.position=Vector3(0,0,0);
+			da.uv=Vector2(0,1);
+			m_vecParseIndexBuffer.push_back(m_vecParseRenderDataBuffer.size());
+			m_vecParseRenderDataBuffer.push_back(da);
+			memset(&da,0,sizeof(da));
+			da.position=Vector3(0,2,0);
+			da.uv=Vector2(0,0);
+			m_vecParseIndexBuffer.push_back(m_vecParseRenderDataBuffer.size());
+			m_vecParseRenderDataBuffer.push_back(da);
+			memset(&da,0,sizeof(da));
+			da.position=Vector3(2,2,0);
+			da.uv=Vector2(1,0);
+			m_vecParseIndexBuffer.push_back(m_vecParseRenderDataBuffer.size());
+			m_vecParseRenderDataBuffer.push_back(da);
+			memset(&da,0,sizeof(da));
+			m_vecParseIndexBuffer.push_back(0);
+			m_vecParseIndexBuffer.push_back(2);
+			da.position=Vector3(2,0,0);
+			da.uv=Vector2(0,0);
+			m_vecParseIndexBuffer.push_back(m_vecParseRenderDataBuffer.size());
+			m_vecParseRenderDataBuffer.push_back(da);
+		}*/
 		CaculateNormalAndTrangant();
 		std::cout<<"uv from fbx finished!"<<endl;
 		m_uNumVertex=m_vecParseRenderDataBuffer.size();
@@ -472,7 +500,8 @@ namespace SoftEngine
 					float fWeight=GetAngle(vEdges[(j+2)%3]-vEdges[j],vEdges[(j+1)%3]-vEdges[j]);
 					if(fWeight<=0.0f)
 						fWeight=0.00001f;
-					AddNormal(i-3+j,matTriBase.n*fWeight);
+					AddNormal(m_vecParseIndexBuffer[i-3+j],matTriBase.n*fWeight);
+					//AddNormal(i-3+j,matTriBase.n*fWeight);
 				}
 
 			}
@@ -498,7 +527,8 @@ namespace SoftEngine
 					float fWeight=GetAngle(vEdges[(j+2)%3]-vEdges[j],vEdges[(j+1)%3]-vEdges[j]);
 					Vector3 tmp=matTriBase.n;
 					tmp.Normalize();
-					UINT pos=AddUV(i-3+j,matTriBase.u*fWeight,matTriBase.v*fWeight,tmp);
+					UINT pos=AddUV(m_vecParseIndexBuffer[i-3+j],matTriBase.u*fWeight,matTriBase.v*fWeight,tmp);
+					//UINT pos=AddUV(i-3+j,matTriBase.u*fWeight,matTriBase.v*fWeight,tmp);
 					m_vecAssign.push_back(pos);
 				}
 			}
@@ -517,12 +547,33 @@ namespace SoftEngine
 				mat.n=n.Normalize();
 			}
 		}
-		for(int i=0;i<m_vecParseIndexBuffer.size();i++)
+		for(UINT i=0;i<m_vecParseIndexBuffer.size();i++)
 		{
 			Matrix3x3 tmp=m_vecBase[m_vecAssign[i]];
 			auto &data=m_vecParseRenderDataBuffer[m_vecParseIndexBuffer[i]];
-			data.normal=tmp.n;
+			/*data.normal=tmp.n;
 			data.tangant=tmp.u;
+			if((tmp.u^ tmp.v )*tmp.n > 0.0f)
+			{
+				data.tangant.w=1.0f;
+			}
+			else
+				data.tangant.w=-1.0f;*/
+			FbxRenderData copydata;
+			copydata.position=data.position;
+			copydata.color=data.color;
+			copydata.normal=tmp.n;
+			copydata.uv=data.uv;
+			copydata.tangant=tmp.u;
+			if((tmp.u^ tmp.v )*tmp.n > 0.0f)
+			{
+				copydata.tangant.w=1.0f;
+			}
+			else
+				copydata.tangant.w=-1.0f;
+			m_vecParseIndexBuffer[i]=m_vecParseRenderDataBuffer.size();
+			m_vecParseRenderDataBuffer.push_back(copydata);
+
 		}
 	}
 
@@ -562,15 +613,11 @@ namespace SoftEngine
 				bool bParityCheck=(bParityRef==bParity);
 				if(!bParityCheck)
 					continue;
-				Vector3 fuv=matFount.u+matFount.v;
-				Vector3 vLShape=fuv-n*(n*fuv);
-				bool bLShapeCheck=(u+v)*vLShape>0.0f;
-				if(!bLShapeCheck)
-					continue;
 			}
 			dwBaseUVIndex=iter->second;
 			break;
 		}
+		//²ð·Ö¶¨
 		if(dwBaseUVIndex==INFINITE)
 		{
 			Matrix3x3 base(Vector3(0,0,0),Vector3(0,0,0),Vector3(0,0,0));

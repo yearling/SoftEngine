@@ -15,7 +15,7 @@ namespace SoftEngine
 		Vector3 m_vNormal;
 		Vector2 m_vTexcoord;
 		Vector4 m_vColor;
-		Vector3 m_vTangant;
+		Vector4 m_vTangant;
 		bool m_bVisible;
 	};
 	struct VSShaderOutput
@@ -28,6 +28,7 @@ namespace SoftEngine
 		Vector2 m_vTexcoord;
 		Vector4 m_vColor;
 		Vector3 m_vTangant;
+		Vector3 m_vBitangant;
 		bool m_bVisible;
 	};
 	VSShaderOutput PrespectLerp(const VSShaderOutput &out0,const VSShaderOutput &out1,float f);

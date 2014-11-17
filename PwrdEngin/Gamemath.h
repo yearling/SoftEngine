@@ -125,6 +125,10 @@ public:
 	Matrix3x3() {};
 	Matrix3x3(const float *);
 	explicit Matrix3x3(const Matrix &);
+	Matrix3x3( float _11, float _12, float _13, 
+		float _21, float _22, float _23,
+		float _31, float _32, float _33 
+		);
 	Matrix3x3(const Vector3 &,const Vector3 &,const Vector3 &);
 	union {
 		struct {

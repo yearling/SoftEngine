@@ -60,8 +60,8 @@ namespace SoftEngine
 		m_pEasyCamera->SetViewParam(&eye,&at);
 		m_pEasyCamera->SetProjParam(PI*0.5f,(float)m_spMainWindow->m_iWidth/(float)
 			m_spMainWindow->m_iHeight,1.0f,1000.0f);
-		m_pBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\wall.bmp");
-		m_pNormalBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\wall_N.bmp");
+		m_pBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\stones.bmp");
+		m_pNormalBMP=BMPReader::GetInstance().LoadBMP("E:\\scene_fbx\\test\\stones_nmap.bmp");
 		m_pSamper=new TextureSampler();
 		m_pNormalMapSamper=new TextureSampler();
 		m_pSamper->SetBMP(m_pBMP);
@@ -145,7 +145,7 @@ namespace SoftEngine
 		m_sd.direct=_RGB(255,255,255);
 		m_sd.ambient=_RGB(255,255,255);
 		m_sd.fAmbientScalar=0.0f;
-		m_sd.fDirectScalar=2.0f;
+		m_sd.fDirectScalar=1.2f;
 		static Vector3 lightdirect(0,0,1);
 		if(m_bKeys[0])
 			lightdirect.x+=0.1f;

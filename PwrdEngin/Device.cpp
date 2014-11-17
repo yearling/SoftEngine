@@ -863,7 +863,7 @@ namespace SoftEngine
 				case DECLUSAGE_NORMAL:
 					 if(v->m_byteType==DECLTYPE_FLOAT3&&v->m_byteUsageIndex==0)		
 						m_iNormalOffsetCached=v->m_wOffset;
-					 if(v->m_byteType==DECLTYPE_FLOAT3&&v->m_byteUsageIndex==1)
+					 if(v->m_byteType==DECLTYPE_FLOAT4&&v->m_byteUsageIndex==1)
 						 m_iTangantCached=v->m_wOffset;
 					 break;
 				case DECLUSAGE_TEXCOORD:

@@ -13,7 +13,7 @@ namespace SoftEngine
 		Vector3 normal;
 		Vector4 color;
 		Vector2 uv;
-		Vector3 tangant;
+		Vector4 tangant;
 		bool operator==(const FbxRenderData &data);
 	};
 	class FbxPaser
