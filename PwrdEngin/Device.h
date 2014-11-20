@@ -9,6 +9,7 @@
 namespace SoftEngine
 {
 	class Device;
+	//读取模型的原始数据，用来传入VS进行处理
 	struct RenderVertex
 	{
 		Vector4 m_vPosition;
@@ -18,6 +19,7 @@ namespace SoftEngine
 		Vector4 m_vTangant;
 		bool m_bVisible;
 	};
+	//VS处理后生成的数据，用来插值后传入PS处理
 	struct VSShaderOutput
 	{
 		Vector4 m_vScreenPosition;
@@ -31,12 +33,20 @@ namespace SoftEngine
 		Vector3 m_vBitangant;
 		bool m_bVisible;
 	};
+
+	//透视矫正插值
 	VSShaderOutput PrespectLerp(const VSShaderOutput &out0,const VSShaderOutput &out1,float f);
+
+	//普通插值，用来做对比实验
 	VSShaderOutput Lerp(const VSShaderOutput &out0,const VSShaderOutput &out1,float f);
+
+	//绘制图元时的方式
 	enum PRIMITIVETYPE
 	{
+		//三角形列表
 		PT_TRIANGLEIST=0,
 	};
+	//顶点声明的顶点类型
 	enum DECLEAR_TYPE
 	{
 		DECLTYPE_FLOAT1=0,
@@ -45,6 +55,7 @@ namespace SoftEngine
 		DECLTYPE_FLOAT4,
 		DECLTYPE_UINT
 	};
+	//顶点声明中顶点用途
 	enum DECLEAR_USAGE
 	{
 		DECLUSAGE_POSITION,
@@ -79,7 +90,7 @@ namespace SoftEngine
 		int m_iNormalOffsetCached;
 		int m_iTexcoordOffsetCached;
 		int m_iTangantCached;
-		int m_iSize;
+		int m_iSize;//顶点大小
 	};
 	
 	class VertexBuffer

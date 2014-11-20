@@ -39,7 +39,7 @@ namespace SoftEngine
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\rectangle.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\box_texture.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane_texture.fbx");
-		m_pFbxPaser->Load("E:\\scene_fbx\\test\\tea.fbx");
+		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\tea.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane2X2.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\triangle_mesh.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\ball_ground.fbx");
@@ -48,12 +48,13 @@ namespace SoftEngine
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\plane2x2bump.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\teaNormal.fbx");
 		//m_pFbxPaser->Load("E:\\scene_fbx\\test\\ballNormal.fbx");
+		m_pFbxPaser->Load("E:\\scene_fbx\\test\\ylq.fbx");
 
 		//////////////////////////////////////////////////////////////////////////
 		m_pEasyCamera=new EASYCamera();
 		m_pEasyCamera->SetHWND(m_spMainWindow->m_hWnd);
 		m_pEasyCamera->SetWindow(width,height);
-		m_pEasyCamera->SetRaius(40.0f);
+		m_pEasyCamera->SetRaius(10.0f);
 		Vector3 eye(0.0f,0.0f,-600.0f);
 		Vector3 at(0.0f,0.0f,0.0f);
 		Vector3 up(0.0f,1.0f,0.0f);
@@ -83,7 +84,7 @@ namespace SoftEngine
 				m_pDevice->SetVS(m_pVS);
 				m_pDevice->PSSetData();
 				m_pDevice->VSSetData();
-				//m_pDevice->SetCullMode(CULL_NONE);
+				m_pDevice->SetCullMode(CULL_NONE);
 				m_pDevice->SetFillMode(FILL_SOLID);
 				//m_pDevice->SetFillMode(FILL_WIREFRAME);
 				m_pDevice->DrawIndexedPrimitive(PT_TRIANGLEIST,0,0,m_pFbxPaser->GetVertexNumber(),0,m_pFbxPaser->GetFaceNumber());

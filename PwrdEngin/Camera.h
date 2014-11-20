@@ -64,7 +64,6 @@ namespace SoftEngine
 		virtual ~CameraBase(void);
 		virtual bool HandleMessage(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam);
 		virtual void FrameMove(float elapse_time)=0;
-		//virtual void Reset();
 		virtual void SetViewParam(Vector3* eye,Vector3 *lookat);
 		virtual void SetProjParam(float FOV,float aspect,float near_plane,float far_plane);
 		virtual void SetDragRect(RECT &rc) {m_rcDragRect=rc;}

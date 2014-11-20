@@ -102,7 +102,7 @@ namespace SoftEngine
 		float spec=eyetoPoint*reflect;
 		if(spec<0.0f)
 			spec=0.0f;
-		spec=spec*spec*spec*spec;
+		spec=pow(spec,50);
 		Color spec_color(_RGB(255,255,255));
 		
 		//////////////////////////////////////////////////////////////////////////
